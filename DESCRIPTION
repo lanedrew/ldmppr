@@ -11,3 +11,5 @@ Encoding: UTF-8
 LazyData: true
 Imports: Rcpp (>= 1.0.12)
 LinkingTo: Rcpp
+URL: https://github.com/lanedrew/ldmppr
+BugReports: https://github.com/lanedrew/ldmppr/issues
