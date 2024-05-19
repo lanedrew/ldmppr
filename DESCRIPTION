@@ -1,12 +1,13 @@
 Package: ldmppr
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Simulating Location Dependent Marked Point Processes
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Authors@R: 
+  person("Lane", "Drew", , role = c("aut", "cre"), email = "lanetdrew@gmail.com")
+Maintainer: Lane Drew <lanetdrew@gmail.com>
+Description: Simulating Location Dependent Marked Point Processes,
+    a package for generating marked spatial point processes where the mark distribution is location dependent.
+License: Apache License (>= 2)
 Encoding: UTF-8
 LazyData: true
 Imports: Rcpp (>= 1.0.12)
