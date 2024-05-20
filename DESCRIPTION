@@ -3,7 +3,7 @@ Type: Package
 Title: Simulating Location Dependent Marked Point Processes
 Version: 0.1.0
 Authors@R: 
-  person("Lane", "Drew", , role = c("aut", "cre"), email = "lanetdrew@gmail.com")
+  person("Lane", "Drew", , role = c("aut", "cre"), email = "lanetdrew@gmail.com", comment = c(ORCID = "0009-0006-5427-4092"))
 Maintainer: Lane Drew <lanetdrew@gmail.com>
 Description: Simulating Location Dependent Marked Point Processes,
     a package for generating marked spatial point processes where the mark distribution is location dependent.
