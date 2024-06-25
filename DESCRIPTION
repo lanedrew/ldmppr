@@ -10,7 +10,29 @@ Description: Simulating Location Dependent Marked Point Processes,
 License: Apache License (>= 2)
 Encoding: UTF-8
 LazyData: true
-Imports: Rcpp (>= 1.0.12)
-LinkingTo: Rcpp
+Imports: 
+    dplyr,
+    randomForest,
+    Rcpp (>= 1.0.12),
+    terra,
+    xgboost, 
+    readr,
+    parsnip,
+    dials,
+    bundle,
+    recipes,
+    rsample,
+    tune,
+    workflows,
+    yardstick,
+    MASS,
+    tidyr,
+    magrittr,
+    hardhat,
+    knitr
+LinkingTo: 
+    Rcpp,
+    RcppArmadillo
 URL: https://github.com/lanedrew/ldmppr
 BugReports: https://github.com/lanedrew/ldmppr/issues
+RoxygenNote: 7.3.1
