@@ -59,14 +59,16 @@ Sim_spatial <- function(M_n, par, nsim.t){
 #' @return a list of simulated values both thinned and unthinned
 #' @export
 #'
-Sim.s_t_int <- function(Tmin, Tmax, par, M_n){
+Sim_spatio_temp <- function(Tmin, Tmax, par, M_n){
   Sim_time = stats::na.omit(Sim_Temporal(Tmin, Tmax, par[1:3])$unthin)
   sim_loc =  Sim_spatial(M_n, par[4:5], length(Sim_time))
   Sim_time[1] = 0
   txy_sim = base::cbind(Sim_time, sim_loc)
   thin_vals = (stats::runif(base::nrow(txy_sim), 0, 1) < interactionCpp_st(txy_sim, par[6:8]))
   txy_sim_thin = txy_sim[thin_vals,]
-  return(base::list(txy_sim, txy_sim_thin))
+  sim_df <- base::data.frame(time = txy_sim[,1], x = txy_sim[,2], y = txy_sim[,3])
+  sim_thin_df <- base::data.frame(time = txy_sim_thin[,1], x = txy_sim_thin[,2], y = txy_sim_thin[,3])
+  return(base::list(unthinned = sim_df, thinned = sim_thin_df))
 }
 
 #' Predict values from the mark distribution
@@ -80,7 +82,7 @@ Sim.s_t_int <- function(Tmin, Tmax, par, M_n){
 #'
 pred_marks <- function(sim_realization, raster_list, size_model){
 
-  s <- sim_realization[,2:3]
+  s <- sim_realization[,c("x", "y")]
   covars <- base::do.call(base::cbind, base::lapply(raster_list, function(x) terra::extract(x, s, method = "bilinear")))
   X <- covars
   X$x <- s[,1]
