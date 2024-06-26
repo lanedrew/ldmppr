@@ -87,5 +87,5 @@ pred_marks <- function(sim_realization, raster_list, size_model){
   X$y <- s[,2]
   X$age <- sim_realization[,1]
 
-  return(stats::predict(size_model, newdata = X))
+  return(stats::predict(size_model, X))
 }
