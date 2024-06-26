@@ -30,7 +30,8 @@ Imports:
     magrittr,
     hardhat,
     knitr,
-    ggplot2
+    ggplot2,
+    butcher
 LinkingTo: 
     Rcpp,
     RcppArmadillo

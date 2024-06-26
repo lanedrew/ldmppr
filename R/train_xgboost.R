@@ -134,7 +134,10 @@ train_gbm_mark_model <- function(df, raster_list, save_model = FALSE, save_path)
     dplyr::mutate(.estimate = base::format(base::round(.estimate, 2), big.mark = ","))
   knitr::kable(xgboost_score)
 
-  bundled_mod <- bundle::bundle(size.mod)
+  bundled_mod <-
+    size.mod %>%
+    butcher::butcher() %>%
+    bundle::bundle()
 
   if(save_model == TRUE){
     base::saveRDS(bundled_mod, file = save_path)
