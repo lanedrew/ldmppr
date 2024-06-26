@@ -73,7 +73,7 @@ train_gbm_mark_model <- function(df, raster_list, save_model = FALSE, save_path)
     resamples = sprl_cv_folds,
     grid = xgboost_grid,
     metrics = yardstick::metric_set(yardstick::rmse, yardstick::rsq, yardstick::mae),
-    control = tune::control_grid(verbose = TRUE)
+    control = tune::control_grid(verbose = FALSE)
   )
 
   xgboost_best_params <- xgboost_tuned %>%

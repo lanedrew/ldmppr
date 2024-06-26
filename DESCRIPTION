@@ -29,7 +29,8 @@ Imports:
     tidyr,
     magrittr,
     hardhat,
-    knitr
+    knitr,
+    ggplot2
 LinkingTo: 
     Rcpp,
     RcppArmadillo
