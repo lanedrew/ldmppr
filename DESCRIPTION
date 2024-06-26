@@ -31,7 +31,8 @@ Imports:
     hardhat,
     knitr,
     ggplot2,
-    butcher
+    butcher,
+    spatstat.geom
 LinkingTo: 
     Rcpp,
     RcppArmadillo

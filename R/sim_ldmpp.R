@@ -89,3 +89,23 @@ pred_marks <- function(sim_realization, raster_list, size_model){
 
   return(stats::predict(size_model, X))
 }
+
+
+#' Generate a marked process given locations and marks
+#'
+#' @param location_data a set of locations
+#' @param marks a vector of marks
+#' @param window a vector of window bounds (2 for x, 2 for y)
+#'
+#' @return a ppp object with marks
+#' @export
+#'
+generate_mpp <- function(location_data, marks, window){
+
+  marked_pp <- spatstat.geom::ppp(sim_realization[,2],
+                                  sim_realization[,3],
+                                  window[1:2], window[3:4],
+                                  marks = marks)
+
+  return(marked_pp)
+}
