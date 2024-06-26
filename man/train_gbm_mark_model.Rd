@@ -9,7 +9,11 @@ train_gbm_mark_model(df, raster_list, save_model = FALSE, save_path)
 \arguments{
 \item{raster_list}{the list of raster objects}
 
-\item{x}{a data.frame containing size, x, y, and age}
+\item{save_model}{determines whether to save the generated model}
+
+\item{save_path}{path for saving the generated model}
+
+\item{x}{a data.frame containing named vectors size, x, y, and age}
 }
 \value{
 a bundled model object

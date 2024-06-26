@@ -1,7 +1,9 @@
 #' Train an XGBoost model for the mark distribution
 #'
-#' @param x a data.frame containing size, x, y, and age
+#' @param x a data.frame containing named vectors size, x, y, and age
 #' @param raster_list the list of raster objects
+#' @param save_model determines whether to save the generated model
+#' @param save_path path for saving the generated model
 #'
 #' @return a bundled model object
 #' @export
@@ -82,39 +84,39 @@ train_gbm_mark_model <- function(df, raster_list, save_model = FALSE, save_path)
   xgboost_model_final <- xgboost_model %>%
     tune::finalize_model(xgboost_best_params)
 
-  train_processed <- recipes::bake(preprocessing_recipe,  new_data = rsample::training(sprl_split))
-  train_prediction <- xgboost_model_final %>%
-    # fit the model on all the training data
-    parsnip::fit(
-      formula = size ~ .,
-      data    = train_processed
-    ) %>%
-    # predict the sale prices for the training data
-    stats::predict(new_data = train_processed) %>%
-    dplyr::bind_cols(rsample::training(sprl_split))
-  xgboost_score_train <-
-    train_prediction %>%
-    yardstick::metrics(size, .pred) %>%
-    dplyr::mutate(.estimate = base::format(base::round(.estimate, 2), big.mark = ","))
-  knitr::kable(xgboost_score_train)
+  # train_processed <- recipes::bake(preprocessing_recipe,  new_data = rsample::training(sprl_split))
+  # train_prediction <- xgboost_model_final %>%
+  #   # fit the model on all the training data
+  #   parsnip::fit(
+  #     formula = size ~ .,
+  #     data    = train_processed
+  #   ) %>%
+  #   # predict the sale prices for the training data
+  #   stats::predict(new_data = train_processed) %>%
+  #   dplyr::bind_cols(rsample::training(sprl_split))
+  # xgboost_score_train <-
+  #   train_prediction %>%
+  #   yardstick::metrics(size, .pred) %>%
+  #   dplyr::mutate(.estimate = base::format(base::round(.estimate, 2), big.mark = ","))
+  # knitr::kable(xgboost_score_train)
 
 
-  test_processed  <- recipes::bake(preprocessing_recipe, new_data = rsample::testing(sprl_split))
-  test_prediction <- xgboost_model_final %>%
-    # fit the model on all the training data
-    parsnip::fit(
-      formula = size ~ .,
-      data    = train_processed
-    ) %>%
-    # use the training model fit to predict the test data
-    stats::predict(new_data = test_processed) %>%
-    dplyr::bind_cols(rsample::testing(sprl_split))
-  # measure the accuracy of our model using `yardstick`
-  xgboost_score <-
-    test_prediction %>%
-    yardstick::metrics(size, .pred) %>%
-    dplyr::mutate(.estimate = base::format(base::round(.estimate, 2), big.mark = ","))
-  knitr::kable(xgboost_score)
+  # test_processed  <- recipes::bake(preprocessing_recipe, new_data = rsample::testing(sprl_split))
+  # test_prediction <- xgboost_model_final %>%
+  #   # fit the model on all the training data
+  #   parsnip::fit(
+  #     formula = size ~ .,
+  #     data    = train_processed
+  #   ) %>%
+  #   # use the training model fit to predict the test data
+  #   stats::predict(new_data = test_processed) %>%
+  #   dplyr::bind_cols(rsample::testing(sprl_split))
+  # # measure the accuracy of our model using `yardstick`
+  # xgboost_score <-
+  #   test_prediction %>%
+  #   yardstick::metrics(size, .pred) %>%
+  #   dplyr::mutate(.estimate = base::format(base::round(.estimate, 2), big.mark = ","))
+  # knitr::kable(xgboost_score)
 
   size.mod <- xgboost_model_final %>%
     # fit the model on all the training data
@@ -123,20 +125,20 @@ train_gbm_mark_model <- function(df, raster_list, save_model = FALSE, save_path)
       data    = mod.data.size
     )
 
-  all_prediction <- size.mod %>%
-    # use the training model fit to predict the test data
-    stats::predict(new_data = mod.data.size) %>%
-    dplyr::bind_cols(mod.data.size)
-  # measure the accuracy of our model using `yardstick`
-  xgboost_score <-
-    all_prediction %>%
-    yardstick::metrics(size, .pred) %>%
-    dplyr::mutate(.estimate = base::format(base::round(.estimate, 2), big.mark = ","))
-  knitr::kable(xgboost_score)
+  # all_prediction <- size.mod %>%
+  #   # use the training model fit to predict the test data
+  #   stats::predict(new_data = mod.data.size) %>%
+  #   dplyr::bind_cols(mod.data.size)
+  # # measure the accuracy of our model using `yardstick`
+  # xgboost_score <-
+  #   all_prediction %>%
+  #   yardstick::metrics(size, .pred) %>%
+  #   dplyr::mutate(.estimate = base::format(base::round(.estimate, 2), big.mark = ","))
+  # knitr::kable(xgboost_score)
 
   bundled_mod <-
     size.mod %>%
-    butcher::butcher() %>%
+    # butcher::butcher() %>%
     bundle::bundle()
 
   if(save_model == TRUE){
