@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# ldmppr
+# dlmtree  <img src="man/figures/ldmppr_logo_hex5.png" align="right" height="138" /></a>
 
 <!-- badges: start -->
 <!-- badges: end -->
