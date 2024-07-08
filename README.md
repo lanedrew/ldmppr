@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# ldmppr <img src="man/figures/ldmppr_logo_hex5.png" align="right" height="138" /></a>
+# ldmppr <img src="man/figures/ldmppr_logo_hex5.png" align="right" height="140" /></a>
 
 <!-- badges: start -->
 
