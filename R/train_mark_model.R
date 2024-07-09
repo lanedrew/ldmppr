@@ -22,21 +22,21 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost", save_model
   ## Fit the size model
   model_data <- data.frame(size = df$size, X)
 
-  sprl_split <- rsample::initial_split(
+  data_split <- rsample::initial_split(
     data = model_data,
     prop = 0.8,
     strata = size
   )
 
   preprocessing_recipe <-
-    recipes::recipe(size ~ ., data = rsample::training(sprl_split)) %>%
+    recipes::recipe(size ~ ., data = rsample::training(data_split)) %>%
     recipes::prep()
 
 
-  sprl_cv_folds <-
+  data_cv_folds <-
     recipes::bake(
       preprocessing_recipe,
-      new_data = rsample::training(sprl_split)
+      new_data = rsample::training(data_split)
     ) %>%
     rsample::vfold_cv(v = 5)
 
@@ -74,7 +74,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost", save_model
 
     xgboost_tuned <- tune::tune_grid(
       object = xgboost_wf,
-      resamples = sprl_cv_folds,
+      resamples = data_cv_folds,
       grid = xgboost_grid,
       metrics = yardstick::metric_set(yardstick::rmse, yardstick::rsq, yardstick::mae),
       control = tune::control_grid(verbose = FALSE)
@@ -122,7 +122,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost", save_model
 
     rf_tuned <- tune::tune_grid(
       object = rf_wf,
-      resamples = sprl_cv_folds,
+      resamples = data_cv_folds,
       grid = rf_grid,
       metrics = yardstick::metric_set(yardstick::rmse, yardstick::rsq, yardstick::mae),
       control = tune::control_grid(verbose = FALSE)
