@@ -7,7 +7,9 @@
 interactionCpp_st(data, paramg)
 }
 \arguments{
-\item{a}{vector of parameters}
+\item{data}{a matrix of points}
+
+\item{paramg}{a vector of parameters}
 }
 \value{
 distance between a t and all t

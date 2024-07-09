@@ -7,7 +7,9 @@
 Part1_4FullDkappaCpp(data, paramg)
 }
 \arguments{
-\item{a}{vector of parameters}
+\item{data}{a matrix of data}
+
+\item{paramg}{a vector of parameters}
 }
 \value{
 distance between a t and all t

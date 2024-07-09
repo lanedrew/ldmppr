@@ -7,7 +7,15 @@
 prodFullCpp(xgrid, ygrid, tgrid, data, params)
 }
 \arguments{
-\item{a}{vector of parameters}
+\item{xgrid}{a vector of grid values for x}
+
+\item{ygrid}{a vector of grid values for y}
+
+\item{tgrid}{a t value}
+
+\item{data}{a matrix of data}
+
+\item{params}{a vector of parameters}
 }
 \value{
 returns the product

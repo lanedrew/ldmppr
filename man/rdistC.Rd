@@ -7,7 +7,9 @@
 rdistC(evalt, obst)
 }
 \arguments{
-\item{a}{vector of t}
+\item{evalt}{a t value}
+
+\item{obst}{a vector of t}
 }
 \value{
 distance between a t and all t

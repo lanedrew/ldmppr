@@ -7,7 +7,9 @@
 pdistCVec(x, y)
 }
 \arguments{
-\item{a}{vector y}
+\item{x}{a vector x}
+
+\item{y}{a vector y}
 }
 \value{
 distance between the two vectors

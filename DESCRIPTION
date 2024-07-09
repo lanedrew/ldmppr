@@ -11,12 +11,8 @@ License: Apache License (>= 2)
 Encoding: UTF-8
 LazyData: true
 Imports: 
-    dplyr,
-    randomForest,
     Rcpp (>= 1.0.12),
     terra,
-    xgboost, 
-    readr,
     parsnip,
     dials,
     bundle,
@@ -25,13 +21,9 @@ Imports:
     tune,
     workflows,
     yardstick,
-    MASS,
-    tidyr,
     magrittr,
     hardhat,
-    knitr,
     ggplot2,
-    butcher,
     spatstat.geom
 LinkingTo: 
     Rcpp,

@@ -3,8 +3,8 @@
 
 #' calculates euclidean distance
 #'
-#' @param a vector x
-#' @param a vector y
+#' @param x a vector x
+#' @param y a vector y
 #' @returns distance between the two vectors
 #' @export
 pdistCVec <- function(x, y) {
@@ -13,11 +13,11 @@ pdistCVec <- function(x, y) {
 
 #' calculates full product
 #'
-#' @param a vector of grid values for x
-#' @param a vector of grid values for y
-#' @param a t value
-#' @param a matrix of data
-#' @param a vector of parameters
+#' @param xgrid a vector of grid values for x
+#' @param ygrid a vector of grid values for y
+#' @param tgrid a t value
+#' @param data a matrix of data
+#' @param params a vector of parameters
 #' @returns returns the product
 #' @export
 prodFullCpp <- function(xgrid, ygrid, tgrid, data, params) {
@@ -26,11 +26,11 @@ prodFullCpp <- function(xgrid, ygrid, tgrid, data, params) {
 
 #' calculates c_theta
 #'
-#' @param a vector of grid values for x
-#' @param a vector of grid values for y
-#' @param a t value
-#' @param a matrix of data
-#' @param a vector of parameters
+#' @param xgrid a vector of grid values for x
+#' @param ygrid a vector of grid values for y
+#' @param tgrid a t value
+#' @param data a matrix of data
+#' @param params a vector of parameters
 #' @returns returns the product
 #' @export
 Ctheta2i <- function(xgrid, ygrid, tgrid, data, params) {
@@ -39,9 +39,9 @@ Ctheta2i <- function(xgrid, ygrid, tgrid, data, params) {
 
 #' calculates sum of values < t
 #'
-#' @param a vector of observed t
-#' @param a t value
-#' @param a vector of values
+#' @param obst a vector of observed t
+#' @param evalt a t value
+#' @param y a vector of values
 #' @returns the sum
 #' @export
 CondSumCpp <- function(obst, evalt, y) {
@@ -50,9 +50,9 @@ CondSumCpp <- function(obst, evalt, y) {
 
 #' calculates sum of values < t
 #'
-#' @param a vector of observed t
-#' @param a t value
-#' @param a vector of values
+#' @param obst a vector of observed t
+#' @param evalt a t value
+#' @param y a vector of values
 #' @returns the sum
 #' @export
 CondSumCppR <- function(obst, evalt, y) {
@@ -61,8 +61,8 @@ CondSumCppR <- function(obst, evalt, y) {
 
 #' calculates euclidean distance
 #'
-#' @param a vector
-#' @param a matrix
+#' @param evalu a vector
+#' @param obsu a matrix
 #' @returns distance between a vector and each row of a matrix
 #' @export
 pdistC <- function(evalu, obsu) {
@@ -71,8 +71,8 @@ pdistC <- function(evalu, obsu) {
 
 #' calculates distance in one dim
 #'
-#' @param a t value
-#' @param a vector of t
+#' @param evalt a t value
+#' @param obst a vector of t
 #' @returns distance between a t and all t
 #' @export
 rdistC <- function(evalt, obst) {
@@ -81,11 +81,11 @@ rdistC <- function(evalt, obst) {
 
 #' calculates part 2
 #'
-#' @param a vector of grid values for x
-#' @param a vector of grid values for y
-#' @param a t value
-#' @param a matrix of data
-#' @param a vector of parameters
+#' @param xgrid a vector of grid values for x
+#' @param ygrid a vector of grid values for y
+#' @param tgrid a t value
+#' @param data a matrix of data
+#' @param param a vector of parameters
 #' @returns distance between a t and all t
 #' @export
 Part2FullDkappaCpp <- function(xgrid, ygrid, tgrid, data, param) {
@@ -94,8 +94,8 @@ Part2FullDkappaCpp <- function(xgrid, ygrid, tgrid, data, param) {
 
 #' calculates part 1 full
 #'
-#' @param a matrix of data
-#' @param a vector of parameters
+#' @param data a matrix of data
+#' @param paramt a vector of parameters
 #' @returns distance between a t and all t
 #' @export
 Part1_1FullDkappaCpp <- function(data, paramt) {
@@ -104,8 +104,8 @@ Part1_1FullDkappaCpp <- function(data, paramt) {
 
 #' calculates part 1 full
 #'
-#' @param a matrix of data
-#' @param a vector of parameters
+#' @param data a matrix of data
+#' @param params a vector of parameters
 #' @returns distance between a t and all t
 #' @export
 Part1_2FullDkappaCpp <- function(data, params) {
@@ -114,11 +114,11 @@ Part1_2FullDkappaCpp <- function(data, params) {
 
 #' calculates part 1-3
 #'
-#' @param a vector of grid values for x
-#' @param a vector of grid values for y
-#' @param a t value
-#' @param a matrix of data
-#' @param a vector of parameters
+#' @param xgrid a vector of grid values for x
+#' @param ygrid a vector of grid values for y
+#' @param tgrid a t value
+#' @param data a matrix of data
+#' @param params a vector of parameters
 #' @returns distance between a t and all t
 #' @export
 Part1_3FullDkappaCpp <- function(xgrid, ygrid, tgrid, data, params) {
@@ -127,8 +127,8 @@ Part1_3FullDkappaCpp <- function(xgrid, ygrid, tgrid, data, params) {
 
 #' calculates part 1-4
 #'
-#' @param a matrix of data
-#' @param a vector of parameters
+#' @param data a matrix of data
+#' @param paramg a vector of parameters
 #' @returns distance between a t and all t
 #' @export
 Part1_4FullDkappaCpp <- function(data, paramg) {
@@ -137,9 +137,9 @@ Part1_4FullDkappaCpp <- function(data, paramg) {
 
 #' calculates interaction
 #'
-#' @param a matrix of points
-#' @param a new point vector
-#' @param a vector of parameters
+#' @param Hist a matrix of points
+#' @param newp a new point vector
+#' @param par a vector of parameters
 #' @returns distance between a t and all t
 #' @export
 interactionCpp <- function(Hist, newp, par) {
@@ -148,9 +148,8 @@ interactionCpp <- function(Hist, newp, par) {
 
 #' calculates interaction
 #'
-#' @param a matrix of points
-#' @param a new point vector
-#' @param a vector of parameters
+#' @param data a matrix of points
+#' @param paramg a vector of parameters
 #' @returns distance between a t and all t
 #' @export
 interactionCpp_st <- function(data, paramg) {

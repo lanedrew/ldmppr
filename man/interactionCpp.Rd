@@ -7,7 +7,11 @@
 interactionCpp(Hist, newp, par)
 }
 \arguments{
-\item{a}{vector of parameters}
+\item{Hist}{a matrix of points}
+
+\item{newp}{a new point vector}
+
+\item{par}{a vector of parameters}
 }
 \value{
 distance between a t and all t

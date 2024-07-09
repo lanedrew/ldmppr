@@ -7,7 +7,9 @@
 pdistC(evalu, obsu)
 }
 \arguments{
-\item{a}{matrix}
+\item{evalu}{a vector}
+
+\item{obsu}{a matrix}
 }
 \value{
 distance between a vector and each row of a matrix

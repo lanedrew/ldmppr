@@ -3,8 +3,8 @@ using namespace Rcpp;
 
 //' calculates euclidean distance
 //'
-//' @param a vector x
-//' @param a vector y
+//' @param x a vector x
+//' @param y a vector y
 //' @returns distance between the two vectors
 //' @export
 // [[Rcpp::export]]
@@ -17,11 +17,11 @@ double pdistCVec(NumericVector x, NumericVector y)
 
 //' calculates full product
 //'
-//' @param a vector of grid values for x
-//' @param a vector of grid values for y
-//' @param a t value
-//' @param a matrix of data
-//' @param a vector of parameters
+//' @param xgrid a vector of grid values for x
+//' @param ygrid a vector of grid values for y
+//' @param tgrid a t value
+//' @param data a matrix of data
+//' @param params a vector of parameters
 //' @returns returns the product
 //' @export
 // [[Rcpp::export]]
@@ -48,11 +48,11 @@ double  prodFullCpp(double xgrid, double ygrid, double tgrid,
 
 //' calculates c_theta
 //'
-//' @param a vector of grid values for x
-//' @param a vector of grid values for y
-//' @param a t value
-//' @param a matrix of data
-//' @param a vector of parameters
+//' @param xgrid a vector of grid values for x
+//' @param ygrid a vector of grid values for y
+//' @param tgrid a t value
+//' @param data a matrix of data
+//' @param params a vector of parameters
 //' @returns returns the product
 //' @export
 // [[Rcpp::export]]
@@ -74,9 +74,9 @@ double Ctheta2i(NumericVector xgrid, NumericVector ygrid, double tgrid,
 
 //' calculates sum of values < t
 //'
-//' @param a vector of observed t
-//' @param a t value
-//' @param a vector of values
+//' @param obst a vector of observed t
+//' @param evalt a t value
+//' @param y a vector of values
 //' @returns the sum
 //' @export
 // [[Rcpp::export]]
@@ -95,9 +95,9 @@ double CondSumCpp(NumericVector obst, double evalt, NumericVector y)
 
 //' calculates sum of values < t
 //'
-//' @param a vector of observed t
-//' @param a t value
-//' @param a vector of values
+//' @param obst a vector of observed t
+//' @param evalt a t value
+//' @param y a vector of values
 //' @returns the sum
 //' @export
 // [[Rcpp::export]]
@@ -117,8 +117,8 @@ double CondSumCppR(NumericVector obst, double evalt, LogicalVector y)
 
 //' calculates euclidean distance
 //'
-//' @param a vector
-//' @param a matrix
+//' @param evalu a vector
+//' @param obsu a matrix
 //' @returns distance between a vector and each row of a matrix
 //' @export
 // [[Rcpp::export]]
@@ -135,8 +135,8 @@ NumericVector pdistC(NumericVector evalu, NumericMatrix obsu)
 
 //' calculates distance in one dim
 //'
-//' @param a t value
-//' @param a vector of t
+//' @param evalt a t value
+//' @param obst a vector of t
 //' @returns distance between a t and all t
 //' @export
 // [[Rcpp::export]]
@@ -154,11 +154,11 @@ NumericVector rdistC(double evalt, NumericVector obst)
 
 //' calculates part 2
 //'
-//' @param a vector of grid values for x
-//' @param a vector of grid values for y
-//' @param a t value
-//' @param a matrix of data
-//' @param a vector of parameters
+//' @param xgrid a vector of grid values for x
+//' @param ygrid a vector of grid values for y
+//' @param tgrid a t value
+//' @param data a matrix of data
+//' @param param a vector of parameters
 //' @returns distance between a t and all t
 //' @export
 // [[Rcpp::export]]
@@ -203,8 +203,8 @@ double Part2FullDkappaCpp(NumericVector xgrid, NumericVector ygrid,
 
 //' calculates part 1 full
 //'
-//' @param a matrix of data
-//' @param a vector of parameters
+//' @param data a matrix of data
+//' @param paramt a vector of parameters
 //' @returns distance between a t and all t
 //' @export
 // [[Rcpp::export]]
@@ -227,8 +227,8 @@ double Part1_1FullDkappaCpp(NumericMatrix data, NumericVector paramt)
 
 //' calculates part 1 full
 //'
-//' @param a matrix of data
-//' @param a vector of parameters
+//' @param data a matrix of data
+//' @param params a vector of parameters
 //' @returns distance between a t and all t
 //' @export
 // [[Rcpp::export]]
@@ -253,11 +253,11 @@ double Part1_2FullDkappaCpp(NumericMatrix data, NumericVector params )
 
 //' calculates part 1-3
 //'
-//' @param a vector of grid values for x
-//' @param a vector of grid values for y
-//' @param a t value
-//' @param a matrix of data
-//' @param a vector of parameters
+//' @param xgrid a vector of grid values for x
+//' @param ygrid a vector of grid values for y
+//' @param tgrid a t value
+//' @param data a matrix of data
+//' @param params a vector of parameters
 //' @returns distance between a t and all t
 //' @export
 // [[Rcpp::export]]
@@ -276,8 +276,8 @@ double Part1_3FullDkappaCpp( NumericVector xgrid, NumericVector ygrid,
 
 //' calculates part 1-4
 //'
-//' @param a matrix of data
-//' @param a vector of parameters
+//' @param data a matrix of data
+//' @param paramg a vector of parameters
 //' @returns distance between a t and all t
 //' @export
 // [[Rcpp::export]]
@@ -304,9 +304,9 @@ double Part1_4FullDkappaCpp(NumericMatrix data, NumericVector paramg)
 
 //' calculates interaction
 //'
-//' @param a matrix of points
-//' @param a new point vector
-//' @param a vector of parameters
+//' @param Hist a matrix of points
+//' @param newp a new point vector
+//' @param par a vector of parameters
 //' @returns distance between a t and all t
 //' @export
 // [[Rcpp::export]]
@@ -327,9 +327,8 @@ double interactionCpp(NumericMatrix Hist, NumericVector newp,
 
 //' calculates interaction
 //'
-//' @param a matrix of points
-//' @param a new point vector
-//' @param a vector of parameters
+//' @param data a matrix of points
+//' @param paramg a vector of parameters
 //' @returns distance between a t and all t
 //' @export
 // [[Rcpp::export]]

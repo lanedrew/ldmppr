@@ -7,7 +7,11 @@
 CondSumCpp(obst, evalt, y)
 }
 \arguments{
-\item{a}{vector of values}
+\item{obst}{a vector of observed t}
+
+\item{evalt}{a t value}
+
+\item{y}{a vector of values}
 }
 \value{
 the sum

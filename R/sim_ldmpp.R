@@ -1,3 +1,12 @@
+#' Self-correcting temporal model likelihood function
+#'
+#' @param par a vector of parameters (alpha_1, beta_1, gamma_1)
+#' @param evalt the vector of times to evaluate the likelihood at
+#' @param obst the observed time to evaluate the likelihood at
+#'
+#' @return the evaluated likelihood for the temporal component
+#' @export
+#'
 TempSpruce <- function(par, evalt, obst) {
   alpha1 = par[1];
   beta1 =  par[2];
@@ -10,6 +19,15 @@ TempSpruce <- function(par, evalt, obst) {
 }
 
 
+#' Simulate the temporal component of the self-correcting model
+#'
+#' @param Tmin minimum time value
+#' @param Tmax maximum time value
+#' @param par a vector of parameters (alpha_1, beta_1, gamma_1)
+#'
+#' @return a list of thinned and unthinned temporal samples
+#' @export
+#'
 Sim_Temporal <- function(Tmin, Tmax, par){
   alpha1 = par[1];
   beta1  = par[2];
@@ -36,6 +54,15 @@ Sim_Temporal <- function(Tmin, Tmax, par){
 }
 
 
+#' Simulate the spatial component of the self-correcting model
+#'
+#' @param M_n vector of (x,y)-coordinates for largest point
+#' @param par a vector of parameters (alpha_2, beta_2)
+#' @param nsim.t number of points to simulate
+#'
+#' @return a matrix of point locations in the (x,y)-plane
+#' @export
+#'
 Sim_spatial <- function(M_n, par, nsim.t){
   Loc <- base::matrix(M_n, ncol=2)  # x and y corresponding to M_n(t_0)
   lengLoc <- 1
