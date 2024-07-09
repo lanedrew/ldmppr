@@ -31,7 +31,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
   model_data <- data.frame(size = df$size, X)
 
   if(verbose) {
-    base::print("Processing data. \n")
+    base::print("Processing data.")
   }
 
   data_split <- rsample::initial_split(
@@ -56,7 +56,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
   if(model_type == "xgboost"){
 
     if(verbose) {
-      base::print("Training XGBoost model. \n")
+      base::print("Training XGBoost model.")
     }
     xgboost_model <-
       parsnip::boost_tree(
@@ -102,7 +102,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
     xgboost_model_final <- xgboost_model %>%
       tune::finalize_model(xgboost_best_params)
 
-    size.mod <- xgboost_model_final %>%
+    mark_model <- xgboost_model_final %>%
       # fit the model on all the training data
       parsnip::fit(
         formula = size ~ .,
@@ -111,7 +111,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
   }else if(model_type == "random_forest"){
 
     if(verbose) {
-      base::print("Training Random Forest model. \n")
+      base::print("Training Random Forest model.")
     }
     rf_model <-
       parsnip::rand_forest(
@@ -154,22 +154,22 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
     rf_model_final <- rf_model %>%
       tune::finalize_model(rf_best_params)
 
-    size.mod <- rf_model_final %>%
+    mark_model <- rf_model_final %>%
       # fit the model on all the training data
       parsnip::fit(
         formula = size ~ .,
         data    = model_data
       )
   }else {
-    return(print("Please input xboost or random_forest for model_type"))
+    return(print("Please input xboost or random_forest for model_type."))
   }
 
   if(verbose) {
-    base::print("Training complete. \n")
+    base::print("Training complete.")
   }
 
   bundled_mod <-
-    size.mod %>%
+    mark_model %>%
     # butcher::butcher() %>%
     bundle::bundle()
 
@@ -177,6 +177,6 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
     base::saveRDS(bundled_mod, file = save_path)
   }
 
-  return(bundled_mod)
+  return(base::list(raw_model = mark_model, bundled_model = bundled_mod))
 
 }
