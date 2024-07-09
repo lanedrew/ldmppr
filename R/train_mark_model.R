@@ -96,7 +96,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost", save_model
     rf_model <-
       parsnip::rand_forest(
         mode = "regression",
-        mtry = hardhat::tune(),
+        # mtry = hardhat::tune(),
         trees = hardhat::tune(),
         min_n = hardhat::tune()
       ) %>%
@@ -104,9 +104,9 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost", save_model
 
     rf_params <-
       dials::parameters(
-        dials::min_n(),
-        dials::mtry(c(1, base::ncol(model_data) - 1)),
+        # dials::mtry(c(1, base::ncol(model_data) - 1)),
         dials::trees(),
+        dials::min_n()
       )
 
     rf_grid <-
