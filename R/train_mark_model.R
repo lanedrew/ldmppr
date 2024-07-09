@@ -5,11 +5,19 @@
 #' @param model_type the machine learning model type
 #' @param save_model determines whether to save the generated model
 #' @param save_path path for saving the generated model
+#' @param parallel TRUE or FALSE indicating whether to use parallelization in model training
+#' @param verbose TRUE or FALSE indicating whether to show progress of model training
 #'
 #' @return a bundled model object
 #' @export
 #'
-train_mark_model <- function(df, raster_list, model_type = "xgboost", save_model = FALSE, save_path){
+train_mark_model <- function(df, raster_list, model_type = "xgboost",
+                             save_model = FALSE, save_path,
+                             parallel = TRUE, verbose = TRUE){
+
+  if(parallel) {
+    doParallel::registerDoParallel()
+  }
 
   s <- base::as.matrix(base::cbind(df$x, df$y))
   raster_trans <- scale_rasters(raster_list)
@@ -21,6 +29,10 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost", save_model
 
   ## Fit the size model
   model_data <- data.frame(size = df$size, X)
+
+  if(verbose) {
+    base::print("Processing data. \n")
+  }
 
   data_split <- rsample::initial_split(
     data = model_data,
@@ -42,6 +54,10 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost", save_model
 
 
   if(model_type == "xgboost"){
+
+    if(verbose) {
+      base::print("Training XGBoost model. \n")
+    }
     xgboost_model <-
       parsnip::boost_tree(
         mode = "regression",
@@ -93,6 +109,10 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost", save_model
         data    = model_data
       )
   }else if(model_type == "random_forest"){
+
+    if(verbose) {
+      base::print("Training Random Forest model. \n")
+    }
     rf_model <-
       parsnip::rand_forest(
         mode = "regression",
@@ -100,7 +120,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost", save_model
         trees = hardhat::tune(),
         min_n = hardhat::tune()
       ) %>%
-      parsnip::set_engine("ranger", objective = "reg:squarederror")
+      parsnip::set_engine("ranger")
 
     rf_params <-
       dials::parameters(
@@ -144,6 +164,9 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost", save_model
     return(print("Please input xboost or random_forest for model_type"))
   }
 
+  if(verbose) {
+    base::print("Training complete. \n")
+  }
 
   bundled_mod <-
     size.mod %>%
