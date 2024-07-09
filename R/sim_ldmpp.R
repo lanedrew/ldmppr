@@ -110,11 +110,11 @@ Sim_spatio_temp <- function(Tmin, Tmax, par, M_n){
 pred_marks <- function(sim_realization, raster_list, size_model){
 
   s <- sim_realization[,c("x", "y")]
-  covars <- base::do.call(base::cbind, base::lapply(raster_list, function(x) terra::extract(x, s, method = "bilinear")))
-  X <- covars
+  raster_trans <- scale_rasters(raster_list)
+  X <- extract_covars(x = s, raster_list = raster_trans)
   X$x <- s[,1]
   X$y <- s[,2]
-  X$age <- sim_realization[,1]
+  X$time <- sim_realization[,1]
 
   return(stats::predict(size_model, X))
 }

@@ -25,7 +25,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
   X <- extract_covars(x = s, raster_list = raster_trans)
   X$x <- s[,1]
   X$y <- s[,2]
-  X$age <- df$time
+  X$time <- df$time
 
   ## Fit the size model
   model_data <- data.frame(size = df$size, X)
