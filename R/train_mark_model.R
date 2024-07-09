@@ -105,7 +105,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost", save_model
     rf_params <-
       dials::parameters(
         dials::min_n(),
-        dials::mtry(),
+        dials::mtry(c(1, base::ncol(model_data) - 1)),
         dials::trees(),
       )
 
