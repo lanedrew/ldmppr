@@ -20,16 +20,16 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost", save_model
   X$age <- df$time
 
   ## Fit the size model
-  mod.data.size <- data.frame(size = df$size, X)
+  model_data <- data.frame(size = df$size, X)
 
   sprl_split <- rsample::initial_split(
-    mod.data.size,
+    data = model_data,
     prop = 0.8,
-    strata = mod.data.size$size
+    strata = size
   )
 
   preprocessing_recipe <-
-    recipes::recipe(.data$size ~ ., data = rsample::training(sprl_split)) %>%
+    recipes::recipe(size ~ ., data = rsample::training(sprl_split)) %>%
     recipes::prep()
 
 
@@ -89,8 +89,8 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost", save_model
     size.mod <- xgboost_model_final %>%
       # fit the model on all the training data
       parsnip::fit(
-        formula = mod.data.size$size ~ .,
-        data    = mod.data.size
+        formula = size ~ .,
+        data    = model_data
       )
   }else if(model_type == "random_forest"){
     rf_model <-
@@ -137,8 +137,8 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost", save_model
     size.mod <- rf_model_final %>%
       # fit the model on all the training data
       parsnip::fit(
-        formula = mod.data.size$size ~ .,
-        data    = mod.data.size
+        formula = size ~ .,
+        data    = model_data
       )
   }else {
     return(print("Please input xboost or random_forest for model_type"))
