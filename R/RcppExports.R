@@ -5,6 +5,7 @@
 #'
 #' @param x a vector x
 #' @param y a vector y
+#'
 #' @returns distance between the two vectors
 #' @export
 pdistCVec <- function(x, y) {
@@ -18,6 +19,7 @@ pdistCVec <- function(x, y) {
 #' @param tgrid a t value
 #' @param data a matrix of data
 #' @param params a vector of parameters
+#'
 #' @returns returns the product
 #' @export
 prodFullCpp <- function(xgrid, ygrid, tgrid, data, params) {
@@ -31,10 +33,12 @@ prodFullCpp <- function(xgrid, ygrid, tgrid, data, params) {
 #' @param tgrid a t value
 #' @param data a matrix of data
 #' @param params a vector of parameters
+#' @param bounds a vector of bounds for time, x, and y
+#'
 #' @returns returns the product
 #' @export
-Ctheta2i <- function(xgrid, ygrid, tgrid, data, params) {
-    .Call('_ldmppr_Ctheta2i', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params)
+Ctheta2i <- function(xgrid, ygrid, tgrid, data, params, bounds) {
+    .Call('_ldmppr_Ctheta2i', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params, bounds)
 }
 
 #' calculates sum of values < t
@@ -42,6 +46,7 @@ Ctheta2i <- function(xgrid, ygrid, tgrid, data, params) {
 #' @param obst a vector of observed t
 #' @param evalt a t value
 #' @param y a vector of values
+#'
 #' @returns the sum
 #' @export
 CondSumCpp <- function(obst, evalt, y) {
@@ -53,6 +58,7 @@ CondSumCpp <- function(obst, evalt, y) {
 #' @param obst a vector of observed t
 #' @param evalt a t value
 #' @param y a vector of values
+#'
 #' @returns the sum
 #' @export
 CondSumCppR <- function(obst, evalt, y) {
@@ -63,6 +69,7 @@ CondSumCppR <- function(obst, evalt, y) {
 #'
 #' @param evalu a vector
 #' @param obsu a matrix
+#'
 #' @returns distance between a vector and each row of a matrix
 #' @export
 pdistC <- function(evalu, obsu) {
@@ -73,6 +80,7 @@ pdistC <- function(evalu, obsu) {
 #'
 #' @param evalt a t value
 #' @param obst a vector of t
+#'
 #' @returns distance between a t and all t
 #' @export
 rdistC <- function(evalt, obst) {
@@ -86,30 +94,32 @@ rdistC <- function(evalt, obst) {
 #' @param tgrid a t value
 #' @param data a matrix of data
 #' @param param a vector of parameters
+#' @param bounds a vector of bounds for time, x, and y
+#'
 #' @returns distance between a t and all t
 #' @export
-Part2FullDkappaCpp <- function(xgrid, ygrid, tgrid, data, param) {
-    .Call('_ldmppr_Part2FullDkappaCpp', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, param)
+Part2FullCpp <- function(xgrid, ygrid, tgrid, data, param, bounds) {
+    .Call('_ldmppr_Part2FullCpp', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, param, bounds)
 }
 
-#' calculates part 1 full
+#' calculates part 1-1 full
 #'
-#' @param data a matrix of data
+#' @param data a matrix of locations and times
 #' @param paramt a vector of parameters
-#' @returns distance between a t and all t
+#' @returns full likelihood for part 1
 #' @export
-Part1_1FullDkappaCpp <- function(data, paramt) {
-    .Call('_ldmppr_Part1_1FullDkappaCpp', PACKAGE = 'ldmppr', data, paramt)
+Part1_1FullCpp <- function(data, paramt) {
+    .Call('_ldmppr_Part1_1FullCpp', PACKAGE = 'ldmppr', data, paramt)
 }
 
-#' calculates part 1 full
+#' calculates part 1-2 full
 #'
-#' @param data a matrix of data
+#' @param data a matrix of locations and times
 #' @param params a vector of parameters
-#' @returns distance between a t and all t
+#' @returns full likelihood for part 2
 #' @export
-Part1_2FullDkappaCpp <- function(data, params) {
-    .Call('_ldmppr_Part1_2FullDkappaCpp', PACKAGE = 'ldmppr', data, params)
+Part1_2FullCpp <- function(data, params) {
+    .Call('_ldmppr_Part1_2FullCpp', PACKAGE = 'ldmppr', data, params)
 }
 
 #' calculates part 1-3
@@ -119,38 +129,43 @@ Part1_2FullDkappaCpp <- function(data, params) {
 #' @param tgrid a t value
 #' @param data a matrix of data
 #' @param params a vector of parameters
-#' @returns distance between a t and all t
+#' @param bounds a vector of time, x, and y bounds
+#'
+#' @returns full likelihood for part 3
 #' @export
-Part1_3FullDkappaCpp <- function(xgrid, ygrid, tgrid, data, params) {
-    .Call('_ldmppr_Part1_3FullDkappaCpp', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params)
+Part1_3FullCpp <- function(xgrid, ygrid, tgrid, data, params, bounds) {
+    .Call('_ldmppr_Part1_3FullCpp', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params, bounds)
 }
 
 #' calculates part 1-4
 #'
-#' @param data a matrix of data
+#' @param data a matrix of locations and times
 #' @param paramg a vector of parameters
-#' @returns distance between a t and all t
+#'
+#' @returns full likelihood for part 4
 #' @export
-Part1_4FullDkappaCpp <- function(data, paramg) {
-    .Call('_ldmppr_Part1_4FullDkappaCpp', PACKAGE = 'ldmppr', data, paramg)
+Part1_4FullCpp <- function(data, paramg) {
+    .Call('_ldmppr_Part1_4FullCpp', PACKAGE = 'ldmppr', data, paramg)
 }
 
-#' calculates interaction
+#' calculates spatial interaction
 #'
 #' @param Hist a matrix of points
 #' @param newp a new point vector
 #' @param par a vector of parameters
-#' @returns distance between a t and all t
+#'
+#' @returns probability of new point
 #' @export
 interactionCpp <- function(Hist, newp, par) {
     .Call('_ldmppr_interactionCpp', PACKAGE = 'ldmppr', Hist, newp, par)
 }
 
-#' calculates interaction
+#' calculates spatio-temporal interaction
 #'
-#' @param data a matrix of points
+#' @param data a matrix of points and times
 #' @param paramg a vector of parameters
-#' @returns distance between a t and all t
+#'
+#' @returns interaction probabilities for every point
 #' @export
 interactionCpp_st <- function(data, paramg) {
     .Call('_ldmppr_interactionCpp_st', PACKAGE = 'ldmppr', data, paramg)

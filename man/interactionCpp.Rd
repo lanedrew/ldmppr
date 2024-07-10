@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{interactionCpp}
 \alias{interactionCpp}
-\title{calculates interaction}
+\title{calculates spatial interaction}
 \usage{
 interactionCpp(Hist, newp, par)
 }
@@ -14,8 +14,8 @@ interactionCpp(Hist, newp, par)
 \item{par}{a vector of parameters}
 }
 \value{
-distance between a t and all t
+probability of new point
 }
 \description{
-calculates interaction
+calculates spatial interaction
 }

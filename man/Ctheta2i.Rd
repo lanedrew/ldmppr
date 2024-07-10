@@ -4,7 +4,7 @@
 \alias{Ctheta2i}
 \title{calculates c_theta}
 \usage{
-Ctheta2i(xgrid, ygrid, tgrid, data, params)
+Ctheta2i(xgrid, ygrid, tgrid, data, params, bounds)
 }
 \arguments{
 \item{xgrid}{a vector of grid values for x}
@@ -16,6 +16,8 @@ Ctheta2i(xgrid, ygrid, tgrid, data, params)
 \item{data}{a matrix of data}
 
 \item{params}{a vector of parameters}
+
+\item{bounds}{a vector of bounds for time, x, and y}
 }
 \value{
 returns the product

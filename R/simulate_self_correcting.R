@@ -7,7 +7,7 @@
 #' @return the evaluated likelihood for the temporal component
 #' @export
 #'
-TempSpruce <- function(par, evalt, obst) {
+temporal_sc <- function(par, evalt, obst) {
   alpha1 = par[1];
   beta1 =  par[2];
   gamma1 = par[3];
@@ -28,29 +28,29 @@ TempSpruce <- function(par, evalt, obst) {
 #' @return a list of thinned and unthinned temporal samples
 #' @export
 #'
-Sim_Temporal <- function(Tmin, Tmax, par){
+sim_temporal_sc <- function(Tmin, Tmax, par){
   alpha1 = par[1];
   beta1  = par[2];
   gamma1 = par[3];
-  Lmax <- base::exp( alpha1 + beta1*Tmax )
+  Lmax <- base::exp(alpha1 + beta1 * Tmax)
   N_max <- Lmax*Tmax
   sample_size <- stats::rpois( 1, N_max )
-  sample <- base::sort( stats::runif( sample_size, Tmin, Tmax ) )
+  sample <- base::sort(stats::runif(sample_size, Tmin, Tmax))
   hist <- base::matrix(0, ncol=1)
   U  <- stats::runif(sample_size, 0, 1)
   t_sim <- base::numeric(sample_size)
   lambda_star <- base::numeric()
   for (i in 1:sample_size){
-    lambda_star[i] <- TempSpruce(par, sample[i], hist)
-    if(U[i] < (lambda_star[i]/Lmax)){
-      t_sim[i] <- c( sample[i])
+    lambda_star[i] <- temporal_sc(par, sample[i], hist)
+    if(U[i] < (lambda_star[i] / Lmax)){
+      t_sim[i] <- c(sample[i])
       hist <- base::rbind(hist, sample[i])
     }
     else {t_sim[i] <- NA
     hist <- hist
     }
   }
-  return (base::list(unthin=t_sim, all=sample))
+  return (base::list(unthin = t_sim, all = sample))
 }
 
 
@@ -63,18 +63,19 @@ Sim_Temporal <- function(Tmin, Tmax, par){
 #' @return a matrix of point locations in the (x,y)-plane
 #' @export
 #'
-Sim_spatial <- function(M_n, par, nsim.t){
+sim_spatial_sc <- function(M_n, par, nsim.t){
   Loc <- base::matrix(M_n, ncol=2)  # x and y corresponding to M_n(t_0)
   lengLoc <- 1
   while(lengLoc < nsim.t){
     newp <- c(stats::runif(1, 0, 100), stats::runif(1, 0, 100))
-    if( stats::runif(1, 0, 1) <= interactionCpp( Loc, newp, par ) ){
-      Loc <- base::rbind(Loc,newp)
+    if( stats::runif(1, 0, 1) <= interactionCpp(Loc, newp, par) ){
+      Loc <- base::rbind(Loc, newp)
       lengLoc <-  lengLoc + 1
     }
   }
   return(Loc)
 }
+
 
 #' Simulate from the self-correcting model
 #'
@@ -86,9 +87,9 @@ Sim_spatial <- function(M_n, par, nsim.t){
 #' @return a list of simulated values both thinned and unthinned
 #' @export
 #'
-Sim_spatio_temp <- function(Tmin, Tmax, par, M_n){
-  Sim_time = stats::na.omit(Sim_Temporal(Tmin, Tmax, par[1:3])$unthin)
-  sim_loc =  Sim_spatial(M_n, par[4:5], length(Sim_time))
+sim_spatial_temporal_sc <- function(Tmin, Tmax, par, M_n){
+  Sim_time = stats::na.omit(sim_temporal_sc(Tmin, Tmax, par[1:3])$unthin)
+  sim_loc =  sim_spatial_sc(M_n, par[4:5], length(Sim_time))
   Sim_time[1] = 0
   txy_sim = base::cbind(Sim_time, sim_loc)
   thin_vals = (stats::runif(base::nrow(txy_sim), 0, 1) < interactionCpp_st(txy_sim, par[6:8]))
@@ -98,26 +99,6 @@ Sim_spatio_temp <- function(Tmin, Tmax, par, M_n){
   return(base::list(unthinned = sim_df, thinned = sim_thin_df))
 }
 
-#' Predict values from the mark distribution
-#'
-#' @param sim_realization a realization of simulated values
-#' @param raster_list list of rasters
-#' @param size_model a predictive model
-#'
-#' @return a vector of predictions
-#' @export
-#'
-pred_marks <- function(sim_realization, raster_list, size_model){
-
-  s <- sim_realization[,c("x", "y")]
-  raster_trans <- scale_rasters(raster_list)
-  X <- extract_covars(x = s, raster_list = raster_trans)
-  X$x <- s[,1]
-  X$y <- s[,2]
-  X$time <- sim_realization[,1]
-
-  return(stats::predict(size_model, X))
-}
 
 
 #' Generate a marked process given locations and marks

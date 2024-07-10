@@ -5,12 +5,13 @@ using namespace Rcpp;
 //'
 //' @param x a vector x
 //' @param y a vector y
+//'
 //' @returns distance between the two vectors
 //' @export
 // [[Rcpp::export]]
 double pdistCVec(NumericVector x, NumericVector y)
 {
-  double  out = sqrt(std::pow(x[0]-y[0] , 2) + std::pow(x[1]-y[1], 2));
+  double  out = sqrt(std::pow(x[0] - y[0] , 2) + std::pow(x[1] - y[1], 2));
   return out;
 }
 
@@ -22,6 +23,7 @@ double pdistCVec(NumericVector x, NumericVector y)
 //' @param tgrid a t value
 //' @param data a matrix of data
 //' @param params a vector of parameters
+//'
 //' @returns returns the product
 //' @export
 // [[Rcpp::export]]
@@ -33,14 +35,14 @@ double  prodFullCpp(double xgrid, double ygrid, double tgrid,
   int n = data.nrow();
   double prodrslt=1;
   double r,interactPhi;
-  NumericVector xygrid = NumericVector::create(xgrid,ygrid);
-  for(int j=0; j<n; ++j)
+  NumericVector xygrid = NumericVector::create(xgrid, ygrid);
+  for(int j = 0; j < n; ++j)
   {
-    if (data(j,0)>=tgrid) break;
-    NumericVector xydata = NumericVector::create(data(j,1),data(j,2));
-    r= pdistCVec(xygrid,xydata);
-    interactPhi = (r<=theta2)*pow((r/theta2),kappa) + (r>theta2);
-    prodrslt = prodrslt*interactPhi;
+    if (data(j, 0) >= tgrid) break;
+    NumericVector xydata = NumericVector::create(data(j, 1), data(j, 2));
+    r= pdistCVec(xygrid, xydata);
+    interactPhi = (r <= theta2) * pow((r / theta2), kappa) + (r > theta2);
+    prodrslt = prodrslt * interactPhi;
   }
   return prodrslt;
 }
@@ -53,23 +55,26 @@ double  prodFullCpp(double xgrid, double ygrid, double tgrid,
 //' @param tgrid a t value
 //' @param data a matrix of data
 //' @param params a vector of parameters
+//' @param bounds a vector of bounds for time, x, and y
+//'
 //' @returns returns the product
 //' @export
 // [[Rcpp::export]]
 double Ctheta2i(NumericVector xgrid, NumericVector ygrid, double tgrid,
-                NumericMatrix data, NumericVector params)
+                NumericMatrix data, NumericVector params,
+                NumericVector bounds)
 {
   int K = xgrid.size();
   int L = ygrid.size();
-  double Iresult=0;
-  for(int k=0; k<K; ++k)
+  double Iresult = 0;
+  for(int k = 0; k < K; ++k)
   {
-    for(int l=0; l<L; ++l)
+    for(int l = 0; l < L; ++l)
     {
-      Iresult +=  prodFullCpp(xgrid[k], ygrid[l],tgrid, data, params);
+      Iresult +=  prodFullCpp(xgrid[k], ygrid[l], tgrid, data, params);
     }
   }
-  return ((Iresult*100*100)/(double(K)*double(L)));
+  return ((Iresult * bounds[1] * bounds[2])/(double(K) * double(L)));
 }
 
 //' calculates sum of values < t
@@ -77,14 +82,15 @@ double Ctheta2i(NumericVector xgrid, NumericVector ygrid, double tgrid,
 //' @param obst a vector of observed t
 //' @param evalt a t value
 //' @param y a vector of values
+//'
 //' @returns the sum
 //' @export
 // [[Rcpp::export]]
 double CondSumCpp(NumericVector obst, double evalt, NumericVector y)
 {
-  double CondSum=0;
+  double CondSum = 0;
   int n = obst.size();
-  for(int i=0; i<n; i++)
+  for(int i = 0; i < n; i++)
   {
     if (obst[i] >= evalt) break;
     CondSum = CondSum + y[i];
@@ -98,6 +104,7 @@ double CondSumCpp(NumericVector obst, double evalt, NumericVector y)
 //' @param obst a vector of observed t
 //' @param evalt a t value
 //' @param y a vector of values
+//'
 //' @returns the sum
 //' @export
 // [[Rcpp::export]]
@@ -105,7 +112,7 @@ double CondSumCppR(NumericVector obst, double evalt, LogicalVector y)
 {
   double CondSum=0;
   int n = obst.size();
-  for(int i=0; i<n; i++)
+  for(int i = 0; i < n; i++)
   {
     if (obst[i] >= evalt) break;
     CondSum = CondSum + y[i];
@@ -119,6 +126,7 @@ double CondSumCppR(NumericVector obst, double evalt, LogicalVector y)
 //'
 //' @param evalu a vector
 //' @param obsu a matrix
+//'
 //' @returns distance between a vector and each row of a matrix
 //' @export
 // [[Rcpp::export]]
@@ -128,7 +136,7 @@ NumericVector pdistC(NumericVector evalu, NumericMatrix obsu)
   NumericVector out(n);
   for(int i = 0; i < n; i++)
   {
-    out[i] = sqrt(std::pow(evalu[0]-obsu(i,0) , 2) + std::pow(evalu[1]-obsu(i,1), 2));
+    out[i] = sqrt(std::pow(evalu[0] - obsu(i, 0) , 2) + std::pow(evalu[1] - obsu(i, 1), 2));
   }
   return out;
 }
@@ -137,6 +145,7 @@ NumericVector pdistC(NumericVector evalu, NumericMatrix obsu)
 //'
 //' @param evalt a t value
 //' @param obst a vector of t
+//'
 //' @returns distance between a t and all t
 //' @export
 // [[Rcpp::export]]
@@ -146,7 +155,7 @@ NumericVector rdistC(double evalt, NumericVector obst)
   NumericVector out(n);
   for(int i = 0; i < n; i++)
   {
-    out[i] = evalt-obst[i];
+    out[i] = evalt - obst[i];
   }
   return out;
 }
@@ -159,11 +168,14 @@ NumericVector rdistC(double evalt, NumericVector obst)
 //' @param tgrid a t value
 //' @param data a matrix of data
 //' @param param a vector of parameters
+//' @param bounds a vector of bounds for time, x, and y
+//'
 //' @returns distance between a t and all t
 //' @export
 // [[Rcpp::export]]
-double Part2FullDkappaCpp(NumericVector xgrid, NumericVector ygrid,
-                          NumericVector tgrid, NumericMatrix data, NumericVector param)
+double Part2FullCpp(NumericVector xgrid, NumericVector ygrid,
+                    NumericVector tgrid, NumericMatrix data, NumericVector param,
+                    NumericVector bounds)
 {
   double alpha1 = param[0];
   double beta1  = param[1];
@@ -179,36 +191,36 @@ double Part2FullDkappaCpp(NumericVector xgrid, NumericVector ygrid,
   int K = xgrid.size();
   int L = ygrid.size();
   int M = tgrid.size();
-  double Iresult=0;
-  for(int m=0; m<M; ++m)
+  double Iresult = 0;
+  for(int m = 0; m < M; ++m)
   {
-    for(int k=0; k<K; ++k)
+    for(int k = 0; k < K; ++k)
     {
-      for(int l=0; l<L; ++l)
+      for(int l = 0; l < L; ++l)
       {
-        NumericVector twoDist = pdistC(NumericVector::create(xgrid[k],ygrid[l]),data(_, Range(1,2)));
-        NumericVector oneDist = rdistC(tgrid[m], data(_,0));
-        Iresult +=( exp(alpha1+beta1*tgrid[m]-gamma1*CondSumCpp(data(_,0), tgrid[m], repcpp(1,n)))
+        NumericVector twoDist = pdistC(NumericVector::create(xgrid[k], ygrid[l]), data(_, Range(1, 2)));
+        NumericVector oneDist = rdistC(tgrid[m], data(_, 0));
+        Iresult +=( exp(alpha1 + beta1 * tgrid[m] - gamma1 * CondSumCpp(data(_, 0), tgrid[m], repcpp(1, n)))
                       * (
-                          prodFullCpp(xgrid[k], ygrid[l], tgrid[m], data, NumericVector::create(theta2,kappa))
-                      /Ctheta2i(xgrid,  ygrid,  tgrid[m], data, NumericVector::create(theta2,kappa))
+                          prodFullCpp(xgrid[k], ygrid[l], tgrid[m], data, NumericVector::create(theta2, kappa))
+                      /Ctheta2i(xgrid,  ygrid,  tgrid[m], data, NumericVector::create(theta2, kappa), bounds)
                       )
-                      * exp(-alpha3*CondSumCppR(data(_,0), tgrid[m],( (twoDist <= beta3) *(oneDist >= gamma3) ))));
+                      * exp(-alpha3 * CondSumCppR(data(_, 0), tgrid[m],( (twoDist <= beta3) * (oneDist >= gamma3) ))));
       }
     }
   }
-  return (Iresult*(0.7657838*100*100)/(double(M)*double(K)*double(L)));
+  return (Iresult * (bounds[0] * bounds[1] * bounds[2])/(double(M) * double(K) * double(L)));
 }
 
 
-//' calculates part 1 full
+//' calculates part 1-1 full
 //'
-//' @param data a matrix of data
+//' @param data a matrix of locations and times
 //' @param paramt a vector of parameters
-//' @returns distance between a t and all t
+//' @returns full likelihood for part 1
 //' @export
 // [[Rcpp::export]]
-double Part1_1FullDkappaCpp(NumericMatrix data, NumericVector paramt)
+double Part1_1FullCpp(NumericMatrix data, NumericVector paramt)
 {
   double alpha1 = paramt[0];
   double beta1  = paramt[1];
@@ -217,34 +229,34 @@ double Part1_1FullDkappaCpp(NumericMatrix data, NumericVector paramt)
   Function repcpp = base["rep.int"];
   int n=data.nrow();
   double temrslt = 0;
-  for (int i=1; i<n; ++i)
+  for (int i = 1; i < n; ++i)
   {
-    temrslt +=alpha1+beta1*data(i,0)-gamma1*CondSumCpp(data(_,0), data(i,0), repcpp(1,n)) ;
+    temrslt += alpha1 + beta1 * data(i, 0) - gamma1 * CondSumCpp(data(_, 0), data(i, 0), repcpp(1, n)) ;
   }
   return temrslt;
 }
 
 
-//' calculates part 1 full
+//' calculates part 1-2 full
 //'
-//' @param data a matrix of data
+//' @param data a matrix of locations and times
 //' @param params a vector of parameters
-//' @returns distance between a t and all t
+//' @returns full likelihood for part 2
 //' @export
 // [[Rcpp::export]]
-double Part1_2FullDkappaCpp(NumericMatrix data, NumericVector params )
+double Part1_2FullCpp(NumericMatrix data, NumericVector params)
 {
-  double theta2 = params[0];
-  double kappa = params[1];
+  double alpha2 = params[0];
+  double beta2 = params[1];
   int n = data.nrow();
-  double p12result=0;
-  for(int i=1; i<n; ++i)
+  double p12result = 0;
+  for(int i = 1; i < n; ++i)
   {
-    for(int j=0; j < i; ++j)
+    for(int j = 0; j < i; ++j)
     {
-      double r = sqrt(std::pow( (data(i,1)-data(j,1)), 2)
-                        + std::pow( (data(i,2)-data(j,2)), 2));
-      p12result += log((r<=theta2)*std::pow((r/theta2), kappa) + (r>theta2));
+      double r = sqrt(std::pow( (data(i, 1) - data(j, 1)), 2)
+                        + std::pow( (data(i, 2) - data(j, 2)), 2));
+      p12result += log(( r <= alpha2) * std::pow((r / alpha2), beta2) + (r > alpha2));
     }
   }
   return p12result;
@@ -258,17 +270,20 @@ double Part1_2FullDkappaCpp(NumericMatrix data, NumericVector params )
 //' @param tgrid a t value
 //' @param data a matrix of data
 //' @param params a vector of parameters
-//' @returns distance between a t and all t
+//' @param bounds a vector of time, x, and y bounds
+//'
+//' @returns full likelihood for part 3
 //' @export
 // [[Rcpp::export]]
-double Part1_3FullDkappaCpp( NumericVector xgrid, NumericVector ygrid,
-                             NumericVector tgrid, NumericMatrix data, NumericVector params )
+double Part1_3FullCpp(NumericVector xgrid, NumericVector ygrid,
+                      NumericVector tgrid, NumericMatrix data, NumericVector params,
+                      NumericVector bounds)
 {
-  double p13result=0;
+  double p13result = 0;
   int n = tgrid.size();
-  for(int i=1; i<n; ++i)
+  for(int i = 1; i < n; ++i)
   {
-    p13result += log(Ctheta2i(xgrid, ygrid, tgrid[i], data, params));
+    p13result += log(Ctheta2i(xgrid, ygrid, tgrid[i], data, params, bounds));
   }
   return p13result;
 }
@@ -276,38 +291,40 @@ double Part1_3FullDkappaCpp( NumericVector xgrid, NumericVector ygrid,
 
 //' calculates part 1-4
 //'
-//' @param data a matrix of data
+//' @param data a matrix of locations and times
 //' @param paramg a vector of parameters
-//' @returns distance between a t and all t
+//'
+//' @returns full likelihood for part 4
 //' @export
 // [[Rcpp::export]]
-double Part1_4FullDkappaCpp(NumericMatrix data, NumericVector paramg)
+double Part1_4FullCpp(NumericMatrix data, NumericVector paramg)
 {
-  double alpha3 = paramg[0];
-  double beta3  = paramg[1];
-  double gamma3 = paramg[2];
+  double alpha4 = paramg[0];
+  double beta4  = paramg[1];
+  double gamma4 = paramg[2];
   int n = data.nrow();
   double grslt = 0;
   double r, lag;
-  for (int i=1; i<n; ++i)
+  for (int i = 1; i < n; ++i)
   {
-    for(int j=0; j<i; ++j)
+    for(int j = 0; j < i; ++j)
     {
-      r = sqrt(std::pow(data(i,1)-data(j,1) , 2) + std::pow(data(i,2)-data(j,2) , 2));
-      lag = data(i,0)-data(j,0);
-      grslt += (r<=beta3)*(lag>=gamma3);
+      r = sqrt(std::pow(data(i, 1) - data(j, 1) , 2) + std::pow(data(i, 2) - data(j, 2), 2));
+      lag = data(i, 0) - data(j, 0);
+      grslt += (r <= beta4) * (lag >= gamma4);
     }
   }
-  return -alpha3*grslt;
+  return -alpha4 * grslt;
 }
 
 
-//' calculates interaction
+//' calculates spatial interaction
 //'
 //' @param Hist a matrix of points
 //' @param newp a new point vector
 //' @param par a vector of parameters
-//' @returns distance between a t and all t
+//'
+//' @returns probability of new point
 //' @export
 // [[Rcpp::export]]
 double interactionCpp(NumericMatrix Hist, NumericVector newp,
@@ -317,43 +334,44 @@ double interactionCpp(NumericMatrix Hist, NumericVector newp,
   double rslt = 1;
   int I = Hist.nrow();
   for(int j = 0; j < I; ++j){
-    double r = sqrt(std::pow( newp[0]-Hist(j,0), 2)
-                      + std::pow( newp[1]-Hist(j,1), 2));
+    double r = sqrt(std::pow(newp[0] - Hist(j, 0), 2)
+                      + std::pow(newp[1] - Hist(j, 1), 2));
     rslt *= ((r <= alpha2) * std::pow( (r / alpha2), beta2) + (r > alpha2));
   }
   return rslt;
 }
 
 
-//' calculates interaction
+//' calculates spatio-temporal interaction
 //'
-//' @param data a matrix of points
+//' @param data a matrix of points and times
 //' @param paramg a vector of parameters
-//' @returns distance between a t and all t
+//'
+//' @returns interaction probabilities for every point
 //' @export
 // [[Rcpp::export]]
 NumericVector interactionCpp_st(NumericMatrix data, NumericVector paramg) {
-  double alpha3 = paramg[0];
-  double beta3  = paramg[1];
-  double gamma3 = paramg[2];
+  double alpha4 = paramg[0];
+  double beta4  = paramg[1];
+  double gamma4 = paramg[2];
   int n = data.nrow();
   NumericVector grslt(n);
   grslt[0] = 0;
   double sumval;
   double r, lag;
   double indic;
-  for (int i=1; i<n; ++i)
+  for (int i = 1; i < n; ++i)
   {
     sumval = 0;
-    for(int j=0; j<i; ++j)
+    for(int j = 0; j < i; ++j)
     {
-      r = sqrt(std::pow(data(i,1)-data(j,1) , 2) + std::pow(data(i,2)-data(j,2) , 2));
-      lag = data(i,0)-data(j,0);
-      indic = (r <= beta3)*(lag >= gamma3);
+      r = sqrt(std::pow(data(i, 1) - data(j, 1) , 2) + std::pow(data(i, 2) - data(j, 2) , 2));
+      lag = data(i, 0) - data(j, 0);
+      indic = (r <= beta4) * (lag >= gamma4);
       sumval += indic;
     }
     grslt[i] = sumval;
   }
-  return exp(-alpha3 * grslt);
+  return exp(-alpha4 * grslt);
 
 }

@@ -2,18 +2,18 @@
 % Please edit documentation in R/RcppExports.R
 \name{interactionCpp_st}
 \alias{interactionCpp_st}
-\title{calculates interaction}
+\title{calculates spatio-temporal interaction}
 \usage{
 interactionCpp_st(data, paramg)
 }
 \arguments{
-\item{data}{a matrix of points}
+\item{data}{a matrix of points and times}
 
 \item{paramg}{a vector of parameters}
 }
 \value{
-distance between a t and all t
+interaction probabilities for every point
 }
 \description{
-calculates interaction
+calculates spatio-temporal interaction
 }

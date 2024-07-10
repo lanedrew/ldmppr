@@ -39,8 +39,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // Ctheta2i
-double Ctheta2i(NumericVector xgrid, NumericVector ygrid, double tgrid, NumericMatrix data, NumericVector params);
-RcppExport SEXP _ldmppr_Ctheta2i(SEXP xgridSEXP, SEXP ygridSEXP, SEXP tgridSEXP, SEXP dataSEXP, SEXP paramsSEXP) {
+double Ctheta2i(NumericVector xgrid, NumericVector ygrid, double tgrid, NumericMatrix data, NumericVector params, NumericVector bounds);
+RcppExport SEXP _ldmppr_Ctheta2i(SEXP xgridSEXP, SEXP ygridSEXP, SEXP tgridSEXP, SEXP dataSEXP, SEXP paramsSEXP, SEXP boundsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -49,7 +49,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type tgrid(tgridSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(Ctheta2i(xgrid, ygrid, tgrid, data, params));
+    Rcpp::traits::input_parameter< NumericVector >::type bounds(boundsSEXP);
+    rcpp_result_gen = Rcpp::wrap(Ctheta2i(xgrid, ygrid, tgrid, data, params, bounds));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -103,9 +104,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// Part2FullDkappaCpp
-double Part2FullDkappaCpp(NumericVector xgrid, NumericVector ygrid, NumericVector tgrid, NumericMatrix data, NumericVector param);
-RcppExport SEXP _ldmppr_Part2FullDkappaCpp(SEXP xgridSEXP, SEXP ygridSEXP, SEXP tgridSEXP, SEXP dataSEXP, SEXP paramSEXP) {
+// Part2FullCpp
+double Part2FullCpp(NumericVector xgrid, NumericVector ygrid, NumericVector tgrid, NumericMatrix data, NumericVector param, NumericVector bounds);
+RcppExport SEXP _ldmppr_Part2FullCpp(SEXP xgridSEXP, SEXP ygridSEXP, SEXP tgridSEXP, SEXP dataSEXP, SEXP paramSEXP, SEXP boundsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -114,37 +115,38 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type tgrid(tgridSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type param(paramSEXP);
-    rcpp_result_gen = Rcpp::wrap(Part2FullDkappaCpp(xgrid, ygrid, tgrid, data, param));
+    Rcpp::traits::input_parameter< NumericVector >::type bounds(boundsSEXP);
+    rcpp_result_gen = Rcpp::wrap(Part2FullCpp(xgrid, ygrid, tgrid, data, param, bounds));
     return rcpp_result_gen;
 END_RCPP
 }
-// Part1_1FullDkappaCpp
-double Part1_1FullDkappaCpp(NumericMatrix data, NumericVector paramt);
-RcppExport SEXP _ldmppr_Part1_1FullDkappaCpp(SEXP dataSEXP, SEXP paramtSEXP) {
+// Part1_1FullCpp
+double Part1_1FullCpp(NumericMatrix data, NumericVector paramt);
+RcppExport SEXP _ldmppr_Part1_1FullCpp(SEXP dataSEXP, SEXP paramtSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type paramt(paramtSEXP);
-    rcpp_result_gen = Rcpp::wrap(Part1_1FullDkappaCpp(data, paramt));
+    rcpp_result_gen = Rcpp::wrap(Part1_1FullCpp(data, paramt));
     return rcpp_result_gen;
 END_RCPP
 }
-// Part1_2FullDkappaCpp
-double Part1_2FullDkappaCpp(NumericMatrix data, NumericVector params);
-RcppExport SEXP _ldmppr_Part1_2FullDkappaCpp(SEXP dataSEXP, SEXP paramsSEXP) {
+// Part1_2FullCpp
+double Part1_2FullCpp(NumericMatrix data, NumericVector params);
+RcppExport SEXP _ldmppr_Part1_2FullCpp(SEXP dataSEXP, SEXP paramsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(Part1_2FullDkappaCpp(data, params));
+    rcpp_result_gen = Rcpp::wrap(Part1_2FullCpp(data, params));
     return rcpp_result_gen;
 END_RCPP
 }
-// Part1_3FullDkappaCpp
-double Part1_3FullDkappaCpp(NumericVector xgrid, NumericVector ygrid, NumericVector tgrid, NumericMatrix data, NumericVector params);
-RcppExport SEXP _ldmppr_Part1_3FullDkappaCpp(SEXP xgridSEXP, SEXP ygridSEXP, SEXP tgridSEXP, SEXP dataSEXP, SEXP paramsSEXP) {
+// Part1_3FullCpp
+double Part1_3FullCpp(NumericVector xgrid, NumericVector ygrid, NumericVector tgrid, NumericMatrix data, NumericVector params, NumericVector bounds);
+RcppExport SEXP _ldmppr_Part1_3FullCpp(SEXP xgridSEXP, SEXP ygridSEXP, SEXP tgridSEXP, SEXP dataSEXP, SEXP paramsSEXP, SEXP boundsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -153,19 +155,20 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type tgrid(tgridSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(Part1_3FullDkappaCpp(xgrid, ygrid, tgrid, data, params));
+    Rcpp::traits::input_parameter< NumericVector >::type bounds(boundsSEXP);
+    rcpp_result_gen = Rcpp::wrap(Part1_3FullCpp(xgrid, ygrid, tgrid, data, params, bounds));
     return rcpp_result_gen;
 END_RCPP
 }
-// Part1_4FullDkappaCpp
-double Part1_4FullDkappaCpp(NumericMatrix data, NumericVector paramg);
-RcppExport SEXP _ldmppr_Part1_4FullDkappaCpp(SEXP dataSEXP, SEXP paramgSEXP) {
+// Part1_4FullCpp
+double Part1_4FullCpp(NumericMatrix data, NumericVector paramg);
+RcppExport SEXP _ldmppr_Part1_4FullCpp(SEXP dataSEXP, SEXP paramgSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type paramg(paramgSEXP);
-    rcpp_result_gen = Rcpp::wrap(Part1_4FullDkappaCpp(data, paramg));
+    rcpp_result_gen = Rcpp::wrap(Part1_4FullCpp(data, paramg));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -198,16 +201,16 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_ldmppr_pdistCVec", (DL_FUNC) &_ldmppr_pdistCVec, 2},
     {"_ldmppr_prodFullCpp", (DL_FUNC) &_ldmppr_prodFullCpp, 5},
-    {"_ldmppr_Ctheta2i", (DL_FUNC) &_ldmppr_Ctheta2i, 5},
+    {"_ldmppr_Ctheta2i", (DL_FUNC) &_ldmppr_Ctheta2i, 6},
     {"_ldmppr_CondSumCpp", (DL_FUNC) &_ldmppr_CondSumCpp, 3},
     {"_ldmppr_CondSumCppR", (DL_FUNC) &_ldmppr_CondSumCppR, 3},
     {"_ldmppr_pdistC", (DL_FUNC) &_ldmppr_pdistC, 2},
     {"_ldmppr_rdistC", (DL_FUNC) &_ldmppr_rdistC, 2},
-    {"_ldmppr_Part2FullDkappaCpp", (DL_FUNC) &_ldmppr_Part2FullDkappaCpp, 5},
-    {"_ldmppr_Part1_1FullDkappaCpp", (DL_FUNC) &_ldmppr_Part1_1FullDkappaCpp, 2},
-    {"_ldmppr_Part1_2FullDkappaCpp", (DL_FUNC) &_ldmppr_Part1_2FullDkappaCpp, 2},
-    {"_ldmppr_Part1_3FullDkappaCpp", (DL_FUNC) &_ldmppr_Part1_3FullDkappaCpp, 5},
-    {"_ldmppr_Part1_4FullDkappaCpp", (DL_FUNC) &_ldmppr_Part1_4FullDkappaCpp, 2},
+    {"_ldmppr_Part2FullCpp", (DL_FUNC) &_ldmppr_Part2FullCpp, 6},
+    {"_ldmppr_Part1_1FullCpp", (DL_FUNC) &_ldmppr_Part1_1FullCpp, 2},
+    {"_ldmppr_Part1_2FullCpp", (DL_FUNC) &_ldmppr_Part1_2FullCpp, 2},
+    {"_ldmppr_Part1_3FullCpp", (DL_FUNC) &_ldmppr_Part1_3FullCpp, 6},
+    {"_ldmppr_Part1_4FullCpp", (DL_FUNC) &_ldmppr_Part1_4FullCpp, 2},
     {"_ldmppr_interactionCpp", (DL_FUNC) &_ldmppr_interactionCpp, 3},
     {"_ldmppr_interactionCpp_st", (DL_FUNC) &_ldmppr_interactionCpp_st, 2},
     {NULL, NULL, 0}
