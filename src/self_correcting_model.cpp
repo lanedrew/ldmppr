@@ -30,8 +30,8 @@ double pdistCVec(NumericVector x, NumericVector y)
 double  prodFullCpp(double xgrid, double ygrid, double tgrid,
                     NumericMatrix data,  NumericVector params)
 {
-  double theta2 = params[0];
-  double kappa = params[1];
+  double alpha2 = params[0];
+  double beta2 = params[1];
   int n = data.nrow();
   double prodrslt=1;
   double r,interactPhi;
@@ -40,8 +40,8 @@ double  prodFullCpp(double xgrid, double ygrid, double tgrid,
   {
     if (data(j, 0) >= tgrid) break;
     NumericVector xydata = NumericVector::create(data(j, 1), data(j, 2));
-    r= pdistCVec(xygrid, xydata);
-    interactPhi = (r <= theta2) * pow((r / theta2), kappa) + (r > theta2);
+    r = pdistCVec(xygrid, xydata);
+    interactPhi = (r <= alpha2) * pow((r / alpha2), beta2) + (r > alpha2);
     prodrslt = prodrslt * interactPhi;
   }
   return prodrslt;
@@ -165,26 +165,26 @@ NumericVector rdistC(double evalt, NumericVector obst)
 //'
 //' @param xgrid a vector of grid values for x
 //' @param ygrid a vector of grid values for y
-//' @param tgrid a t value
-//' @param data a matrix of data
-//' @param param a vector of parameters
+//' @param tgrid a vector of grid values for t
+//' @param data a matrix of times and locations
+//' @param params a vector of parameters
 //' @param bounds a vector of bounds for time, x, and y
 //'
-//' @returns distance between a t and all t
+//' @returns second part of likelihood
 //' @export
 // [[Rcpp::export]]
 double Part2FullCpp(NumericVector xgrid, NumericVector ygrid,
-                    NumericVector tgrid, NumericMatrix data, NumericVector param,
+                    NumericVector tgrid, NumericMatrix data, NumericVector params,
                     NumericVector bounds)
 {
-  double alpha1 = param[0];
-  double beta1  = param[1];
-  double gamma1 = param[2];
-  double theta2 = param[3];
-  double kappa  = param[4];
-  double alpha3 = param[5];
-  double beta3  = param[6];
-  double gamma3 = param[7];
+  double alpha1 = params[0];
+  double beta1  = params[1];
+  double gamma1 = params[2];
+  double alpha2 = params[3];
+  double beta2  = params[4];
+  double alpha3 = params[5];
+  double beta3  = params[6];
+  double gamma3 = params[7];
   Environment base( "package:base" ) ;
   Function repcpp = base["rep.int"];
   int n = data.nrow();
@@ -202,8 +202,8 @@ double Part2FullCpp(NumericVector xgrid, NumericVector ygrid,
         NumericVector oneDist = rdistC(tgrid[m], data(_, 0));
         Iresult +=( exp(alpha1 + beta1 * tgrid[m] - gamma1 * CondSumCpp(data(_, 0), tgrid[m], repcpp(1, n)))
                       * (
-                          prodFullCpp(xgrid[k], ygrid[l], tgrid[m], data, NumericVector::create(theta2, kappa))
-                      /Ctheta2i(xgrid,  ygrid,  tgrid[m], data, NumericVector::create(theta2, kappa), bounds)
+                          prodFullCpp(xgrid[k], ygrid[l], tgrid[m], data, NumericVector::create(alpha2, beta2))
+                      /Ctheta2i(xgrid,  ygrid,  tgrid[m], data, NumericVector::create(alpha2, beta2), bounds)
                       )
                       * exp(-alpha3 * CondSumCppR(data(_, 0), tgrid[m],( (twoDist <= beta3) * (oneDist >= gamma3) ))));
       }
@@ -217,6 +217,7 @@ double Part2FullCpp(NumericVector xgrid, NumericVector ygrid,
 //'
 //' @param data a matrix of locations and times
 //' @param paramt a vector of parameters
+//'
 //' @returns full likelihood for part 1
 //' @export
 // [[Rcpp::export]]
@@ -241,6 +242,7 @@ double Part1_1FullCpp(NumericMatrix data, NumericVector paramt)
 //'
 //' @param data a matrix of locations and times
 //' @param params a vector of parameters
+//'
 //' @returns full likelihood for part 2
 //' @export
 // [[Rcpp::export]]
@@ -268,7 +270,7 @@ double Part1_2FullCpp(NumericMatrix data, NumericVector params)
 //' @param xgrid a vector of grid values for x
 //' @param ygrid a vector of grid values for y
 //' @param tgrid a t value
-//' @param data a matrix of data
+//' @param data a matrix of times and locations
 //' @param params a vector of parameters
 //' @param bounds a vector of time, x, and y bounds
 //'
@@ -291,7 +293,7 @@ double Part1_3FullCpp(NumericVector xgrid, NumericVector ygrid,
 
 //' calculates part 1-4
 //'
-//' @param data a matrix of locations and times
+//' @param data a matrix of times and locations
 //' @param paramg a vector of parameters
 //'
 //' @returns full likelihood for part 4
@@ -316,6 +318,64 @@ double Part1_4FullCpp(NumericMatrix data, NumericVector paramg)
   }
   return -alpha4 * grslt;
 }
+
+
+//' calculates part 1
+//'
+//' @param xgrid a vector of grid values for x
+//' @param ygrid a vector of grid values for y
+//' @param tgrid a t value
+//' @param data a matrix of times and locations
+//' @param params a vector of parameters
+//' @param bounds a vector of bounds for time, x, and y
+//'
+//' @returns first part of likelihood
+//' @export
+// [[Rcpp::export]]
+double Part1FullCpp(NumericVector xgrid, NumericVector ygrid, NumericVector tgrid,
+                    NumericMatrix data, NumericVector params, NumericVector bounds)
+{
+  double alpha1 = params[0];
+  double beta1  = params[1];
+  double gamma1 = params[2];
+  double alpha2 = params[3];
+  double beta2  = params[4];
+  double alpha3 = params[5];
+  double beta3  = params[6];
+  double gamma3 = params[7];
+  double p1rslt;
+  p1rslt = Part1_1FullCpp(data, NumericVector::create(alpha1, beta1, gamma1))
+           + Part1_2FullCpp(data, NumericVector::create(alpha2, beta2))
+           - Part1_3FullCpp(xgrid, ygrid, tgrid, data,
+                            NumericVector::create(alpha2, beta2), bounds)
+           + Part1_4FullCpp(data, NumericVector::create(alpha3, beta3, gamma3));
+  return (p1rslt);
+}
+
+
+//' calculates negative full self-correcting log-likelihood
+//'
+//' @param xgrid a vector of grid values for x
+//' @param ygrid a vector of grid values for y
+//' @param tgrid a vector of grid values for t
+//' @param data a matrix of times and locations
+//' @param params a vector of parameters
+//' @param bounds a vector of bounds for time, x, and y
+//'
+//' @returns negative full log-likelihood
+//' @export
+// [[Rcpp::export]]
+double full_sc_lhood(NumericVector xgrid, NumericVector ygrid, NumericVector tgrid,
+                     NumericMatrix data, NumericVector params, NumericVector bounds)
+{
+  double full_likeli;
+
+  full_likeli = Part1FullCpp(xgrid, ygrid, tgrid, data, params, bounds)
+                - Part2FullCpp(xgrid, ygrid, tgrid, data, params, bounds);
+
+  return(-full_likeli);
+}
+
 
 
 //' calculates spatial interaction
@@ -344,7 +404,7 @@ double interactionCpp(NumericMatrix Hist, NumericVector newp,
 
 //' calculates spatio-temporal interaction
 //'
-//' @param data a matrix of points and times
+//' @param data a matrix of times and locations
 //' @param paramg a vector of parameters
 //'
 //' @returns interaction probabilities for every point

@@ -27,7 +27,8 @@ Imports:
     magrittr,
     hardhat,
     ggplot2,
-    spatstat.geom
+    spatstat.geom,
+    nloptr
 LinkingTo: 
     Rcpp,
     RcppArmadillo

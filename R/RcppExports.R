@@ -91,21 +91,22 @@ rdistC <- function(evalt, obst) {
 #'
 #' @param xgrid a vector of grid values for x
 #' @param ygrid a vector of grid values for y
-#' @param tgrid a t value
-#' @param data a matrix of data
-#' @param param a vector of parameters
+#' @param tgrid a vector of grid values for t
+#' @param data a matrix of times and locations
+#' @param params a vector of parameters
 #' @param bounds a vector of bounds for time, x, and y
 #'
-#' @returns distance between a t and all t
+#' @returns second part of likelihood
 #' @export
-Part2FullCpp <- function(xgrid, ygrid, tgrid, data, param, bounds) {
-    .Call('_ldmppr_Part2FullCpp', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, param, bounds)
+Part2FullCpp <- function(xgrid, ygrid, tgrid, data, params, bounds) {
+    .Call('_ldmppr_Part2FullCpp', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params, bounds)
 }
 
 #' calculates part 1-1 full
 #'
 #' @param data a matrix of locations and times
 #' @param paramt a vector of parameters
+#'
 #' @returns full likelihood for part 1
 #' @export
 Part1_1FullCpp <- function(data, paramt) {
@@ -116,6 +117,7 @@ Part1_1FullCpp <- function(data, paramt) {
 #'
 #' @param data a matrix of locations and times
 #' @param params a vector of parameters
+#'
 #' @returns full likelihood for part 2
 #' @export
 Part1_2FullCpp <- function(data, params) {
@@ -127,7 +129,7 @@ Part1_2FullCpp <- function(data, params) {
 #' @param xgrid a vector of grid values for x
 #' @param ygrid a vector of grid values for y
 #' @param tgrid a t value
-#' @param data a matrix of data
+#' @param data a matrix of times and locations
 #' @param params a vector of parameters
 #' @param bounds a vector of time, x, and y bounds
 #'
@@ -139,13 +141,43 @@ Part1_3FullCpp <- function(xgrid, ygrid, tgrid, data, params, bounds) {
 
 #' calculates part 1-4
 #'
-#' @param data a matrix of locations and times
+#' @param data a matrix of times and locations
 #' @param paramg a vector of parameters
 #'
 #' @returns full likelihood for part 4
 #' @export
 Part1_4FullCpp <- function(data, paramg) {
     .Call('_ldmppr_Part1_4FullCpp', PACKAGE = 'ldmppr', data, paramg)
+}
+
+#' calculates part 1
+#'
+#' @param xgrid a vector of grid values for x
+#' @param ygrid a vector of grid values for y
+#' @param tgrid a t value
+#' @param data a matrix of times and locations
+#' @param params a vector of parameters
+#' @param bounds a vector of bounds for time, x, and y
+#'
+#' @returns first part of likelihood
+#' @export
+Part1FullCpp <- function(xgrid, ygrid, tgrid, data, params, bounds) {
+    .Call('_ldmppr_Part1FullCpp', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params, bounds)
+}
+
+#' calculates negative full self-correcting log-likelihood
+#'
+#' @param xgrid a vector of grid values for x
+#' @param ygrid a vector of grid values for y
+#' @param tgrid a vector of grid values for t
+#' @param data a matrix of times and locations
+#' @param params a vector of parameters
+#' @param bounds a vector of bounds for time, x, and y
+#'
+#' @returns negative full log-likelihood
+#' @export
+full_sc_lhood <- function(xgrid, ygrid, tgrid, data, params, bounds) {
+    .Call('_ldmppr_full_sc_lhood', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params, bounds)
 }
 
 #' calculates spatial interaction
@@ -162,7 +194,7 @@ interactionCpp <- function(Hist, newp, par) {
 
 #' calculates spatio-temporal interaction
 #'
-#' @param data a matrix of points and times
+#' @param data a matrix of times and locations
 #' @param paramg a vector of parameters
 #'
 #' @returns interaction probabilities for every point

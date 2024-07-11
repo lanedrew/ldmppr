@@ -7,7 +7,7 @@
 interactionCpp_st(data, paramg)
 }
 \arguments{
-\item{data}{a matrix of points and times}
+\item{data}{a matrix of times and locations}
 
 \item{paramg}{a vector of parameters}
 }

@@ -7,7 +7,7 @@
 Part1_4FullCpp(data, paramg)
 }
 \arguments{
-\item{data}{a matrix of locations and times}
+\item{data}{a matrix of times and locations}
 
 \item{paramg}{a vector of parameters}
 }

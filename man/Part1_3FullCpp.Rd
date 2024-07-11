@@ -13,7 +13,7 @@ Part1_3FullCpp(xgrid, ygrid, tgrid, data, params, bounds)
 
 \item{tgrid}{a t value}
 
-\item{data}{a matrix of data}
+\item{data}{a matrix of times and locations}
 
 \item{params}{a vector of parameters}
 

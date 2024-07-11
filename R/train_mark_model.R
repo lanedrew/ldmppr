@@ -31,7 +31,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
   model_data <- data.frame(size = df$size, X)
 
   if(verbose) {
-    base::print("Processing data.")
+    base::print("Processing data...")
   }
 
   data_split <- rsample::initial_split(
@@ -56,7 +56,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
   if(model_type == "xgboost"){
 
     if(verbose) {
-      base::print("Training XGBoost model.")
+      base::print("Training XGBoost model...")
     }
     xgboost_model <-
       parsnip::boost_tree(
@@ -111,7 +111,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
   }else if(model_type == "random_forest"){
 
     if(verbose) {
-      base::print("Training Random Forest model.")
+      base::print("Training Random Forest model...")
     }
     rf_model <-
       parsnip::rand_forest(
@@ -165,7 +165,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
   }
 
   if(verbose) {
-    base::print("Training complete.")
+    base::print("Training complete!")
   }
 
   bundled_mod <-
