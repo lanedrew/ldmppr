@@ -189,18 +189,19 @@ BEGIN_RCPP
 END_RCPP
 }
 // full_sc_lhood
-double full_sc_lhood(NumericVector xgrid, NumericVector ygrid, NumericVector tgrid, NumericMatrix data, NumericVector params, NumericVector bounds);
-RcppExport SEXP _ldmppr_full_sc_lhood(SEXP xgridSEXP, SEXP ygridSEXP, SEXP tgridSEXP, SEXP dataSEXP, SEXP paramsSEXP, SEXP boundsSEXP) {
+double full_sc_lhood(NumericVector xgrid, NumericVector ygrid, NumericVector tgrid, NumericVector tobs, NumericMatrix data, NumericVector params, NumericVector bounds);
+RcppExport SEXP _ldmppr_full_sc_lhood(SEXP xgridSEXP, SEXP ygridSEXP, SEXP tgridSEXP, SEXP tobsSEXP, SEXP dataSEXP, SEXP paramsSEXP, SEXP boundsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type xgrid(xgridSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type ygrid(ygridSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type tgrid(tgridSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type tobs(tobsSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type params(paramsSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type bounds(boundsSEXP);
-    rcpp_result_gen = Rcpp::wrap(full_sc_lhood(xgrid, ygrid, tgrid, data, params, bounds));
+    rcpp_result_gen = Rcpp::wrap(full_sc_lhood(xgrid, ygrid, tgrid, tobs, data, params, bounds));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -244,7 +245,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ldmppr_Part1_3FullCpp", (DL_FUNC) &_ldmppr_Part1_3FullCpp, 6},
     {"_ldmppr_Part1_4FullCpp", (DL_FUNC) &_ldmppr_Part1_4FullCpp, 2},
     {"_ldmppr_Part1FullCpp", (DL_FUNC) &_ldmppr_Part1FullCpp, 6},
-    {"_ldmppr_full_sc_lhood", (DL_FUNC) &_ldmppr_full_sc_lhood, 6},
+    {"_ldmppr_full_sc_lhood", (DL_FUNC) &_ldmppr_full_sc_lhood, 7},
     {"_ldmppr_interactionCpp", (DL_FUNC) &_ldmppr_interactionCpp, 3},
     {"_ldmppr_interactionCpp_st", (DL_FUNC) &_ldmppr_interactionCpp_st, 2},
     {NULL, NULL, 0}

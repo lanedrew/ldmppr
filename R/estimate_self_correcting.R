@@ -14,6 +14,14 @@
 estimate_parameters_sc <- function(xgrid, ygrid, tgrid, data, parameter_inits,
                                    bounds, opt_algorithm = "NLOPT_LN_NELDERMEAD")  {
 
+  opt_likeli <- function(parameters) {
+    full_sc_lhood(xgrid = xgrid, ygrid = ygrid, tgrid = tgrid, tobs = data[,1],
+                  data = data, params = parameters, bounds = bounds)
+    return(-full_sc_lhood)
+  }
+
+
+
   parameter_estimates <- nloptr::nloptr(x0 = parameter_inits,
                                         eval_f = full_sc_lhood,
                                         lb = c(-Inf, 0, 0, 0, 0, 0, 0, 0),

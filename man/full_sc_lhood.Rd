@@ -2,9 +2,9 @@
 % Please edit documentation in R/RcppExports.R
 \name{full_sc_lhood}
 \alias{full_sc_lhood}
-\title{calculates negative full self-correcting log-likelihood}
+\title{calculates full self-correcting log-likelihood}
 \usage{
-full_sc_lhood(xgrid, ygrid, tgrid, data, params, bounds)
+full_sc_lhood(xgrid, ygrid, tgrid, tobs, data, params, bounds)
 }
 \arguments{
 \item{xgrid}{a vector of grid values for x}
@@ -13,6 +13,8 @@ full_sc_lhood(xgrid, ygrid, tgrid, data, params, bounds)
 
 \item{tgrid}{a vector of grid values for t}
 
+\item{tobs}{a vector of observed values for t}
+
 \item{data}{a matrix of times and locations}
 
 \item{params}{a vector of parameters}
@@ -20,8 +22,8 @@ full_sc_lhood(xgrid, ygrid, tgrid, data, params, bounds)
 \item{bounds}{a vector of bounds for time, x, and y}
 }
 \value{
-negative full log-likelihood
+full log-likelihood
 }
 \description{
-calculates negative full self-correcting log-likelihood
+calculates full self-correcting log-likelihood
 }

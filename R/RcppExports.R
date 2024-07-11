@@ -165,19 +165,20 @@ Part1FullCpp <- function(xgrid, ygrid, tgrid, data, params, bounds) {
     .Call('_ldmppr_Part1FullCpp', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params, bounds)
 }
 
-#' calculates negative full self-correcting log-likelihood
+#' calculates full self-correcting log-likelihood
 #'
 #' @param xgrid a vector of grid values for x
 #' @param ygrid a vector of grid values for y
 #' @param tgrid a vector of grid values for t
+#' @param tobs a vector of observed values for t
 #' @param data a matrix of times and locations
 #' @param params a vector of parameters
 #' @param bounds a vector of bounds for time, x, and y
 #'
-#' @returns negative full log-likelihood
+#' @returns full log-likelihood
 #' @export
-full_sc_lhood <- function(xgrid, ygrid, tgrid, data, params, bounds) {
-    .Call('_ldmppr_full_sc_lhood', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params, bounds)
+full_sc_lhood <- function(xgrid, ygrid, tgrid, tobs, data, params, bounds) {
+    .Call('_ldmppr_full_sc_lhood', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, tobs, data, params, bounds)
 }
 
 #' calculates spatial interaction

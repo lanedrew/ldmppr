@@ -353,27 +353,29 @@ double Part1FullCpp(NumericVector xgrid, NumericVector ygrid, NumericVector tgri
 }
 
 
-//' calculates negative full self-correcting log-likelihood
+//' calculates full self-correcting log-likelihood
 //'
 //' @param xgrid a vector of grid values for x
 //' @param ygrid a vector of grid values for y
 //' @param tgrid a vector of grid values for t
+//' @param tobs a vector of observed values for t
 //' @param data a matrix of times and locations
 //' @param params a vector of parameters
 //' @param bounds a vector of bounds for time, x, and y
 //'
-//' @returns negative full log-likelihood
+//' @returns full log-likelihood
 //' @export
 // [[Rcpp::export]]
 double full_sc_lhood(NumericVector xgrid, NumericVector ygrid, NumericVector tgrid,
-                     NumericMatrix data, NumericVector params, NumericVector bounds)
+                     NumericVector tobs, NumericMatrix data, NumericVector params,
+                     NumericVector bounds)
 {
   double full_likeli;
 
-  full_likeli = Part1FullCpp(xgrid, ygrid, tgrid, data, params, bounds)
+  full_likeli = Part1FullCpp(xgrid, ygrid, tobs, data, params, bounds)
                 - Part2FullCpp(xgrid, ygrid, tgrid, data, params, bounds);
 
-  return(-full_likeli);
+  return(full_likeli);
 }
 
 
