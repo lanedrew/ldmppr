@@ -23,7 +23,7 @@ estimate_parameters_sc <- function(xgrid, ygrid, tgrid, data, parameter_inits,
 
 
   parameter_estimates <- nloptr::nloptr(x0 = parameter_inits,
-                                        eval_f = full_sc_lhood,
+                                        eval_f = opt_likeli,
                                         lb = c(-Inf, 0, 0, 0, 0, 0, 0, 0),
                                         ub = c(Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf),
                                         opts = list("algorithm" = opt_algorithm,
