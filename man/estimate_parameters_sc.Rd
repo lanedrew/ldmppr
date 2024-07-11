@@ -11,7 +11,8 @@ estimate_parameters_sc(
   data,
   parameter_inits,
   bounds,
-  opt_algorithm = "NLOPT_LN_NELDERMEAD"
+  opt_algorithm = "NLOPT_LN_NELDERMEAD",
+  verbose = TRUE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ estimate_parameters_sc(
 \item{bounds}{a vector of bounds for time, x, and y}
 
 \item{opt_algorithm}{the NLopt algorithm to use for maximization}
+
+\item{verbose}{TRUE or FALSE indicating whether to show progress of optimization}
 }
 \value{
 an nloptr object with details of the optimization including solution
