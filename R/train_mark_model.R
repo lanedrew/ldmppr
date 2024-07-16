@@ -15,6 +15,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
                              save_model = FALSE, save_path,
                              parallel = TRUE, verbose = TRUE){
 
+
   if(parallel) {
     doParallel::registerDoParallel()
   }
