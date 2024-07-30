@@ -28,6 +28,7 @@ Imports:
     hardhat,
     ggplot2,
     spatstat.geom,
+    spatstat.explore,
     nloptr
 LinkingTo: 
     Rcpp,
