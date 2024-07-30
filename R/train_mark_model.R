@@ -32,9 +32,9 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
   X$near.nbr.dist <- NA
   X$near.nbr.num <- NA
   X$avg.nbr.dist.15 <- NA
-  X$near.nbr.size <- NA
-  X$near.nbr.size.all <- NA
-  X$near.nbr.size.dist.ratio <- NA
+  X$near.nbr.time <- NA
+  X$near.nbr.time.all <- NA
+  X$near.nbr.time.dist.ratio <- NA
   colnames(s) <- c("x", "y")
   distance.matrix <- base::as.matrix(stats::dist(s, method = "euclidean"))
 
@@ -52,10 +52,9 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
     if(base::length(close.points.15) == 0){
       X$near.nbr.time.all[i] <- X$time[base::unique(base::which(distance.matrix[i,] == X$near.nbr.dist[i]))]
     }
-    X$near.nbr.size.dist.ratio[i] <- X$near.nbr.time[i]/X$near.nbr.dist[i]
+    X$near.nbr.time.dist.ratio[i] <- X$near.nbr.time[i]/X$near.nbr.dist[i]
   }
 
-  base::print(utils::head(X))
 
   ## Fit the size model
   model_data <- data.frame(size = df$size, X)
