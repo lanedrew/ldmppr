@@ -41,15 +41,15 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
   for(i in 1:base::nrow(X)){
     close.points.15 <- base::unique(base::which(distance.matrix[i,] < 15 & distance.matrix[i,] != 0))
     close.times.15 <- X$time[close.points.15]
-    X$near.nbr.dist[i] <- min(distance.matrix[i,][-i])
-    X$near.nbr.num[i] <- length(close.points.15)
-    X$avg.nbr.dist.15[i] <- mean(distance.matrix[i,][close.points.15])
-    if(length(close.points.15) == 0){
-      X$avg.nbr.dist.15[i] <- min(distance.matrix[i,][-i])
+    X$near.nbr.dist[i] <- base::min(distance.matrix[i,][-i])
+    X$near.nbr.num[i] <- base::length(close.points.15)
+    X$avg.nbr.dist.15[i] <- base::mean(distance.matrix[i,][close.points.15])
+    if(base::length(close.points.15) == 0){
+      X$avg.nbr.dist.15[i] <- base::min(distance.matrix[i,][-i])
     }
     X$near.nbr.time[i] <- X$time[base::unique(base::which(distance.matrix[i,] == X$near.nbr.dist[i]))]
     X$near.nbr.time.all[i] <- mean(close.times.15)
-    if(length(close.points.15) == 0){
+    if(base::length(close.points.15) == 0){
       X$near.nbr.time.all[i] <- X$time[base::unique(base::which(distance.matrix[i,] == X$near.nbr.dist[i]))]
     }
     X$near.nbr.size.dist.ratio[i] <- X$near.nbr.time[i]/X$near.nbr.dist[i]
