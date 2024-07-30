@@ -55,7 +55,7 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
     X$near.nbr.size.dist.ratio[i] <- X$near.nbr.time[i]/X$near.nbr.dist[i]
   }
 
-  base::print(base::head(X))
+  base::print(utils::head(X))
 
   ## Fit the size model
   model_data <- data.frame(size = df$size, X)
