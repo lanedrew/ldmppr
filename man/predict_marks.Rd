@@ -9,12 +9,12 @@ predict_marks(sim_realization, raster_list, size_model)
 \arguments{
 \item{sim_realization}{a realization of simulated values}
 
-\item{raster_list}{list of rasters}
+\item{raster_list}{a list of rasters}
 
 \item{size_model}{a predictive model}
 }
 \value{
-a vector of predictions
+a vector of predicted mark values
 }
 \description{
 Predict values from the mark distribution

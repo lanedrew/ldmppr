@@ -36,7 +36,7 @@ scale_rasters <- function(raster_list) {
 #' Extract covariate values from a set of rasters
 #'
 #' @param x a 2-column matrix or data.frame(x, y) or (lon, lat)
-#' @param raster_list the list of raster objects
+#' @param raster_list a list of raster objects
 #'
 #' @return a matrix of covariates drawn from the provided rasters
 #' @export

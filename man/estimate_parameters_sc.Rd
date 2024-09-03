@@ -30,7 +30,7 @@ estimate_parameters_sc(
 
 \item{opt_algorithm}{the NLopt algorithm to use for maximization}
 
-\item{verbose}{TRUE or FALSE indicating whether to show progress of optimization}
+\item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of optimization}
 }
 \value{
 an nloptr object with details of the optimization including solution

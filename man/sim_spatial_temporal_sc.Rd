@@ -4,16 +4,18 @@
 \alias{sim_spatial_temporal_sc}
 \title{Simulate from the self-correcting model}
 \usage{
-sim_spatial_temporal_sc(Tmin, Tmax, par, M_n)
+sim_spatial_temporal_sc(Tmin = 0, Tmax = 1, params, M_n, xy.bounds)
 }
 \arguments{
 \item{Tmin}{minimum value for T}
 
 \item{Tmax}{maximum value for T}
 
-\item{par}{vector of parameter estimates}
+\item{params}{vector of parameter estimates}
 
 \item{M_n}{point to condition on}
+
+\item{xy.bounds}{vector of lower and upper bounds for the domain (2 for x, 2 for y)}
 }
 \value{
 a list of simulated values both thinned and unthinned

@@ -25,9 +25,9 @@ train_mark_model(
 
 \item{save_path}{path for saving the generated model}
 
-\item{parallel}{TRUE or FALSE indicating whether to use parallelization in model training}
+\item{parallel}{`TRUE` or `FALSE` indicating whether to use parallelization in model training}
 
-\item{verbose}{TRUE or FALSE indicating whether to show progress of model training}
+\item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of model training}
 }
 \value{
 a bundled model object

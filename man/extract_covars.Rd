@@ -9,7 +9,7 @@ extract_covars(x, raster_list)
 \arguments{
 \item{x}{a 2-column matrix or data.frame(x, y) or (lon, lat)}
 
-\item{raster_list}{the list of raster objects}
+\item{raster_list}{a list of raster objects}
 }
 \value{
 a matrix of covariates drawn from the provided rasters

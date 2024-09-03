@@ -5,8 +5,8 @@
 #' @param model_type the machine learning model type
 #' @param save_model determines whether to save the generated model
 #' @param save_path path for saving the generated model
-#' @param parallel TRUE or FALSE indicating whether to use parallelization in model training
-#' @param verbose TRUE or FALSE indicating whether to show progress of model training
+#' @param parallel `TRUE` or `FALSE` indicating whether to use parallelization in model training
+#' @param verbose `TRUE` or `FALSE` indicating whether to show progress of model training
 #'
 #' @return a bundled model object
 #' @export

@@ -7,7 +7,7 @@
 #' @param parameter_inits a vector of parameter initialization values
 #' @param bounds a vector of bounds for time, x, and y
 #' @param opt_algorithm the NLopt algorithm to use for maximization
-#' @param verbose TRUE or FALSE indicating whether to show progress of optimization
+#' @param verbose `TRUE` or `FALSE` indicating whether to show progress of optimization
 #'
 #' @return an nloptr object with details of the optimization including solution
 #' @export

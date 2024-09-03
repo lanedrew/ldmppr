@@ -1,10 +1,10 @@
 #' Predict values from the mark distribution
 #'
 #' @param sim_realization a realization of simulated values
-#' @param raster_list list of rasters
+#' @param raster_list a list of rasters
 #' @param size_model a predictive model
 #'
-#' @return a vector of predictions
+#' @return a vector of predicted mark values
 #' @export
 #'
 predict_marks <- function(sim_realization, raster_list, size_model){

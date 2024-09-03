@@ -4,14 +4,16 @@
 \alias{sim_spatial_sc}
 \title{Simulate the spatial component of the self-correcting model}
 \usage{
-sim_spatial_sc(M_n, par, nsim.t)
+sim_spatial_sc(M_n, params, nsim.t, xy.bounds)
 }
 \arguments{
 \item{M_n}{vector of (x,y)-coordinates for largest point}
 
-\item{par}{a vector of parameters (alpha_2, beta_2)}
+\item{params}{a vector of parameters (alpha_2, beta_2)}
 
 \item{nsim.t}{number of points to simulate}
+
+\item{xy.bounds}{vector of lower and upper bounds for the domain (2 for x, 2 for y)}
 }
 \value{
 a matrix of point locations in the (x,y)-plane

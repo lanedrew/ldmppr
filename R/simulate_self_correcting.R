@@ -23,15 +23,15 @@ temporal_sc <- function(par, evalt, obst) {
 #'
 #' @param Tmin minimum time value
 #' @param Tmax maximum time value
-#' @param par a vector of parameters (alpha_1, beta_1, gamma_1)
+#' @param params a vector of parameters (alpha_1, beta_1, gamma_1)
 #'
 #' @return a list of thinned and unthinned temporal samples
 #' @export
 #'
-sim_temporal_sc <- function(Tmin, Tmax, par){
-  alpha1 = par[1];
-  beta1  = par[2];
-  gamma1 = par[3];
+sim_temporal_sc <- function(Tmin = 0, Tmax = 1, params){
+  alpha1 = params[1];
+  beta1  = params[2];
+  gamma1 = params[3];
   Lmax <- base::exp(alpha1 + beta1 * Tmax)
   N_max <- Lmax*Tmax
   sample_size <- stats::rpois( 1, N_max )
@@ -41,7 +41,7 @@ sim_temporal_sc <- function(Tmin, Tmax, par){
   t_sim <- base::numeric(sample_size)
   lambda_star <- base::numeric()
   for (i in 1:sample_size){
-    lambda_star[i] <- temporal_sc(par, sample[i], hist)
+    lambda_star[i] <- temporal_sc(params, sample[i], hist)
     if(U[i] < (lambda_star[i] / Lmax)){
       t_sim[i] <- c(sample[i])
       hist <- base::rbind(hist, sample[i])
@@ -57,18 +57,19 @@ sim_temporal_sc <- function(Tmin, Tmax, par){
 #' Simulate the spatial component of the self-correcting model
 #'
 #' @param M_n vector of (x,y)-coordinates for largest point
-#' @param par a vector of parameters (alpha_2, beta_2)
+#' @param params a vector of parameters (alpha_2, beta_2)
 #' @param nsim.t number of points to simulate
+#' @param xy.bounds vector of lower and upper bounds for the domain (2 for x, 2 for y)
 #'
 #' @return a matrix of point locations in the (x,y)-plane
 #' @export
 #'
-sim_spatial_sc <- function(M_n, par, nsim.t){
+sim_spatial_sc <- function(M_n, params, nsim.t, xy.bounds){
   Loc <- base::matrix(M_n, ncol=2)  # x and y corresponding to M_n(t_0)
   lengLoc <- 1
   while(lengLoc < nsim.t){
-    newp <- c(stats::runif(1, 0, 100), stats::runif(1, 0, 100))
-    if( stats::runif(1, 0, 1) <= interactionCpp(Loc, newp, par) ){
+    newp <- c(stats::runif(1, xy.bounds[1], xy.bounds[2]), stats::runif(1, xy.bounds[3], xy.bounds[4]))
+    if( stats::runif(1, 0, 1) <= interactionCpp(Loc, newp, params) ){
       Loc <- base::rbind(Loc, newp)
       lengLoc <-  lengLoc + 1
     }
@@ -81,18 +82,19 @@ sim_spatial_sc <- function(M_n, par, nsim.t){
 #'
 #' @param Tmin minimum value for T
 #' @param Tmax maximum value for T
-#' @param par vector of parameter estimates
+#' @param params vector of parameter estimates
 #' @param M_n point to condition on
+#' @param xy.bounds vector of lower and upper bounds for the domain (2 for x, 2 for y)
 #'
 #' @return a list of simulated values both thinned and unthinned
 #' @export
 #'
-sim_spatial_temporal_sc <- function(Tmin, Tmax, par, M_n){
-  Sim_time = stats::na.omit(sim_temporal_sc(Tmin, Tmax, par[1:3])$unthin)
-  sim_loc =  sim_spatial_sc(M_n, par[4:5], length(Sim_time))
+sim_spatial_temporal_sc <- function(Tmin = 0, Tmax = 1, params, M_n, xy.bounds){
+  Sim_time = stats::na.omit(sim_temporal_sc(Tmin, Tmax, params[1:3])$unthin)
+  sim_loc =  sim_spatial_sc(M_n, params[4:5], length(Sim_time), xy.bounds)
   Sim_time[1] = 0
   txy_sim = base::cbind(Sim_time, sim_loc)
-  thin_vals = (stats::runif(base::nrow(txy_sim), 0, 1) < interactionCpp_st(txy_sim, par[6:8]))
+  thin_vals = (stats::runif(base::nrow(txy_sim), 0, 1) < interactionCpp_st(txy_sim, params[6:8]))
   txy_sim_thin = txy_sim[thin_vals,]
   sim_df <- base::data.frame(time = txy_sim[,1], x = txy_sim[,2], y = txy_sim[,3])
   sim_thin_df <- base::data.frame(time = txy_sim_thin[,1], x = txy_sim_thin[,2], y = txy_sim_thin[,3])

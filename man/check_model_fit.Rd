@@ -9,6 +9,8 @@ check_model_fit(
   Tmin = 0,
   Tmax,
   params,
+  mark_model,
+  raster_list,
   M_n,
   n.sim = 2500,
   verbose = TRUE
@@ -23,11 +25,15 @@ check_model_fit(
 
 \item{params}{vector of parameter estimates}
 
+\item{mark_model}{a trained mark model object}
+
+\item{raster_list}{a list of raster objects}
+
 \item{M_n}{point to condition on}
 
 \item{n.sim}{number of simulated datasets to generate}
 
-\item{verbose}{TRUE or FALSE indicating whether to show progress}
+\item{verbose}{`TRUE` or `FALSE` indicating whether to show progress}
 }
 \value{
 a list of model fit summaries
