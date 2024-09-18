@@ -3,24 +3,29 @@
 #' @param df a data.frame containing named vectors size, x, y, and time
 #' @param raster_list the list of raster objects
 #' @param model_type the machine learning model type
+#' @param bounds a vector of domain bounds (2 for x, 2 for y)
 #' @param save_model determines whether to save the generated model
 #' @param save_path path for saving the generated model
 #' @param parallel `TRUE` or `FALSE` indicating whether to use parallelization in model training
+#' @param correction type of correction to apply ("none", "toroidal", or "truncation")
 #' @param verbose `TRUE` or `FALSE` indicating whether to show progress of model training
 #'
 #' @return a bundled model object
 #' @export
 #'
-train_mark_model <- function(df, raster_list, model_type = "xgboost",
+train_mark_model <- function(df, raster_list,
+                             model_type = "xgboost", bounds,
                              save_model = FALSE, save_path,
-                             parallel = TRUE, verbose = TRUE){
+                             parallel = TRUE,
+                             correction = "none",
+                             verbose = TRUE){
 
 
   if(parallel) {
     doParallel::registerDoParallel()
   }
 
-  s <- base::as.matrix(base::cbind(df$x, df$y))
+  s <- base::as.matrix(base::cbind(df$x - bounds[1], df$y - bounds[3]))
   raster_trans <- scale_rasters(raster_list)
 
   X <- extract_covars(x = s, raster_list = raster_trans)
@@ -36,7 +41,13 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
   X$near.nbr.time.all <- NA
   X$near.nbr.time.dist.ratio <- NA
   colnames(s) <- c("x", "y")
-  distance.matrix <- base::as.matrix(stats::dist(s, method = "euclidean"))
+  if((correction == "none") | (correction == "truncation")) {
+    distance.matrix <- base::as.matrix(stats::dist(s, method = "euclidean"))
+  }else if(correction == "toroidal") {
+    distance.matrix <- toroidal_dist_matrix_optimized(s, bounds[2] - bounds[1], bounds[4] - bounds[3])
+  }
+
+
 
   for(i in 1:base::nrow(X)){
     close.points.15 <- base::unique(base::which(distance.matrix[i,] < 15 & distance.matrix[i,] != 0))
@@ -58,6 +69,13 @@ train_mark_model <- function(df, raster_list, model_type = "xgboost",
 
   ## Fit the size model
   model_data <- data.frame(size = df$size, X)
+
+  if(correction == "truncation"){
+    model_data <- model_data[(model_data$x > bounds[1] + 15 &
+                              model_data$x < bounds[2] - 15 &
+                              model_data$y > bounds[3] + 15 &
+                              model_data$y < bounds[4] - 15),]
+  }
 
   if(verbose) {
     base::print("Processing data...")

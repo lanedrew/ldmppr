@@ -8,9 +8,11 @@ train_mark_model(
   df,
   raster_list,
   model_type = "xgboost",
+  bounds,
   save_model = FALSE,
   save_path,
   parallel = TRUE,
+  correction = "none",
   verbose = TRUE
 )
 }
@@ -21,11 +23,15 @@ train_mark_model(
 
 \item{model_type}{the machine learning model type}
 
+\item{bounds}{a vector of domain bounds (2 for x, 2 for y)}
+
 \item{save_model}{determines whether to save the generated model}
 
 \item{save_path}{path for saving the generated model}
 
 \item{parallel}{`TRUE` or `FALSE` indicating whether to use parallelization in model training}
+
+\item{correction}{type of correction to apply ("none", "toroidal", or "truncation")}
 
 \item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of model training}
 }
