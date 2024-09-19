@@ -71,10 +71,10 @@ train_mark_model <- function(df, raster_list,
   model_data <- data.frame(size = df$size, X)
 
   if(correction == "truncation"){
-    model_data <- model_data[(model_data$x > bounds[1] + 15 &
-                              model_data$x < bounds[2] - 15 &
-                              model_data$y > bounds[3] + 15 &
-                              model_data$y < bounds[4] - 15),]
+    model_data <- model_data[(model_data$x > 15 &
+                              model_data$x < (bounds[2] - bounds[1]) - 15 &
+                              model_data$y > 15 &
+                              model_data$y < (bounds[4] - bounds[3]) - 15),]
   }
 
   if(verbose) {
