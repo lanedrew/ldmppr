@@ -4,7 +4,13 @@
 \alias{predict_marks}
 \title{Predict values from the mark distribution}
 \usage{
-predict_marks(sim_realization, raster_list, size_model)
+predict_marks(
+  sim_realization,
+  raster_list,
+  size_model,
+  bounds,
+  correction = "none"
+)
 }
 \arguments{
 \item{sim_realization}{a realization of simulated values}
@@ -12,6 +18,10 @@ predict_marks(sim_realization, raster_list, size_model)
 \item{raster_list}{a list of rasters}
 
 \item{size_model}{a predictive model}
+
+\item{bounds}{a vector of domain bounds (2 for x, 2 for y)}
+
+\item{correction}{type of correction to apply ("none" or "toroidal")}
 }
 \value{
 a vector of predicted mark values

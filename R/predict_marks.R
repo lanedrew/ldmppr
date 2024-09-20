@@ -3,11 +3,13 @@
 #' @param sim_realization a realization of simulated values
 #' @param raster_list a list of rasters
 #' @param size_model a predictive model
+#' @param bounds a vector of domain bounds (2 for x, 2 for y)
+#' @param correction type of correction to apply ("none" or "toroidal")
 #'
 #' @return a vector of predicted mark values
 #' @export
 #'
-predict_marks <- function(sim_realization, raster_list, size_model){
+predict_marks <- function(sim_realization, raster_list, size_model, bounds, correction = "none"){
 
   s <- sim_realization[,c("x", "y")]
   raster_trans <- scale_rasters(raster_list)
@@ -22,7 +24,11 @@ predict_marks <- function(sim_realization, raster_list, size_model){
   X$near.nbr.time <- NA
   X$near.nbr.time.all <- NA
   X$near.nbr.time.dist.ratio <- NA
-  distance.matrix <- base::as.matrix(stats::dist(s, method = "euclidean"))
+  if((correction == "none")) {
+    distance.matrix <- base::as.matrix(stats::dist(s, method = "euclidean"))
+  }else if(correction == "toroidal") {
+    distance.matrix <- toroidal_dist_matrix_optimized(s, bounds[2] - bounds[1], bounds[4] - bounds[3])
+  }
 
   for(i in 1:base::nrow(X)){
     close.points.15 <- base::unique(base::which(distance.matrix[i,] < 15 & distance.matrix[i,] != 0))
