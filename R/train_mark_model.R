@@ -7,6 +7,7 @@
 #' @param save_model determines whether to save the generated model
 #' @param save_path path for saving the generated model
 #' @param parallel `TRUE` or `FALSE` indicating whether to use parallelization in model training
+#' @param include_comp_inds `TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates
 #' @param correction type of correction to apply ("none", "toroidal", or "truncation")
 #' @param verbose `TRUE` or `FALSE` indicating whether to show progress of model training
 #'
@@ -17,6 +18,7 @@ train_mark_model <- function(df, raster_list,
                              model_type = "xgboost", bounds,
                              save_model = FALSE, save_path,
                              parallel = TRUE,
+                             include_comp_inds = FALSE,
                              correction = "none",
                              verbose = TRUE){
 
@@ -33,37 +35,39 @@ train_mark_model <- function(df, raster_list,
   X$y <- s[,2]
   X$time <- df$time
 
+  if(include_comp_inds == TRUE){
 
-  X$near.nbr.dist <- NA
-  X$near.nbr.num <- NA
-  X$avg.nbr.dist.15 <- NA
-  X$near.nbr.time <- NA
-  X$near.nbr.time.all <- NA
-  X$near.nbr.time.dist.ratio <- NA
-  colnames(s) <- c("x", "y")
-  if((correction == "none") | (correction == "truncation")) {
-    distance.matrix <- base::as.matrix(stats::dist(s, method = "euclidean"))
-  }else if(correction == "toroidal") {
-    distance.matrix <- toroidal_dist_matrix_optimized(s, bounds[2] - bounds[1], bounds[4] - bounds[3])
-  }
+    X$near.nbr.dist <- NA
+    X$near.nbr.num <- NA
+    X$avg.nbr.dist.15 <- NA
+    X$near.nbr.time <- NA
+    X$near.nbr.time.all <- NA
+    X$near.nbr.time.dist.ratio <- NA
+    colnames(s) <- c("x", "y")
 
-
-
-  for(i in 1:base::nrow(X)){
-    close.points.15 <- base::unique(base::which(distance.matrix[i,] < 15 & distance.matrix[i,] != 0))
-    close.times.15 <- X$time[close.points.15]
-    X$near.nbr.dist[i] <- base::min(distance.matrix[i,][-i])
-    X$near.nbr.num[i] <- base::length(close.points.15)
-    X$avg.nbr.dist.15[i] <- base::mean(distance.matrix[i,][close.points.15])
-    if(base::length(close.points.15) == 0){
-      X$avg.nbr.dist.15[i] <- base::min(distance.matrix[i,][-i])
+    if((correction == "none") | (correction == "truncation")) {
+      distance.matrix <- base::as.matrix(stats::dist(s, method = "euclidean"))
+    }else if(correction == "toroidal") {
+      distance.matrix <- toroidal_dist_matrix_optimized(s, bounds[2] - bounds[1], bounds[4] - bounds[3])
     }
-    X$near.nbr.time[i] <- X$time[base::unique(base::which(distance.matrix[i,] == X$near.nbr.dist[i]))]
-    X$near.nbr.time.all[i] <- mean(close.times.15)
-    if(base::length(close.points.15) == 0){
-      X$near.nbr.time.all[i] <- X$time[base::unique(base::which(distance.matrix[i,] == X$near.nbr.dist[i]))]
+
+
+    for(i in 1:base::nrow(X)){
+      close.points.15 <- base::unique(base::which(distance.matrix[i,] < 15 & distance.matrix[i,] != 0))
+      close.times.15 <- X$time[close.points.15]
+      X$near.nbr.dist[i] <- base::min(distance.matrix[i,][-i])
+      X$near.nbr.num[i] <- base::length(close.points.15)
+      X$avg.nbr.dist.15[i] <- base::mean(distance.matrix[i,][close.points.15])
+      if(base::length(close.points.15) == 0){
+        X$avg.nbr.dist.15[i] <- base::min(distance.matrix[i,][-i])
+      }
+      X$near.nbr.time[i] <- X$time[base::unique(base::which(distance.matrix[i,] == X$near.nbr.dist[i]))]
+      X$near.nbr.time.all[i] <- mean(close.times.15)
+      if(base::length(close.points.15) == 0){
+        X$near.nbr.time.all[i] <- X$time[base::unique(base::which(distance.matrix[i,] == X$near.nbr.dist[i]))]
+      }
+      X$near.nbr.time.dist.ratio[i] <- X$near.nbr.time[i]/X$near.nbr.dist[i]
     }
-    X$near.nbr.time.dist.ratio[i] <- X$near.nbr.time[i]/X$near.nbr.dist[i]
   }
 
 
@@ -125,7 +129,7 @@ train_mark_model <- function(df, raster_list,
       )
 
     xgboost_grid <-
-      dials::grid_max_entropy(
+      dials::grid_space_filling(
         xgboost_params,
         size = 200
       )
@@ -177,7 +181,7 @@ train_mark_model <- function(df, raster_list,
       )
 
     rf_grid <-
-      dials::grid_max_entropy(
+      dials::grid_space_filling(
         rf_params,
         size = 200
       )

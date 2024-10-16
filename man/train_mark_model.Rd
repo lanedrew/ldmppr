@@ -12,6 +12,7 @@ train_mark_model(
   save_model = FALSE,
   save_path,
   parallel = TRUE,
+  include_comp_inds = FALSE,
   correction = "none",
   verbose = TRUE
 )
@@ -30,6 +31,8 @@ train_mark_model(
 \item{save_path}{path for saving the generated model}
 
 \item{parallel}{`TRUE` or `FALSE` indicating whether to use parallelization in model training}
+
+\item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates}
 
 \item{correction}{type of correction to apply ("none", "toroidal", or "truncation")}
 
