@@ -204,3 +204,40 @@ interactionCpp_st <- function(data, paramg) {
     .Call('_ldmppr_interactionCpp_st', PACKAGE = 'ldmppr', data, paramg)
 }
 
+#' calculates temporal likelihood
+#'
+#' @param par a vector of parameters (alpha_1, beta_1, gamma_1)
+#' @param evalt a t value
+#' @param obst a vector of t
+#'
+#' @returns full temporal likelihood evaluation
+#' @export
+temporal_sc_cpp <- function(par, evalt, obst) {
+    .Call('_ldmppr_temporal_sc_cpp', PACKAGE = 'ldmppr', par, evalt, obst)
+}
+
+#' Simulate the temporal component of the self-correcting model
+#'
+#' @param Tmin minimum time value
+#' @param Tmax maximum time value
+#' @param params a vector of parameters (alpha_1, beta_1, gamma_1)
+#'
+#' @return a vector of thinned and temporal samples
+#' @export
+sim_temporal_sc_cpp <- function(Tmin = 0, Tmax = 1, params = as.numeric( c(0, 0, 0))) {
+    .Call('_ldmppr_sim_temporal_sc_cpp', PACKAGE = 'ldmppr', Tmin, Tmax, params)
+}
+
+#' Simulate the spatial component of the self-correcting model
+#'
+#' @param M_n vector of (x,y)-coordinates for largest point
+#' @param params a vector of parameters (alpha_2, beta_2)
+#' @param nsim_t number of points to simulate
+#' @param xy_bounds vector of lower and upper bounds for the domain (2 for x, 2 for y)
+#'
+#' @return a matrix of point locations in the (x,y)-plane
+#' @export
+sim_spatial_sc_cpp <- function(M_n, params, nsim_t, xy_bounds) {
+    .Call('_ldmppr_sim_spatial_sc_cpp', PACKAGE = 'ldmppr', M_n, params, nsim_t, xy_bounds)
+}
+

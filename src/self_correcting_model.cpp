@@ -1,4 +1,4 @@
-#include <Rcpp.h>
+#include <RcppArmadillo.h>
 using namespace Rcpp;
 
 //' calculates euclidean distance
@@ -436,4 +436,110 @@ NumericVector interactionCpp_st(NumericMatrix data, NumericVector paramg) {
   }
   return exp(-alpha4 * grslt);
 
+}
+
+
+//' calculates temporal likelihood
+//'
+//' @param par a vector of parameters (alpha_1, beta_1, gamma_1)
+//' @param evalt a t value
+//' @param obst a vector of t
+//'
+//' @returns full temporal likelihood evaluation
+//' @export
+// [[Rcpp::export]]
+double temporal_sc_cpp(NumericVector par, double evalt, NumericVector obst) {
+  double alpha1 = par[0];
+  double beta1 =  par[1];
+  double gamma1 = par[2];
+  int Nrow = obst.size();
+  NumericVector oneDist = rdistC(evalt, obst);
+  NumericVector ones(Nrow, 1.0);
+  double N_t = CondSumCpp(obst, evalt, ones);
+  double result = exp(alpha1 + beta1 * evalt - gamma1 * N_t);
+  return(result);
+}
+
+
+
+//' Simulate the temporal component of the self-correcting model
+//'
+//' @param Tmin minimum time value
+//' @param Tmax maximum time value
+//' @param params a vector of parameters (alpha_1, beta_1, gamma_1)
+//'
+//' @return a vector of thinned and temporal samples
+//' @export
+// [[Rcpp::export]]
+NumericVector sim_temporal_sc_cpp(double Tmin = 0, double Tmax = 1, NumericVector params = NumericVector::create(0, 0, 0)) {
+  double alpha1 = params[0];
+  double beta1  = params[1];
+
+  double Lmax = exp(alpha1 + beta1 * Tmax);
+  double N_max = Lmax * Tmax;
+
+  // Generate a sample size from a Poisson distribution
+  int sample_size = R::rpois(N_max);
+
+  // Generate uniformly distributed samples
+  NumericVector sample = Rcpp::runif(sample_size, Tmin, Tmax);
+
+  // Sort the sample in place
+  std::sort(sample.begin(), sample.end());
+
+  // Initialize history (hist) as an empty std::vector
+  std::vector<double> hist;
+  hist.push_back(0.0);  // Add an initial value
+
+  // Generate a uniformly distributed vector U for acceptance-rejection
+  NumericVector U = Rcpp::runif(sample_size, 0, 1);
+
+  // Create output vector t_sim and lambda_star
+  NumericVector t_sim(sample_size);
+  NumericVector lambda_star(sample_size);
+
+  // Main loop
+  for (int i = 0; i < sample_size; ++i) {
+    lambda_star[i] = temporal_sc_cpp(params, sample[i], NumericVector(wrap(hist)));
+
+    // Acceptance-Rejection condition
+    if (U[i] < (lambda_star[i] / Lmax)) {
+      t_sim[i] = sample[i];
+      hist.push_back(sample[i]);  // Update history
+    } else {
+      t_sim[i] = NA_REAL;  // Mark rejected samples as NA
+    }
+  }
+
+  return t_sim;  // Return the final simulated times
+}
+
+
+//' Simulate the spatial component of the self-correcting model
+//'
+//' @param M_n vector of (x,y)-coordinates for largest point
+//' @param params a vector of parameters (alpha_2, beta_2)
+//' @param nsim_t number of points to simulate
+//' @param xy_bounds vector of lower and upper bounds for the domain (2 for x, 2 for y)
+//'
+//' @return a matrix of point locations in the (x,y)-plane
+//' @export
+//[[Rcpp::export]]
+NumericMatrix sim_spatial_sc_cpp(NumericVector M_n, NumericVector params, int nsim_t, NumericVector xy_bounds){
+  // NumericMatrix Loc(1,2);
+  arma::mat Loc(1,2);
+  Loc(0,0) = M_n(0);
+  Loc(0,1) = M_n(1);
+  int lengLoc = 1;
+  while(lengLoc < nsim_t){
+    arma::rowvec new_point(2);
+    new_point(0) = R::runif(xy_bounds[0], xy_bounds[1]);
+    new_point(1) = R::runif(xy_bounds[2], xy_bounds[3]);
+
+    if( R::runif(0, 1) <= interactionCpp(Rcpp::NumericMatrix(Rcpp::wrap(Loc)), Rcpp::NumericVector(Rcpp::wrap(new_point)), params) ){
+      Loc = arma::join_cols(Loc, new_point);
+      lengLoc += 1;
+    }
+  }
+  return(Rcpp::NumericMatrix(Rcpp::wrap(Loc)));
 }

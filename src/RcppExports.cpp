@@ -230,6 +230,46 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// temporal_sc_cpp
+double temporal_sc_cpp(NumericVector par, double evalt, NumericVector obst);
+RcppExport SEXP _ldmppr_temporal_sc_cpp(SEXP parSEXP, SEXP evaltSEXP, SEXP obstSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type par(parSEXP);
+    Rcpp::traits::input_parameter< double >::type evalt(evaltSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type obst(obstSEXP);
+    rcpp_result_gen = Rcpp::wrap(temporal_sc_cpp(par, evalt, obst));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sim_temporal_sc_cpp
+NumericVector sim_temporal_sc_cpp(double Tmin, double Tmax, NumericVector params);
+RcppExport SEXP _ldmppr_sim_temporal_sc_cpp(SEXP TminSEXP, SEXP TmaxSEXP, SEXP paramsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type Tmin(TminSEXP);
+    Rcpp::traits::input_parameter< double >::type Tmax(TmaxSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type params(paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(sim_temporal_sc_cpp(Tmin, Tmax, params));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sim_spatial_sc_cpp
+NumericMatrix sim_spatial_sc_cpp(NumericVector M_n, NumericVector params, int nsim_t, NumericVector xy_bounds);
+RcppExport SEXP _ldmppr_sim_spatial_sc_cpp(SEXP M_nSEXP, SEXP paramsSEXP, SEXP nsim_tSEXP, SEXP xy_boundsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type M_n(M_nSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type params(paramsSEXP);
+    Rcpp::traits::input_parameter< int >::type nsim_t(nsim_tSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type xy_bounds(xy_boundsSEXP);
+    rcpp_result_gen = Rcpp::wrap(sim_spatial_sc_cpp(M_n, params, nsim_t, xy_bounds));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ldmppr_pdistCVec", (DL_FUNC) &_ldmppr_pdistCVec, 2},
@@ -248,6 +288,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ldmppr_full_sc_lhood", (DL_FUNC) &_ldmppr_full_sc_lhood, 7},
     {"_ldmppr_interactionCpp", (DL_FUNC) &_ldmppr_interactionCpp, 3},
     {"_ldmppr_interactionCpp_st", (DL_FUNC) &_ldmppr_interactionCpp_st, 2},
+    {"_ldmppr_temporal_sc_cpp", (DL_FUNC) &_ldmppr_temporal_sc_cpp, 3},
+    {"_ldmppr_sim_temporal_sc_cpp", (DL_FUNC) &_ldmppr_sim_temporal_sc_cpp, 3},
+    {"_ldmppr_sim_spatial_sc_cpp", (DL_FUNC) &_ldmppr_sim_spatial_sc_cpp, 4},
     {NULL, NULL, 0}
 };
 

@@ -101,6 +101,29 @@ sim_spatial_temporal_sc <- function(Tmin = 0, Tmax = 1, params, M_n, xy.bounds){
   return(base::list(unthinned = sim_df, thinned = sim_thin_df))
 }
 
+#' Simulate from the self-correcting model
+#'
+#' @param Tmin minimum value for T
+#' @param Tmax maximum value for T
+#' @param params vector of parameter estimates
+#' @param M_n point to condition on
+#' @param xy_bounds vector of lower and upper bounds for the domain (2 for x, 2 for y)
+#'
+#' @return a list of simulated values both thinned and unthinned
+#' @export
+#'
+sim_spatial_temporal_sc_cpp <- function(Tmin = 0, Tmax = 1, params, M_n, xy_bounds){
+  Sim_time = stats::na.omit(sim_temporal_sc_cpp(Tmin, Tmax, params[1:3]))
+  sim_loc =  sim_spatial_sc_cpp(M_n, params[4:5], length(Sim_time), xy_bounds)
+  Sim_time[1] = 0
+  txy_sim = base::cbind(Sim_time, sim_loc)
+  thin_vals = (stats::runif(base::nrow(txy_sim), 0, 1) < interactionCpp_st(txy_sim, params[6:8]))
+  txy_sim_thin = txy_sim[thin_vals,]
+  sim_df <- base::data.frame(time = txy_sim[,1], x = txy_sim[,2], y = txy_sim[,3])
+  sim_thin_df <- base::data.frame(time = txy_sim_thin[,1], x = txy_sim_thin[,2], y = txy_sim_thin[,3])
+  return(base::list(unthinned = sim_df, thinned = sim_thin_df))
+}
+
 
 
 #' Generate a marked process given locations and marks
