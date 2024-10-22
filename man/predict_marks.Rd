@@ -8,7 +8,7 @@ predict_marks(
   sim_realization,
   raster_list,
   size_model,
-  bounds,
+  xy_bounds,
   include_comp_inds = FALSE,
   correction = "none"
 )
@@ -20,7 +20,7 @@ predict_marks(
 
 \item{size_model}{a predictive model}
 
-\item{bounds}{a vector of domain bounds (2 for x, 2 for y)}
+\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y)}
 
 \item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates}
 

@@ -9,10 +9,13 @@ check_model_fit(
   Tmin = 0,
   Tmax,
   params,
-  mark_model,
-  raster_list,
   M_n,
-  n.sim = 2500,
+  raster_list,
+  mark_model,
+  xy_bounds,
+  include_comp_inds = FALSE,
+  correction = "none",
+  n_sim = 2500,
   verbose = TRUE
 )
 }
@@ -25,13 +28,19 @@ check_model_fit(
 
 \item{params}{vector of parameter estimates}
 
-\item{mark_model}{a trained mark model object}
+\item{M_n}{point to condition on}
 
 \item{raster_list}{a list of raster objects}
 
-\item{M_n}{point to condition on}
+\item{mark_model}{a trained mark model object}
 
-\item{n.sim}{number of simulated datasets to generate}
+\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y)}
+
+\item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates}
+
+\item{correction}{type of correction to apply ("none" or "toroidal")}
+
+\item{n_sim}{number of simulated datasets to generate}
 
 \item{verbose}{`TRUE` or `FALSE` indicating whether to show progress}
 }

@@ -3,7 +3,7 @@
 #' @param sim_realization a realization of simulated values
 #' @param raster_list a list of rasters
 #' @param size_model a predictive model
-#' @param bounds a vector of domain bounds (2 for x, 2 for y)
+#' @param xy_bounds a vector of domain bounds (2 for x, 2 for y)
 #' @param include_comp_inds `TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates
 #' @param correction type of correction to apply ("none" or "toroidal")
 #'
@@ -11,7 +11,7 @@
 #' @export
 #'
 predict_marks <- function(sim_realization, raster_list,
-                          size_model, bounds,
+                          size_model, xy_bounds,
                           include_comp_inds = FALSE,
                           correction = "none"){
 
@@ -32,7 +32,7 @@ predict_marks <- function(sim_realization, raster_list,
     if((correction == "none")) {
       distance.matrix <- base::as.matrix(stats::dist(s, method = "euclidean"))
     }else if(correction == "toroidal") {
-      distance.matrix <- toroidal_dist_matrix_optimized(s, bounds[2] - bounds[1], bounds[4] - bounds[3])
+      distance.matrix <- toroidal_dist_matrix_optimized(s, xy_bounds[2] - xy_bounds[1], xy_bounds[4] - xy_bounds[3])
     }
 
     for(i in 1:base::nrow(X)){
