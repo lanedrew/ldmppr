@@ -109,7 +109,7 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
                                               theo = spatstat.explore::Jest(spatstat.geom::unmark(ref_data),
                                                                            r = d[1:J_val])$theo,
                                               sim_m = J_PP[1:J_val,]),
-                                   all_finite = FALSE
+                                   allfinite = FALSE
                                    )
   r_envJ <- GET::global_envelope_test(C_ref_J, type = "rank")
 
