@@ -86,7 +86,7 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
                                                                            r = d[1:F_val])$rs,
                                               theo = spatstat.explore::Fest(spatstat.geom::unmark(ref_data),
                                                                             r = d[1:F_val])$theo,
-                                              sim_m = F_PP)
+                                              sim_m = F_PP[1:F_val,])
                                    )
   r_envF <- GET::global_envelope_test(C_ref_F, type = "rank")
 
@@ -96,7 +96,7 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
                                                                            r = d[1:G_val])$rs,
                                               theo = spatstat.explore::Gest(spatstat.geom::unmark(ref_data),
                                                                            r = d[1:G_val])$theo,
-                                              sim_m = G_PP)
+                                              sim_m = G_PP[1:G_val,])
                                    )
   r_envG <- GET::global_envelope_test(C_ref_G, type = "rank")
 
@@ -108,7 +108,7 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
                                                                            r = d[1:J_val])$rs,
                                               theo = spatstat.explore::Jest(spatstat.geom::unmark(ref_data),
                                                                            r = d[1:J_val])$theo,
-                                              sim_m = J_PP)
+                                              sim_m = J_PP[1:J_val,])
                                    )
   r_envJ <- GET::global_envelope_test(C_ref_J, type = "rank")
 

@@ -8,7 +8,7 @@ train_mark_model(
   df,
   raster_list,
   model_type = "xgboost",
-  bounds,
+  xy_bounds,
   save_model = FALSE,
   save_path,
   parallel = TRUE,
@@ -24,7 +24,7 @@ train_mark_model(
 
 \item{model_type}{the machine learning model type}
 
-\item{bounds}{a vector of domain bounds (2 for x, 2 for y)}
+\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y)}
 
 \item{save_model}{determines whether to save the generated model}
 
