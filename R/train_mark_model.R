@@ -3,7 +3,7 @@
 #' @param df a data.frame containing named vectors size, x, y, and time
 #' @param raster_list the list of raster objects
 #' @param model_type the machine learning model type
-#' @param bounds a vector of domain bounds (2 for x, 2 for y)
+#' @param xy_bounds a vector of domain bounds (2 for x, 2 for y)
 #' @param save_model determines whether to save the generated model
 #' @param save_path path for saving the generated model
 #' @param parallel `TRUE` or `FALSE` indicating whether to use parallelization in model training
@@ -15,7 +15,7 @@
 #' @export
 #'
 train_mark_model <- function(df, raster_list,
-                             model_type = "xgboost", bounds,
+                             model_type = "xgboost", xy_bounds,
                              save_model = FALSE, save_path,
                              parallel = TRUE,
                              include_comp_inds = FALSE,
@@ -27,7 +27,7 @@ train_mark_model <- function(df, raster_list,
     doParallel::registerDoParallel()
   }
 
-  s <- base::as.matrix(base::cbind(df$x - bounds[1], df$y - bounds[3]))
+  s <- base::as.matrix(base::cbind(df$x - xy_bounds[1], df$y - xy_bounds[3]))
   raster_trans <- scale_rasters(raster_list)
 
   X <- extract_covars(x = s, raster_list = raster_trans)
@@ -48,7 +48,7 @@ train_mark_model <- function(df, raster_list,
     if((correction == "none") | (correction == "truncation")) {
       distance.matrix <- base::as.matrix(stats::dist(s, method = "euclidean"))
     }else if(correction == "toroidal") {
-      distance.matrix <- toroidal_dist_matrix_optimized(s, bounds[2] - bounds[1], bounds[4] - bounds[3])
+      distance.matrix <- toroidal_dist_matrix_optimized(s, xy_bounds[2] - xy_bounds[1], xy_bounds[4] - xy_bounds[3])
     }
 
 
@@ -76,9 +76,9 @@ train_mark_model <- function(df, raster_list,
 
   if(correction == "truncation"){
     model_data <- model_data[(model_data$x > 15 &
-                              model_data$x < (bounds[2] - bounds[1]) - 15 &
+                              model_data$x < (xy_bounds[2] - xy_bounds[1]) - 15 &
                               model_data$y > 15 &
-                              model_data$y < (bounds[4] - bounds[3]) - 15),]
+                              model_data$y < (xy_bounds[4] - xy_bounds[3]) - 15),]
   }
 
   if(verbose) {
