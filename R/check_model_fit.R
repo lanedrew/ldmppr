@@ -149,9 +149,9 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
   Comb_ref <- GET::create_curve_set(base::list(r = rComb,
                                                obs = Comb_data,
                                                sim_m = base::rbind(sqrt(K_PP / pi) - d,
-                                                                   F_PP,
-                                                                   G_PP,
-                                                                   J_PP / J_scale)
+                                                                   F_PP[1:F_val,],
+                                                                   G_PP[1:G_val,],
+                                                                   J_PP[1:J_val,] / J_scale)
                                                )
                                    )
   r_envComb <-  GET::global_envelope_test(Comb_ref, type = "rank")
