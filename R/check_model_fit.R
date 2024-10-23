@@ -105,7 +105,8 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
 
   # print(paste0("J_val:", J_val))
   # print(paste0("r_J:", d[1:J_val]))
-  # print(paste0("max J_PP:", base::max(J_PP[1:J_val,])))
+  print(paste0("J obs:", spatstat.explore::Jest(spatstat.geom::unmark(ref_data),
+                                                   r = d[1:J_val])$rs - 1))
   if (any(is.infinite(J_PP[1:J_val,]) | is.na(J_PP[1:J_val,]))) {
     warning("J_PP contains Inf or NA values.")
   }
