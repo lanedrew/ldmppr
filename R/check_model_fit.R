@@ -28,6 +28,8 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
   d <- K_ref$r
   d_length <- base::length(d)
 
+  print(paste0("r:", d))
+
   K_PP <- base::matrix(0, nrow = d_length, ncol = n_sim)
   F_PP <- base::matrix(0, nrow = d_length, ncol = n_sim)
   G_PP <- base::matrix(0, nrow = d_length, ncol = n_sim)
@@ -100,6 +102,10 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
 
   J_val <- base::min(c(base::min(base::apply(F_PP, 2, function(x) base::sum(x < 1))),
                        base::min(base::apply(G_PP, 2, function(x) base::sum(x < 1)))))
+
+  print(paste0("J_val:", J_val))
+  print(paste0("r_J:", d[1:J_val]))
+
   C_ref_J <- GET::create_curve_set(base::list(r = d[1:J_val],
                                               obs = spatstat.explore::Jest(spatstat.geom::unmark(ref_data),
                                                                            r = d[1:J_val])$rs - 1,
