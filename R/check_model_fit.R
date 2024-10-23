@@ -103,10 +103,12 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
   J_val <- base::min(c(base::min(base::apply(F_PP, 2, function(x) base::sum(x < 1))),
                        base::min(base::apply(G_PP, 2, function(x) base::sum(x < 1)))))
 
-  print(paste0("J_val:", J_val))
-  print(paste0("r_J:", d[1:J_val]))
-  print(paste0("max J_PP:", base::max(J_PP[1:J_val,])))
-
+  # print(paste0("J_val:", J_val))
+  # print(paste0("r_J:", d[1:J_val]))
+  # print(paste0("max J_PP:", base::max(J_PP[1:J_val,])))
+  if (any(is.infinite(J_PP[1:J_val,]) | is.na(J_PP[1:J_val,]))) {
+    warning("J_PP contains Inf or NA values.")
+  }
   C_ref_J <- GET::create_curve_set(base::list(r = d[1:J_val],
                                               obs = spatstat.explore::Jest(spatstat.geom::unmark(ref_data),
                                                                            r = d[1:J_val])$rs - 1,
