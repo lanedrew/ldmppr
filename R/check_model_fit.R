@@ -59,7 +59,6 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
 
   }
 
-  J_scale <- base::max(base::apply(J_PP, 1, base::max))
   sim_list <- base::list(Ksim = K_PP,
                          Fsim = F_PP,
                          Gsim = G_PP,
@@ -142,6 +141,7 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
   J_data <- spatstat.explore::Jest(ref_data,
                                    correction = "rs",
                                    r = d[1:J_val])$rs - 1
+  J_scale <- base::max(base::apply(J_PP[1:J_val,], 1, base::max))
   Comb_data <- c(sqrt(K_data / pi) - d,
                  F_data,
                  G_data,
