@@ -105,6 +105,7 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
 
   print(paste0("J_val:", J_val))
   print(paste0("r_J:", d[1:J_val]))
+  print(paste0("max J_PP:", base::max(J_PP[1:J_val,])))
 
   C_ref_J <- GET::create_curve_set(base::list(r = d[1:J_val],
                                               obs = spatstat.explore::Jest(spatstat.geom::unmark(ref_data),
