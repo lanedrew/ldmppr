@@ -101,12 +101,11 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
 
   J_val <- base::min(c(base::min(base::apply(F_PP, 2, function(x) base::sum(x < 1))),
                        base::min(base::apply(G_PP, 2, function(x) base::sum(x < 1)))))
-  # J_val <- base::min(c(F_val - 1, G_val - 1))
   C_ref_J <- GET::create_curve_set(base::list(r = d[1:J_val],
                                               obs = spatstat.explore::Jest(spatstat.geom::unmark(ref_data),
-                                                                           r = d[1:J_val])$rs,
+                                                                           r = d[1:J_val])$rs - 1,
                                               theo = spatstat.explore::Jest(spatstat.geom::unmark(ref_data),
-                                                                           r = d[1:J_val])$theo,
+                                                                           r = d[1:J_val])$theo - 1,
                                               sim_m = J_PP[1:J_val,]),
                                    allfinite = FALSE
                                    )
