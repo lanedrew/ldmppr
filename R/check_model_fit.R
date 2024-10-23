@@ -40,7 +40,7 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
   for (j in 1:n_sim){
     sim_j <- sim_spatial_temporal_sc_cpp(Tmin = 0, Tmax = 1, params, M_n, xy_bounds)[[2]]
     pred_marks_j <- predict_marks(sim_realization = sim_j,
-                                  raster_list = raster_list,
+                                  raster_list = scale_rasters(raster_list),
                                   size_model = mark_model,
                                   xy_bounds = xy_bounds,
                                   include_comp_inds = include_comp_inds,
@@ -98,17 +98,17 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
                                    )
   r_envG <- GET::global_envelope_test(C_ref_G, type = "rank")
 
-  # J_val <- base::min(c(base::min(base::apply(F_PP, 2, function(x) base::sum(x < 1))),
-  #                      base::min(base::apply(G_PP, 2, function(x) base::sum(x < 1)))))
-  # C_ref_J <- GET::create_curve_set(base::list(r = d[1:J_val],
-  #                                             obs = spatstat.explore::Jest(spatstat.geom::unmark(ref_data),
-  #                                                                          r = d[1:J_val])$rs - 1,
-  #                                             theo = spatstat.explore::Jest(spatstat.geom::unmark(ref_data),
-  #                                                                          r = d[1:J_val])$theo - 1,
-  #                                             sim_m = J_PP[1:J_val,]),
-  #                                  allfinite = FALSE
-  #                                  )
-  # r_envJ <- GET::global_envelope_test(C_ref_J, type = "rank")
+  J_val <- base::min(c(base::min(base::apply(F_PP, 2, function(x) base::sum(x < 1))),
+                       base::min(base::apply(G_PP, 2, function(x) base::sum(x < 1)))))
+  C_ref_J <- GET::create_curve_set(base::list(r = d[1:J_val],
+                                              obs = spatstat.explore::Jest(spatstat.geom::unmark(ref_data),
+                                                                           r = d[1:J_val])$rs - 1,
+                                              theo = spatstat.explore::Jest(spatstat.geom::unmark(ref_data),
+                                                                           r = d[1:J_val])$theo - 1,
+                                              sim_m = J_PP[1:J_val,]),
+                                   allfinite = FALSE
+                                   )
+  r_envJ <- GET::global_envelope_test(C_ref_J, type = "rank")
 
   C_ref_E <- GET::create_curve_set(base::list(r = d,
                                obs = spatstat.explore::Emark(ref_data, correction = "isotropic", r = d)$iso,
