@@ -101,12 +101,8 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
   J_val <- base::min(c(base::min(base::apply(F_PP, 2, function(x) base::sum(x < 1))),
                        base::min(base::apply(G_PP, 2, function(x) base::sum(x < 1))),
                        base::sum(!base::is.na(spatstat.explore::Jest(spatstat.geom::unmark(ref_data),
-                                                                     r = d[1:J_val])$rs - 1))))
+                                                                     r = d[1:J_val])$rs))))
 
-  # print(paste0("J_val:", J_val))
-  # print(paste0("r_J:", d[1:J_val]))
-  # print(paste0("J obs:", spatstat.explore::Jest(spatstat.geom::unmark(ref_data),
-  #                                                  r = d[1:J_val])$rs - 1))
   if (any(is.infinite(J_PP[1:J_val,]) | is.na(J_PP[1:J_val,]))) {
     warning("J_PP contains Inf or NA values.")
   }
@@ -132,57 +128,48 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
                                sim_m = V_PP))
   r_envV <- GET::global_envelope_test(C_ref_V, type = "rank")
 
-  # rComb <- c(d,
-  #            d[1:F_val] + base::max(d),
-  #            d[1:G_val] + base::max(d[1:F_val] + base::max(d)),
-  #            d[1:J_val] + base::max(d[1:G_val] + base::max(d[1:F_val] + base::max(d)))
-  # )
-  # K_data <- spatstat.explore::Kest(ref_data,
-  #                                  correction = "isotropic",
-  #                                  r = d)$iso
-  # F_data <- spatstat.explore::Fest(ref_data,
-  #                                  correction = "rs",
-  #                                  r = d[1:F_val])$rs
-  # G_data <- spatstat.explore::Gest(ref_data,
-  #                                  correction = "rs",
-  #                                  r = d[1:G_val])$rs
-  # J_data <- spatstat.explore::Jest(ref_data,
-  #                                  correction = "rs",
-  #                                  r = d[1:J_val])$rs - 1
-  # J_scale <- base::max(base::apply(J_PP[1:J_val,], 1, base::max))
-  # Comb_data <- c(sqrt(K_data / pi) - d,
-  #                F_data,
-  #                G_data,
-  #                J_data / J_scale)
-  # Comb_ref <- GET::create_curve_set(base::list(r = rComb,
-  #                                              obs = Comb_data,
-  #                                              sim_m = base::rbind(sqrt(K_PP / pi) - d,
-  #                                                                  F_PP[1:F_val,],
-  #                                                                  G_PP[1:G_val,],
-  #                                                                  J_PP[1:J_val,] / J_scale)
-  #                                              )
-  #                                  )
-  # r_envComb <-  GET::global_envelope_test(Comb_ref, type = "rank")
+  rComb <- c(d,
+             d[1:F_val] + base::max(d),
+             d[1:G_val] + base::max(d[1:F_val] + base::max(d)),
+             d[1:J_val] + base::max(d[1:G_val] + base::max(d[1:F_val] + base::max(d)))
+  )
+  K_data <- spatstat.explore::Kest(ref_data,
+                                   correction = "isotropic",
+                                   r = d)$iso
+  F_data <- spatstat.explore::Fest(ref_data,
+                                   correction = "rs",
+                                   r = d[1:F_val])$rs
+  G_data <- spatstat.explore::Gest(ref_data,
+                                   correction = "rs",
+                                   r = d[1:G_val])$rs
+  J_data <- spatstat.explore::Jest(ref_data,
+                                   correction = "rs",
+                                   r = d[1:J_val])$rs - 1
+  J_scale <- base::max(base::apply(J_PP[1:J_val,], 1, base::max))
+  Comb_data <- c(sqrt(K_data / pi) - d,
+                 F_data,
+                 G_data,
+                 J_data / J_scale)
+  Comb_ref <- GET::create_curve_set(base::list(r = rComb,
+                                               obs = Comb_data,
+                                               sim_m = base::rbind(sqrt(K_PP / pi) - d,
+                                                                   F_PP[1:F_val,],
+                                                                   G_PP[1:G_val,],
+                                                                   J_PP[1:J_val,] / J_scale)
+                                               )
+                                   )
+  r_envComb <-  GET::global_envelope_test(Comb_ref, type = "rank")
 
-
-  # return(base::list(L_env = r_envL,
-  #                   F_env = r_envF,
-  #                   G_env = r_envG,
-  #                   J_env = r_envJ,
-  #                   E_env = r_envE,
-  #                   V_env = r_envV,
-  #                   Comb_env = r_envComb,
-  #                   Sims = sim_list
-  #                   )
-  #        )
 
   return(base::list(L_env = r_envL,
                     F_env = r_envF,
                     G_env = r_envG,
+                    J_env = r_envJ,
                     E_env = r_envE,
                     V_env = r_envV,
+                    Comb_env = r_envComb,
                     Sims = sim_list
                     )
-  )
+         )
 
 }
