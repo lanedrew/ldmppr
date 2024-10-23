@@ -24,7 +24,8 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
                             n_sim = 2500,
                             verbose = TRUE){
 
-  d <- spatstat.explore::Kest(spatstat.geom::unmark(ref_data))$r
+  K_ref <- spatstat.explore::Kest(spatstat.geom::unmark(ref_data))
+  d <- K_ref$r
   d_length <- base::length(d)
 
   K_PP <- base::matrix(0, nrow = d_length, ncol = n_sim)
@@ -70,8 +71,6 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
   if(verbose) print("Simulations complete!")
 
 
-  K_ref <- spatstat.explore::Kest(spatstat.geom::unmark(ref_data))
-  d <- K_ref$r
   C_ref_L <- GET::create_curve_set(base::list(r = d,
                                               obs = sqrt(K_ref$iso / pi) - d,
                                               theo = sqrt(K_ref$theo / pi) - d ,
