@@ -30,7 +30,8 @@ Imports:
     spatstat.geom,
     spatstat.explore,
     nloptr, 
-    GET
+    GET,
+    progress
 LinkingTo: 
     Rcpp,
     RcppArmadillo

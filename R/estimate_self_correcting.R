@@ -37,7 +37,7 @@ estimate_parameters_sc <- function(xgrid, ygrid, tgrid, data, parameter_inits,
                                                     "xtol_rel" = 1e-2,
                                                     "print_level" = print_opts))
   if(verbose){
-    print("Total time to run:")
+    base::message("Total time to run:")
     print(base::proc.time() - ptm)
   }
 

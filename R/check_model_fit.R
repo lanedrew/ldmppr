@@ -36,26 +36,60 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
   V_PP <- base::matrix(0, nrow = d_length, ncol = n_sim)
   n_real <- base::numeric()
 
-  if(verbose) print("Beginning simulations!")
-  for (j in 1:n_sim){
-    sim_j <- sim_spatial_temporal_sc_cpp(Tmin = 0, Tmax = 1, params, M_n, xy_bounds)[[2]]
-    pred_marks_j <- predict_marks(sim_realization = sim_j,
-                                  raster_list = scale_rasters(raster_list),
-                                  size_model = mark_model,
-                                  xy_bounds = xy_bounds,
-                                  include_comp_inds = include_comp_inds,
-                                  correction = correction)
-    PP_xy <- generate_mpp(location_data = sim_j, marks = pred_marks_j, window = xy_bounds)
-    n_real[j] <- base::length(sim_j[,1])
-    K_PP[, j] <- spatstat.explore::Kest(spatstat.geom::unmark(PP_xy), correction = "isotropic", r = d)$iso
-    F_PP[, j] <- spatstat.explore::Fest(spatstat.geom::unmark(PP_xy), correction = "rs",        r = d)$rs
-    G_PP[, j] <- spatstat.explore::Gest(spatstat.geom::unmark(PP_xy), correction = "rs",        r = d)$rs
-    J_PP[, j] <- spatstat.explore::Jest(spatstat.geom::unmark(PP_xy), correction = "rs",        r = d)$rs - 1
-    E_PP[, j] <- spatstat.explore::Emark(PP_xy, correction = "isotropic", r = d)$iso
-    V_PP[, j] <- spatstat.explore::Vmark(PP_xy, correction = "isotropic", r = d)$iso
+  if(verbose) {
+    # print("Beginning simulations!")
+    pb <- progress::progress_bar$new(
+      format = "Simulation Progress: [:bar] :percent eta: :eta",
+      total = n_sim, clear = FALSE, width = 60)
+    pb$tick(0)
+    base::Sys.sleep(3)
 
-    if(verbose == TRUE & j %% 100 == 0){
-      print(paste0("Simulation iterations complete: ", j, "/", n_sim))
+    for (j in 1:n_sim){
+
+      sim_j <- sim_spatial_temporal_sc_cpp(Tmin = 0, Tmax = 1, params, M_n, xy_bounds)[[2]]
+      pred_marks_j <- predict_marks(sim_realization = sim_j,
+                                    raster_list = scale_rasters(raster_list),
+                                    size_model = mark_model,
+                                    xy_bounds = xy_bounds,
+                                    include_comp_inds = include_comp_inds,
+                                    correction = correction)
+      PP_xy <- generate_mpp(location_data = sim_j, marks = pred_marks_j, window = xy_bounds)
+      n_real[j] <- base::length(sim_j[,1])
+      K_PP[, j] <- spatstat.explore::Kest(spatstat.geom::unmark(PP_xy), correction = "isotropic", r = d)$iso
+      F_PP[, j] <- spatstat.explore::Fest(spatstat.geom::unmark(PP_xy), correction = "rs",        r = d)$rs
+      G_PP[, j] <- spatstat.explore::Gest(spatstat.geom::unmark(PP_xy), correction = "rs",        r = d)$rs
+      J_PP[, j] <- spatstat.explore::Jest(spatstat.geom::unmark(PP_xy), correction = "rs",        r = d)$rs - 1
+      E_PP[, j] <- spatstat.explore::Emark(PP_xy, correction = "isotropic", r = d)$iso
+      V_PP[, j] <- spatstat.explore::Vmark(PP_xy, correction = "isotropic", r = d)$iso
+
+      pb$tick()
+      base::Sys.sleep(1 / 100)
+      # if(verbose == TRUE & j %% 100 == 0){
+      #   print(paste0("Simulation iterations complete: ", j, "/", n_sim))
+      # }
+
+    }
+
+  }else {
+
+    for (j in 1:n_sim){
+
+      sim_j <- sim_spatial_temporal_sc_cpp(Tmin = 0, Tmax = 1, params, M_n, xy_bounds)[[2]]
+      pred_marks_j <- predict_marks(sim_realization = sim_j,
+                                    raster_list = scale_rasters(raster_list),
+                                    size_model = mark_model,
+                                    xy_bounds = xy_bounds,
+                                    include_comp_inds = include_comp_inds,
+                                    correction = correction)
+      PP_xy <- generate_mpp(location_data = sim_j, marks = pred_marks_j, window = xy_bounds)
+      n_real[j] <- base::length(sim_j[,1])
+      K_PP[, j] <- spatstat.explore::Kest(spatstat.geom::unmark(PP_xy), correction = "isotropic", r = d)$iso
+      F_PP[, j] <- spatstat.explore::Fest(spatstat.geom::unmark(PP_xy), correction = "rs",        r = d)$rs
+      G_PP[, j] <- spatstat.explore::Gest(spatstat.geom::unmark(PP_xy), correction = "rs",        r = d)$rs
+      J_PP[, j] <- spatstat.explore::Jest(spatstat.geom::unmark(PP_xy), correction = "rs",        r = d)$rs - 1
+      E_PP[, j] <- spatstat.explore::Emark(PP_xy, correction = "isotropic", r = d)$iso
+      V_PP[, j] <- spatstat.explore::Vmark(PP_xy, correction = "isotropic", r = d)$iso
+
     }
 
   }
@@ -68,7 +102,7 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
                          Vsim = V_PP,
                          n_per = n_real)
 
-  if(verbose) print("Simulations complete!")
+  # if(verbose) print("Simulations complete!")
 
 
   C_ref_L <- GET::create_curve_set(base::list(r = d,
