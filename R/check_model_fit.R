@@ -39,8 +39,10 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
   if(verbose) {
     # print("Beginning simulations!")
     pb <- progress::progress_bar$new(
-      format = "Simulation Progress: [:bar] :percent eta: :eta",
-      total = n_sim, clear = FALSE, width = 60)
+      format = "Data Simulation Progress: [:bar] :percent in :elapsed, ETA: :eta",
+      total = n_sim, clear = FALSE, width = 100)
+
+    base::message("Beginning Data Simulations...")
     pb$tick(0)
     base::Sys.sleep(3)
 
@@ -64,11 +66,9 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
 
       pb$tick()
       base::Sys.sleep(1 / 100)
-      # if(verbose == TRUE & j %% 100 == 0){
-      #   print(paste0("Simulation iterations complete: ", j, "/", n_sim))
-      # }
 
     }
+    base::message("Data Simulations Complete...")
 
   }else {
 
@@ -135,7 +135,7 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
   J_val <- base::min(c(base::min(base::apply(F_PP, 2, function(x) base::sum(x < 1))),
                        base::min(base::apply(G_PP, 2, function(x) base::sum(x < 1))),
                        base::sum(!base::is.na(spatstat.explore::Jest(spatstat.geom::unmark(ref_data),
-                                                                     r = d[1:J_val])$rs))))
+                                                                     r = d)$rs))))
 
   if (any(is.infinite(J_PP[1:J_val,]) | is.na(J_PP[1:J_val,]))) {
     warning("J_PP contains Inf or NA values.")
