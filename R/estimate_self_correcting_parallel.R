@@ -33,20 +33,22 @@ estimate_parameters_sc_parallel <- function(xgrid, ygrid, tgrid, data,
 
     # Set up a new plan for parallel execution
     future::plan("future::multisession", workers = num_cores)
+    if(verbose){
+      message("Number of workers: ", num_cores)
+    }
   }
 
   # Create storage for possible datasets
   generated_datasets <- list()
   for(i in 1:base::length(delta_vals)){
     # Create generated datasets for different mappings using the power-law function
-    generated_datasets[i] <- data %>%
+    generated_datasets[[i]] <- data %>%
       dplyr::arrange(dplyr::desc(size)) %>%
       dplyr::mutate(time = power_law_mapping(sizes = size, delta = delta_vals[i])) %>%
       dplyr::select(-size) %>%
       dplyr::relocate(time) %>%
       base::as.matrix()
   }
-
 
   # Define a wrapper function to call in parallel
   parallel_function <- function(data_vals) {
@@ -55,8 +57,21 @@ estimate_parameters_sc_parallel <- function(xgrid, ygrid, tgrid, data,
                            bounds = bounds, opt_algorithm = opt_algorithm, verbose = verbose)
   }
 
+  # Start timing
+  if(verbose) {
+    message("Starting parallel optimization.")
+    start_time <- base::proc.time()
+  }
+
   # Apply the parallel_function across the different datasets
-  results <- furrr::future_map(generated_datasets, parallel_function)
+  results <- furrr::future_map(generated_datasets, parallel_function, .options = furrr::furrr_options(seed = TRUE))
+
+  if (verbose) {
+    end_time <- base::proc.time()
+    duration <- end_time - start_time
+    message("Parallel optimization complete.")
+    message("Total time for parallel computation: ", round(duration[3], 2), " seconds")
+  }
 
   # Determine the optimal mapping and generate a list to return
   min_objective <- base::which.min(base::sapply(results, function(x) x$objective))
