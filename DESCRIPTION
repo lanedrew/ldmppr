@@ -31,7 +31,10 @@ Imports:
     spatstat.explore,
     nloptr, 
     GET,
-    progress
+    progress,
+    dplyr,
+    future,
+    furrr
 LinkingTo: 
     Rcpp,
     RcppArmadillo
