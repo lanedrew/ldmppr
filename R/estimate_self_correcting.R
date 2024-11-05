@@ -16,7 +16,7 @@ estimate_parameters_sc <- function(xgrid, ygrid, tgrid, data, parameter_inits,
                                    bounds, opt_algorithm = "NLOPT_GN_DIRECT_L", verbose = TRUE)  {
 
   opt_likeli <- function(parameters) {
-    likeli <- full_sc_lhood(xgrid = xgrid, ygrid = ygrid, tgrid = tgrid, tobs = data[,3],
+    likeli <- full_sc_lhood(xgrid = xgrid, ygrid = ygrid, tgrid = tgrid, tobs = data[,1],
                             data = data, params = parameters, bounds = bounds)
     return(-likeli)
   }
