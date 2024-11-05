@@ -15,14 +15,14 @@
 #' @return a list of the optimal found values and the full results
 #' @export
 #'
-estimate_parameters_parallel <- function(xgrid, ygrid, tgrid, data,
-                                         delta_vals = c(.5, 1, 1.5),
-                                         parameter_inits,
-                                         bounds,
-                                         opt_algorithm = "NLOPT_LN_NELDERMEAD",
-                                         verbose = TRUE,
-                                         num_cores = parallel::detectCores() - 1,
-                                         set_future_plan = FALSE) {
+estimate_parameters_sc_parallel <- function(xgrid, ygrid, tgrid, data,
+                                            delta_vals = c(.5, 1, 1.5),
+                                            parameter_inits,
+                                            bounds,
+                                            opt_algorithm = "NLOPT_LN_NELDERMEAD",
+                                            verbose = TRUE,
+                                            num_cores = parallel::detectCores() - 1,
+                                            set_future_plan = FALSE) {
 
 
 
@@ -43,14 +43,15 @@ estimate_parameters_parallel <- function(xgrid, ygrid, tgrid, data,
       dplyr::arrange(dplyr::desc(size)) %>%
       dplyr::mutate(time = power_law_mapping(sizes = size, delta = delta_vals[i])) %>%
       dplyr::select(-size) %>%
+      dplyr::relocate(time) %>%
       base::as.matrix()
   }
 
 
   # Define a wrapper function to call in parallel
-  parallel_function <- function(data) {
+  parallel_function <- function(data_vals) {
     estimate_parameters_sc(xgrid = xgrid, ygrid = ygrid, tgrid = tgrid,
-                           data = data, parameter_inits = parameter_inits,
+                           data = data_vals, parameter_inits = parameter_inits,
                            bounds = bounds, opt_algorithm = opt_algorithm, verbose = verbose)
   }
 

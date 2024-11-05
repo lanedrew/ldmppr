@@ -4,3 +4,4 @@
 NULL
 
 utils::globalVariables('size')
+utils::globalVariables('time')
