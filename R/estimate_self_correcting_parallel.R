@@ -19,7 +19,7 @@ estimate_parameters_sc_parallel <- function(xgrid, ygrid, tgrid, data,
                                             delta_vals = c(.5, 1, 1.5),
                                             parameter_inits,
                                             bounds,
-                                            opt_algorithm = "NLOPT_LN_NELDERMEAD",
+                                            opt_algorithm = "NLOPT_GN_DIRECT_L",
                                             verbose = TRUE,
                                             num_cores = parallel::detectCores() - 1,
                                             set_future_plan = FALSE) {
@@ -30,6 +30,11 @@ estimate_parameters_sc_parallel <- function(xgrid, ygrid, tgrid, data,
   if (set_future_plan) {
     original_plan <- future::plan()
     base::on.exit(future::plan(original_plan), add = TRUE)
+
+    # Adjust the number of cores if fewer are necessary
+    if(num_cores > length(delta_vals)){
+      num_cores <- length(delta_vals)
+    }
 
     # Set up a new plan for parallel execution
     future::plan("future::multisession", workers = num_cores)
@@ -53,8 +58,11 @@ estimate_parameters_sc_parallel <- function(xgrid, ygrid, tgrid, data,
   # Define a wrapper function to call in parallel
   parallel_function <- function(data_vals) {
     estimate_parameters_sc(xgrid = xgrid, ygrid = ygrid, tgrid = tgrid,
-                           data = data_vals, parameter_inits = parameter_inits,
-                           bounds = bounds, opt_algorithm = opt_algorithm, verbose = verbose)
+                           data = data_vals,
+                           parameter_inits = parameter_inits,
+                           bounds = bounds,
+                           opt_algorithm = opt_algorithm,
+                           verbose = FALSE)
   }
 
   # Start timing

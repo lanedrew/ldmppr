@@ -13,7 +13,7 @@
 #' @export
 #'
 estimate_parameters_sc <- function(xgrid, ygrid, tgrid, data, parameter_inits,
-                                   bounds, opt_algorithm = "NLOPT_LN_NELDERMEAD", verbose = TRUE)  {
+                                   bounds, opt_algorithm = "NLOPT_GN_DIRECT_L", verbose = TRUE)  {
 
   opt_likeli <- function(parameters) {
     likeli <- full_sc_lhood(xgrid = xgrid, ygrid = ygrid, tgrid = tgrid, tobs = data[,3],
@@ -34,7 +34,7 @@ estimate_parameters_sc <- function(xgrid, ygrid, tgrid, data, parameter_inits,
                                         ub = c(Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf),
                                         opts = list("algorithm" = opt_algorithm,
                                                     "maxeval" = 300,
-                                                    "xtol_rel" = 1e-2,
+                                                    "xtol_rel" = 1e-4,
                                                     "print_level" = print_opts))
   if(verbose){
     base::message("Total time to run:")
