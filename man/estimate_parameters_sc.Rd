@@ -11,7 +11,7 @@ estimate_parameters_sc(
   data,
   parameter_inits,
   bounds,
-  opt_algorithm = "NLOPT_LN_NELDERMEAD",
+  opt_algorithm = "NLOPT_GN_DIRECT_L",
   verbose = TRUE
 )
 }

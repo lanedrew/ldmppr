@@ -12,7 +12,7 @@ estimate_parameters_sc_parallel(
   delta_vals = c(0.5, 1, 1.5),
   parameter_inits,
   bounds,
-  opt_algorithm = "NLOPT_LN_NELDERMEAD",
+  opt_algorithm = "NLOPT_GN_DIRECT_L",
   verbose = TRUE,
   num_cores = parallel::detectCores() - 1,
   set_future_plan = FALSE
