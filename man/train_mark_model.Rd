@@ -5,41 +5,44 @@
 \title{Train an ML model for the mark distribution}
 \usage{
 train_mark_model(
-  df,
-  raster_list,
+  data,
+  raster_list = NULL,
   model_type = "xgboost",
-  xy_bounds,
+  xy_bounds = NULL,
   save_model = FALSE,
-  save_path,
+  save_path = NULL,
   parallel = TRUE,
   include_comp_inds = FALSE,
+  competition_radius = NULL,
   correction = "none",
   verbose = TRUE
 )
 }
 \arguments{
-\item{df}{a data.frame containing named vectors size, x, y, and time}
+\item{data}{a data frame containing named vectors size, x, y, and time.}
 
-\item{raster_list}{the list of raster objects}
+\item{raster_list}{the list of raster objects.}
 
-\item{model_type}{the machine learning model type}
+\item{model_type}{the machine learning model type ("xgboost" or "random_forest").}
 
-\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y)}
+\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y).}
 
-\item{save_model}{determines whether to save the generated model}
+\item{save_model}{`TRUE` or `FALSE` indicating whether to save the generated model.}
 
-\item{save_path}{path for saving the generated model}
+\item{save_path}{path for saving the generated model.}
 
-\item{parallel}{`TRUE` or `FALSE` indicating whether to use parallelization in model training}
+\item{parallel}{`TRUE` or `FALSE` indicating whether to use parallelization in model training.}
 
-\item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates}
+\item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates.}
 
-\item{correction}{type of correction to apply ("none", "toroidal", or "truncation")}
+\item{competition_radius}{distance for competition radius if \code{include_comp_inds} is `TRUE`.}
 
-\item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of model training}
+\item{correction}{type of correction to apply ("none", "toroidal", or "truncation").}
+
+\item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of model training.}
 }
 \value{
-a bundled model object
+a bundled model object.
 }
 \description{
 Train an ML model for the mark distribution
