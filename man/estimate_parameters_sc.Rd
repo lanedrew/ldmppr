@@ -12,6 +12,7 @@ estimate_parameters_sc(
   parameter_inits,
   bounds,
   opt_algorithm = "NLOPT_GN_DIRECT_L",
+  nloptr_options = list(maxeval = 400, xtol_rel = 1e-05, maxtime = NULL),
   verbose = TRUE
 )
 }
@@ -29,6 +30,8 @@ estimate_parameters_sc(
 \item{bounds}{a vector of bounds for time, x, and y}
 
 \item{opt_algorithm}{the NLopt algorithm to use for maximization}
+
+\item{nloptr_options}{a list of named options including "maxeval", "xtol_rel", and "maxtime"}
 
 \item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of optimization}
 }
