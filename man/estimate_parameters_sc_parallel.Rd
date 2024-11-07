@@ -2,7 +2,7 @@
 % Please edit documentation in R/estimate_self_correcting_parallel.R
 \name{estimate_parameters_sc_parallel}
 \alias{estimate_parameters_sc_parallel}
-\title{estimate parameters of self-correcting model using log-likelihood maximization}
+\title{Estimate parameters of the self-correcting model using log-likelihood maximization in parallel}
 \usage{
 estimate_parameters_sc_parallel(
   xgrid,
@@ -13,6 +13,7 @@ estimate_parameters_sc_parallel(
   parameter_inits,
   bounds,
   opt_algorithm = "NLOPT_GN_DIRECT_L",
+  nloptr_options = list(maxeval = 400, xtol_rel = 1e-05, maxtime = NULL),
   verbose = TRUE,
   num_cores = parallel::detectCores() - 1,
   set_future_plan = FALSE
@@ -35,6 +36,8 @@ estimate_parameters_sc_parallel(
 
 \item{opt_algorithm}{the NLopt algorithm to use for maximization}
 
+\item{nloptr_options}{a list of named options including "maxeval", "xtol_rel", and "maxtime"}
+
 \item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of optimization}
 
 \item{num_cores}{number of cores to use in parallel estimation}
@@ -45,5 +48,7 @@ estimate_parameters_sc_parallel(
 a list of the optimal found values and the full results
 }
 \description{
-estimate parameters of self-correcting model using log-likelihood maximization
+Estimate the parameters of the self-correcting model using nloptr given a set of delta values.
+Makes use of parallel computation to allow the user to identify the optimal delta value more quickly
+given available computational resources.
 }

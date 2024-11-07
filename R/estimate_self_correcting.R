@@ -1,4 +1,8 @@
-#' estimate parameters of self-correcting model using log-likelihood maximization
+#' Estimate parameters of the self-correcting model using log-likelihood maximization
+#'
+#' @description
+#' Estimate the parameters of the self-correcting model using nloptr given a formatted dataset.
+#'
 #'
 #' @param xgrid a vector of grid values for x
 #' @param ygrid a vector of gridyvalues for y

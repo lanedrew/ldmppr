@@ -2,7 +2,7 @@
 % Please edit documentation in R/estimate_self_correcting.R
 \name{estimate_parameters_sc}
 \alias{estimate_parameters_sc}
-\title{estimate parameters of self-correcting model using log-likelihood maximization}
+\title{Estimate parameters of the self-correcting model using log-likelihood maximization}
 \usage{
 estimate_parameters_sc(
   xgrid,
@@ -39,5 +39,5 @@ estimate_parameters_sc(
 an nloptr object with details of the optimization including solution
 }
 \description{
-estimate parameters of self-correcting model using log-likelihood maximization
+Estimate the parameters of the self-correcting model using nloptr given a formatted dataset.
 }

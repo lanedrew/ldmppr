@@ -1,4 +1,10 @@
-#' estimate parameters of self-correcting model using log-likelihood maximization
+#' Estimate parameters of the self-correcting model using log-likelihood maximization in parallel
+#'
+#' @description
+#' Estimate the parameters of the self-correcting model using nloptr given a set of delta values.
+#' Makes use of parallel computation to allow the user to identify the optimal delta value more quickly
+#' given available computational resources.
+#'
 #'
 #' @param xgrid a vector of grid values for x
 #' @param ygrid a vector of grid values for y
@@ -8,6 +14,7 @@
 #' @param parameter_inits a vector of parameter initialization values
 #' @param bounds a vector of bounds for time, x, and y
 #' @param opt_algorithm the NLopt algorithm to use for maximization
+#' @param nloptr_options a list of named options including "maxeval", "xtol_rel", and "maxtime"
 #' @param verbose `TRUE` or `FALSE` indicating whether to show progress of optimization
 #' @param num_cores number of cores to use in parallel estimation
 #' @param set_future_plan `TRUE` or `FALSE` indicating whether to change the parallelization plan for use in the function
@@ -20,18 +27,19 @@ estimate_parameters_sc_parallel <- function(xgrid, ygrid, tgrid, data,
                                             parameter_inits,
                                             bounds,
                                             opt_algorithm = "NLOPT_GN_DIRECT_L",
+                                            nloptr_options = list(maxeval = 400,
+                                                                  xtol_rel = 1e-5,
+                                                                  maxtime = NULL),
                                             verbose = TRUE,
                                             num_cores = parallel::detectCores() - 1,
                                             set_future_plan = FALSE) {
-
-
 
   # Save the original plan and restore it on exit
   if (set_future_plan) {
     original_plan <- future::plan()
     base::on.exit(future::plan(original_plan), add = TRUE)
 
-    # Adjust the number of cores if fewer are necessary
+    # Adjust the number of cores if fewer are necessary than the total available
     if(num_cores > length(delta_vals)){
       num_cores <- length(delta_vals)
     }
@@ -46,6 +54,7 @@ estimate_parameters_sc_parallel <- function(xgrid, ygrid, tgrid, data,
   # Create storage for possible datasets
   generated_datasets <- list()
   for(i in 1:base::length(delta_vals)){
+
     # Create generated datasets for different mappings using the power-law function
     generated_datasets[[i]] <- data %>%
       dplyr::arrange(dplyr::desc(size)) %>%
@@ -62,6 +71,7 @@ estimate_parameters_sc_parallel <- function(xgrid, ygrid, tgrid, data,
                            parameter_inits = parameter_inits,
                            bounds = bounds,
                            opt_algorithm = opt_algorithm,
+                           nloptr_options = nloptr_options,
                            verbose = FALSE)
   }
 
