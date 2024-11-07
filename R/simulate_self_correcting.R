@@ -5,7 +5,7 @@
 #' @param obst the observed time to evaluate the likelihood at
 #'
 #' @return the evaluated likelihood for the temporal component
-#' @export
+#' @keywords internal
 #'
 temporal_sc <- function(par, evalt, obst) {
   alpha1 = par[1];
@@ -26,7 +26,7 @@ temporal_sc <- function(par, evalt, obst) {
 #' @param params a vector of parameters (alpha_1, beta_1, gamma_1)
 #'
 #' @return a list of thinned and unthinned temporal samples
-#' @export
+#' @keywords internal
 #'
 sim_temporal_sc <- function(Tmin = 0, Tmax = 1, params){
   alpha1 = params[1];
@@ -62,7 +62,7 @@ sim_temporal_sc <- function(Tmin = 0, Tmax = 1, params){
 #' @param xy.bounds vector of lower and upper bounds for the domain (2 for x, 2 for y)
 #'
 #' @return a matrix of point locations in the (x,y)-plane
-#' @export
+#' @keywords internal
 #'
 sim_spatial_sc <- function(M_n, params, nsim.t, xy.bounds){
   Loc <- base::matrix(M_n, ncol=2)  # x and y corresponding to M_n(t_0)
@@ -87,9 +87,9 @@ sim_spatial_sc <- function(M_n, params, nsim.t, xy.bounds){
 #' @param xy.bounds vector of lower and upper bounds for the domain (2 for x, 2 for y)
 #'
 #' @return a list of simulated values both thinned and unthinned
-#' @export
+#' @keywords internal
 #'
-sim_spatial_temporal_sc <- function(Tmin = 0, Tmax = 1, params, M_n, xy.bounds){
+sim_spatial_temporal_sc_old <- function(Tmin = 0, Tmax = 1, params, M_n, xy.bounds){
   Sim_time = stats::na.omit(sim_temporal_sc(Tmin, Tmax, params[1:3])$unthin)
   sim_loc =  sim_spatial_sc(M_n, params[4:5], length(Sim_time), xy.bounds)
   Sim_time[1] = 0
@@ -112,7 +112,7 @@ sim_spatial_temporal_sc <- function(Tmin = 0, Tmax = 1, params, M_n, xy.bounds){
 #' @return a list of simulated values both thinned and unthinned
 #' @export
 #'
-sim_spatial_temporal_sc_cpp <- function(Tmin = 0, Tmax = 1, params, M_n, xy_bounds){
+simulate_sc <- function(Tmin = 0, Tmax = 1, params, M_n, xy_bounds){
   Sim_time = stats::na.omit(sim_temporal_sc_cpp(Tmin, Tmax, params[1:3]))
   sim_loc =  sim_spatial_sc_cpp(M_n, params[4:5], length(Sim_time), xy_bounds)
   Sim_time[1] = 0
@@ -124,24 +124,3 @@ sim_spatial_temporal_sc_cpp <- function(Tmin = 0, Tmax = 1, params, M_n, xy_boun
   return(base::list(unthinned = sim_df, thinned = sim_thin_df))
 }
 
-
-
-#' Generate a marked process given locations and marks
-#'
-#' @param location_data a set of locations
-#' @param marks a vector of marks
-#' @param window a vector of window bounds (2 for x, 2 for y)
-#'
-#' @return a ppp object with marks
-#' @export
-#'
-generate_mpp <- function(location_data, marks, window){
-
-  location_data <- base::as.data.frame(location_data)
-  marked_pp <- spatstat.geom::ppp(location_data[,c("x")],
-                                  location_data[,c("y")],
-                                  window[1:2], window[3:4],
-                                  marks = marks)
-
-  return(marked_pp)
-}
