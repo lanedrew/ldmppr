@@ -19,3 +19,4 @@ the sum
 \description{
 calculates sum of values < t
 }
+\keyword{internal}

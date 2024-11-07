@@ -1,6 +1,6 @@
 #' Ignores unused import functions
 #'
-#' @noRd
+#' @keywords internal
 ignore_unused_imports <- function() {
   xgboost::xgboost
   ranger::ranger

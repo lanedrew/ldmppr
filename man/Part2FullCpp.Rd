@@ -25,3 +25,4 @@ second part of likelihood
 \description{
 calculates part 2
 }
+\keyword{internal}

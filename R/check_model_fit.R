@@ -48,7 +48,7 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
 
     for (j in 1:n_sim){
 
-      sim_j <- sim_spatial_temporal_sc_cpp(Tmin = 0, Tmax = 1, params, M_n, xy_bounds)[[2]]
+      sim_j <- simulate_sc(Tmin = 0, Tmax = 1, params, M_n, xy_bounds)[[2]]
       pred_marks_j <- predict_marks(sim_realization = sim_j,
                                     raster_list = scale_rasters(raster_list),
                                     size_model = mark_model,
@@ -74,7 +74,7 @@ check_model_fit <- function(ref_data, Tmin = 0, Tmax, params,
 
     for (j in 1:n_sim){
 
-      sim_j <- sim_spatial_temporal_sc_cpp(Tmin = 0, Tmax = 1, params, M_n, xy_bounds)[[2]]
+      sim_j <- simulate_sc(Tmin = 0, Tmax = 1, params, M_n, xy_bounds)[[2]]
       pred_marks_j <- predict_marks(sim_realization = sim_j,
                                     raster_list = scale_rasters(raster_list),
                                     size_model = mark_model,

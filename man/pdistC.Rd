@@ -17,3 +17,4 @@ distance between a vector and each row of a matrix
 \description{
 calculates euclidean distance
 }
+\keyword{internal}

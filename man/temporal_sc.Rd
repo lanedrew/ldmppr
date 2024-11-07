@@ -19,3 +19,4 @@ the evaluated likelihood for the temporal component
 \description{
 Self-correcting temporal model likelihood function
 }
+\keyword{internal}

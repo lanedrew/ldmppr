@@ -17,3 +17,4 @@ distance between the two vectors
 \description{
 calculates euclidean distance
 }
+\keyword{internal}

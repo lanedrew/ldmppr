@@ -25,3 +25,4 @@ full likelihood for part 3
 \description{
 calculates part 1-3
 }
+\keyword{internal}

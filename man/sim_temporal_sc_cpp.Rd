@@ -19,3 +19,4 @@ a vector of thinned and temporal samples
 \description{
 Simulate the temporal component of the self-correcting model
 }
+\keyword{internal}

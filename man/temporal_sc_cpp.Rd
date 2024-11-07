@@ -19,3 +19,4 @@ full temporal likelihood evaluation
 \description{
 calculates temporal likelihood
 }
+\keyword{internal}

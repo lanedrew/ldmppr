@@ -27,3 +27,4 @@ full log-likelihood
 \description{
 calculates full self-correcting log-likelihood
 }
+\keyword{internal}

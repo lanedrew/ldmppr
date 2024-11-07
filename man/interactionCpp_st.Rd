@@ -17,3 +17,4 @@ interaction probabilities for every point
 \description{
 calculates spatio-temporal interaction
 }
+\keyword{internal}

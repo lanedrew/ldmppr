@@ -23,3 +23,4 @@ returns the product
 \description{
 calculates full product
 }
+\keyword{internal}

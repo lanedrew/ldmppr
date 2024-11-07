@@ -25,3 +25,4 @@ returns the product
 \description{
 calculates c_theta
 }
+\keyword{internal}

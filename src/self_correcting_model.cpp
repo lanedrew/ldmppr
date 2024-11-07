@@ -7,7 +7,7 @@ using namespace Rcpp;
 //' @param y a vector y
 //'
 //' @returns distance between the two vectors
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 double pdistCVec(NumericVector x, NumericVector y)
 {
@@ -25,7 +25,7 @@ double pdistCVec(NumericVector x, NumericVector y)
 //' @param params a vector of parameters
 //'
 //' @returns returns the product
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 double  prodFullCpp(double xgrid, double ygrid, double tgrid,
                     NumericMatrix data,  NumericVector params)
@@ -58,7 +58,7 @@ double  prodFullCpp(double xgrid, double ygrid, double tgrid,
 //' @param bounds a vector of bounds for time, x, and y
 //'
 //' @returns returns the product
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 double Ctheta2i(NumericVector xgrid, NumericVector ygrid, double tgrid,
                 NumericMatrix data, NumericVector params,
@@ -84,7 +84,7 @@ double Ctheta2i(NumericVector xgrid, NumericVector ygrid, double tgrid,
 //' @param y a vector of values
 //'
 //' @returns the sum
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 double CondSumCpp(NumericVector obst, double evalt, NumericVector y)
 {
@@ -106,7 +106,7 @@ double CondSumCpp(NumericVector obst, double evalt, NumericVector y)
 //' @param y a vector of values
 //'
 //' @returns the sum
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 double CondSumCppR(NumericVector obst, double evalt, LogicalVector y)
 {
@@ -128,7 +128,7 @@ double CondSumCppR(NumericVector obst, double evalt, LogicalVector y)
 //' @param obsu a matrix
 //'
 //' @returns distance between a vector and each row of a matrix
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 NumericVector pdistC(NumericVector evalu, NumericMatrix obsu)
 {
@@ -147,7 +147,7 @@ NumericVector pdistC(NumericVector evalu, NumericMatrix obsu)
 //' @param obst a vector of t
 //'
 //' @returns distance between a t and all t
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 NumericVector rdistC(double evalt, NumericVector obst)
 {
@@ -171,7 +171,7 @@ NumericVector rdistC(double evalt, NumericVector obst)
 //' @param bounds a vector of bounds for time, x, and y
 //'
 //' @returns second part of likelihood
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 double Part2FullCpp(NumericVector xgrid, NumericVector ygrid,
                     NumericVector tgrid, NumericMatrix data, NumericVector params,
@@ -219,7 +219,7 @@ double Part2FullCpp(NumericVector xgrid, NumericVector ygrid,
 //' @param paramt a vector of parameters
 //'
 //' @returns full likelihood for part 1
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 double Part1_1FullCpp(NumericMatrix data, NumericVector paramt)
 {
@@ -244,7 +244,7 @@ double Part1_1FullCpp(NumericMatrix data, NumericVector paramt)
 //' @param params a vector of parameters
 //'
 //' @returns full likelihood for part 2
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 double Part1_2FullCpp(NumericMatrix data, NumericVector params)
 {
@@ -275,7 +275,7 @@ double Part1_2FullCpp(NumericMatrix data, NumericVector params)
 //' @param bounds a vector of time, x, and y bounds
 //'
 //' @returns full likelihood for part 3
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 double Part1_3FullCpp(NumericVector xgrid, NumericVector ygrid,
                       NumericVector tgrid, NumericMatrix data, NumericVector params,
@@ -297,7 +297,7 @@ double Part1_3FullCpp(NumericVector xgrid, NumericVector ygrid,
 //' @param paramg a vector of parameters
 //'
 //' @returns full likelihood for part 4
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 double Part1_4FullCpp(NumericMatrix data, NumericVector paramg)
 {
@@ -330,7 +330,7 @@ double Part1_4FullCpp(NumericMatrix data, NumericVector paramg)
 //' @param bounds a vector of bounds for time, x, and y
 //'
 //' @returns first part of likelihood
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 double Part1FullCpp(NumericVector xgrid, NumericVector ygrid, NumericVector tgrid,
                     NumericMatrix data, NumericVector params, NumericVector bounds)
@@ -364,7 +364,7 @@ double Part1FullCpp(NumericVector xgrid, NumericVector ygrid, NumericVector tgri
 //' @param bounds a vector of bounds for time, x, and y
 //'
 //' @returns full log-likelihood
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 double full_sc_lhood(NumericVector xgrid, NumericVector ygrid, NumericVector tgrid,
                      NumericVector tobs, NumericMatrix data, NumericVector params,
@@ -387,7 +387,7 @@ double full_sc_lhood(NumericVector xgrid, NumericVector ygrid, NumericVector tgr
 //' @param par a vector of parameters
 //'
 //' @returns probability of new point
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 double interactionCpp(NumericMatrix Hist, NumericVector newp,
                       NumericVector par) {
@@ -410,7 +410,7 @@ double interactionCpp(NumericMatrix Hist, NumericVector newp,
 //' @param paramg a vector of parameters
 //'
 //' @returns interaction probabilities for every point
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 NumericVector interactionCpp_st(NumericMatrix data, NumericVector paramg) {
   double alpha4 = paramg[0];
@@ -446,7 +446,7 @@ NumericVector interactionCpp_st(NumericMatrix data, NumericVector paramg) {
 //' @param obst a vector of t
 //'
 //' @returns full temporal likelihood evaluation
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 double temporal_sc_cpp(NumericVector par, double evalt, NumericVector obst) {
   double alpha1 = par[0];
@@ -469,7 +469,7 @@ double temporal_sc_cpp(NumericVector par, double evalt, NumericVector obst) {
 //' @param params a vector of parameters (alpha_1, beta_1, gamma_1)
 //'
 //' @return a vector of thinned and temporal samples
-//' @export
+//' @keywords internal
 // [[Rcpp::export]]
 NumericVector sim_temporal_sc_cpp(double Tmin = 0, double Tmax = 1, NumericVector params = NumericVector::create(0, 0, 0)) {
   double alpha1 = params[0];
@@ -523,7 +523,7 @@ NumericVector sim_temporal_sc_cpp(double Tmin = 0, double Tmax = 1, NumericVecto
 //' @param xy_bounds vector of lower and upper bounds for the domain (2 for x, 2 for y)
 //'
 //' @return a matrix of point locations in the (x,y)-plane
-//' @export
+//' @keywords internal
 //[[Rcpp::export]]
 NumericMatrix sim_spatial_sc_cpp(NumericVector M_n, NumericVector params, int nsim_t, NumericVector xy_bounds){
   // NumericMatrix Loc(1,2);

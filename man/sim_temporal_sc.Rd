@@ -19,3 +19,4 @@ a list of thinned and unthinned temporal samples
 \description{
 Simulate the temporal component of the self-correcting model
 }
+\keyword{internal}

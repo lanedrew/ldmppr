@@ -19,3 +19,4 @@ probability of new point
 \description{
 calculates spatial interaction
 }
+\keyword{internal}

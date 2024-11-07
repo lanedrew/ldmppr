@@ -17,3 +17,4 @@ full likelihood for part 1
 \description{
 calculates part 1-1 full
 }
+\keyword{internal}

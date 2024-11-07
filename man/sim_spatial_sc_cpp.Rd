@@ -21,3 +21,4 @@ a matrix of point locations in the (x,y)-plane
 \description{
 Simulate the spatial component of the self-correcting model
 }
+\keyword{internal}

@@ -17,3 +17,4 @@ distance between a t and all t
 \description{
 calculates distance in one dim
 }
+\keyword{internal}
