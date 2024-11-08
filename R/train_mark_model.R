@@ -87,7 +87,7 @@ train_mark_model <- function(data,
         X$avg_nbr_dist[i] <- base::min(distance_matrix[i,][-i])
       }
       X$near_nbr_time[i] <- X$time[base::unique(base::which(distance_matrix[i,] == X$near_nbr_dist[i]))]
-      X$nea_nbr_time_all[i] <- mean(close_times)
+      X$near_nbr_time_all[i] <- mean(close_times)
       if(base::length(close_points) == 0){
         X$near_nbr_time_all[i] <- X$time[base::unique(base::which(distance_matrix[i,] == X$near_nbr_dist[i]))]
       }
