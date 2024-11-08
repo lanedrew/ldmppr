@@ -5,47 +5,56 @@
 \title{check fit of estimated model on the reference data}
 \usage{
 check_model_fit(
-  ref_data,
-  Tmin = 0,
-  Tmax,
-  params,
-  M_n,
-  raster_list,
-  mark_model,
-  xy_bounds,
+  reference_data,
+  t_min = 0,
+  t_max = 1,
+  sc_params = NULL,
+  anchor_point = NULL,
+  raster_list = NULL,
+  mark_model = NULL,
+  xy_bounds = NULL,
   include_comp_inds = FALSE,
+  thinning = TRUE,
   correction = "none",
+  competition_radius = 15,
   n_sim = 2500,
+  save_sims = TRUE,
   verbose = TRUE
 )
 }
 \arguments{
-\item{ref_data}{a ppp object for the reference data}
+\item{reference_data}{a ppp object for the reference dataset.}
 
-\item{Tmin}{minimum value for T (defaults to 0)}
+\item{t_min}{minimum value for time.}
 
-\item{Tmax}{maximum value for T}
+\item{t_max}{maximum value for time.}
 
-\item{params}{vector of parameter estimates}
+\item{sc_params}{vector of parameter values corresponding to (alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).}
 
-\item{M_n}{point to condition on}
+\item{anchor_point}{vector of (x,y) coordinates of point to condition on.}
 
-\item{raster_list}{a list of raster objects}
+\item{raster_list}{a list of raster objects.}
 
-\item{mark_model}{a trained mark model object}
+\item{mark_model}{a model object (typically from \code{train_mark_model}).}
 
-\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y)}
+\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y).}
 
-\item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates}
+\item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates.}
 
-\item{correction}{type of correction to apply ("none" or "toroidal")}
+\item{thinning}{`TRUE` or `FALSE` indicating whether to use the thinned or unthinned simulated values.}
 
-\item{n_sim}{number of simulated datasets to generate}
+\item{correction}{type of correction to apply ("none" or "toroidal").}
 
-\item{verbose}{`TRUE` or `FALSE` indicating whether to show progress}
+\item{competition_radius}{distance for competition radius if \code{include_comp_inds} is `TRUE`.}
+
+\item{n_sim}{number of simulated datasets to generate.}
+
+\item{save_sims}{`TRUE` or `FALSE` indicating whether to save and return the simulated datasets.}
+
+\item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of model checking.}
 }
 \value{
-a list of model fit summaries
+a list containing various model fit summaries and
 }
 \description{
 check fit of estimated model on the reference data

@@ -41,8 +41,13 @@ estimate_parameters_sc <- function(data,
 
   # Define a function to evaluate the self-correcting model full likelihood given a set of parameter values
   opt_likeli <- function(parameters) {
-    likeli <- full_sc_lhood(xgrid = xgrid, ygrid = ygrid, tgrid = tgrid, tobs = data[,1],
-                            data = data, params = parameters, bounds = bounds)
+    likeli <- full_sc_lhood(xgrid = x_grid,
+                            ygrid = y_grid,
+                            tgrid = t_grid,
+                            tobs = data[,1],
+                            data = data,
+                            params = parameters,
+                            bounds = upper_bounds)
     return(-likeli)
   }
 

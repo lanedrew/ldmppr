@@ -19,9 +19,9 @@ train_mark_model(
 )
 }
 \arguments{
-\item{data}{a data frame containing named vectors size, x, y, and time.}
+\item{data}{a data frame containing named vectors x, y, size, and time.}
 
-\item{raster_list}{the list of raster objects.}
+\item{raster_list}{a list of raster objects.}
 
 \item{model_type}{the machine learning model type ("xgboost" or "random_forest").}
 

@@ -5,13 +5,13 @@
 \title{Estimate parameters of the self-correcting model using log-likelihood maximization in parallel}
 \usage{
 estimate_parameters_sc_parallel(
-  xgrid,
-  ygrid,
-  tgrid,
   data,
-  delta_vals = c(0.5, 1, 1.5),
-  parameter_inits,
-  bounds,
+  x_grid = NULL,
+  y_grid = NULL,
+  t_grid = NULL,
+  delta_values = NULL,
+  parameter_inits = NULL,
+  upper_bounds = NULL,
   opt_algorithm = "NLOPT_GN_DIRECT_L",
   nloptr_options = list(maxeval = 400, xtol_rel = 1e-05, maxtime = NULL),
   verbose = TRUE,
@@ -20,32 +20,32 @@ estimate_parameters_sc_parallel(
 )
 }
 \arguments{
-\item{xgrid}{a vector of grid values for x}
+\item{data}{a data frame of locations and sizes labelled ("x", "y", "size").}
 
-\item{ygrid}{a vector of grid values for y}
+\item{x_grid}{a vector of grid values for x.}
 
-\item{tgrid}{a vector of grid values for t}
+\item{y_grid}{a vector of grid values for y.}
 
-\item{data}{a dataframe of locations and sizes labelled (x, y, size)}
+\item{t_grid}{a vector of grid values for t.}
 
-\item{delta_vals}{a vector of delta values}
+\item{delta_values}{a vector of delta values.}
 
-\item{parameter_inits}{a vector of parameter initialization values}
+\item{parameter_inits}{a vector of parameter initialization values.}
 
-\item{bounds}{a vector of bounds for time, x, and y}
+\item{upper_bounds}{a vector of upper bounds for time, x, and y.}
 
-\item{opt_algorithm}{the NLopt algorithm to use for maximization}
+\item{opt_algorithm}{the NLopt algorithm to use for maximization.}
 
-\item{nloptr_options}{a list of named options including "maxeval", "xtol_rel", and "maxtime"}
+\item{nloptr_options}{a list of named options for nloptr including "maxeval", "xtol_rel", and "maxtime".}
 
-\item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of optimization}
+\item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of optimization.}
 
-\item{num_cores}{number of cores to use in parallel estimation}
+\item{num_cores}{number of cores to use in parallel estimation.}
 
-\item{set_future_plan}{`TRUE` or `FALSE` indicating whether to change the parallelization plan for use in the function}
+\item{set_future_plan}{`TRUE` or `FALSE` indicating whether to change the parallelization plan for use in the function.}
 }
 \value{
-a list of the optimal found values and the full results
+a list containing the optimal obtained values and the full results.
 }
 \description{
 Estimate the parameters of the self-correcting model using nloptr given a set of delta values.

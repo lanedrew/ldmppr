@@ -17,7 +17,7 @@ simulate_sc(
 
 \item{t_max}{maximum value for time.}
 
-\item{sc_params}{vector of parameter values (alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).}
+\item{sc_params}{vector of parameter values corresponding to (alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).}
 
 \item{anchor_point}{vector of (x,y) coordinates of point to condition on.}
 

@@ -6,7 +6,7 @@
 #'
 #' @param t_min minimum value for time.
 #' @param t_max maximum value for time.
-#' @param sc_params vector of parameter values (alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).
+#' @param sc_params vector of parameter values corresponding to (alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).
 #' @param anchor_point vector of (x,y) coordinates of point to condition on.
 #' @param xy_bounds a vector of domain bounds (2 for x, 2 for y).
 #'
@@ -19,7 +19,7 @@ simulate_sc <- function(t_min = 0,
                         anchor_point = NULL,
                         xy_bounds = NULL){
 
-  # Check arguments
+  # Check the arguments
   if(t_min < 0 | t_min >= t_max | is.null(t_min)) stop("Provide a value greater than 0 and less than t_max for the t_min argument.")
   if(t_max > 1 | t_min >= t_max | is.null(t_max)) stop("Provide a value greater than t_min and less than 1 for the t_max argument.")
   if(length(sc_params) != 8 | anyNA(sc_params) | any(sc_params[2:8] < 0)) stop("Provide a valid set of parameter values for the sc_params argument.")

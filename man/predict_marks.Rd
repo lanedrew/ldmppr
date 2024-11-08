@@ -6,31 +6,31 @@
 \usage{
 predict_marks(
   sim_realization,
-  raster_list,
-  size_model,
-  xy_bounds,
+  raster_list = NULL,
+  mark_model = NULL,
+  xy_bounds = NULL,
   include_comp_inds = FALSE,
   competition_radius = 15,
   correction = "none"
 )
 }
 \arguments{
-\item{sim_realization}{a realization of simulated values}
+\item{sim_realization}{a data frame containing a thinned or unthinned realization from \code{simulate_sc}.}
 
-\item{raster_list}{a list of rasters}
+\item{raster_list}{a list of raster objects.}
 
-\item{size_model}{a predictive model}
+\item{mark_model}{a model object (typically from \code{train_mark_model}).}
 
-\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y)}
+\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y).}
 
-\item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates}
+\item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates.}
 
 \item{competition_radius}{distance for competition radius if \code{include_comp_inds} is `TRUE`.}
 
-\item{correction}{type of correction to apply ("none" or "toroidal")}
+\item{correction}{type of correction to apply ("none" or "toroidal").}
 }
 \value{
-a vector of predicted mark values
+a vector of predicted mark values.
 }
 \description{
 Predict values from the mark distribution
