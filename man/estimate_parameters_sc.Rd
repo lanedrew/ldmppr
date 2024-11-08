@@ -2,41 +2,41 @@
 % Please edit documentation in R/estimate_self_correcting.R
 \name{estimate_parameters_sc}
 \alias{estimate_parameters_sc}
-\title{Estimate parameters of the self-correcting model using log-likelihood maximization}
+\title{Estimate parameters of the self-correcting model using log-likelihood optimization}
 \usage{
 estimate_parameters_sc(
-  xgrid,
-  ygrid,
-  tgrid,
   data,
-  parameter_inits,
-  bounds,
-  opt_algorithm = "NLOPT_GN_DIRECT_L",
+  x_grid = NULL,
+  y_grid = NULL,
+  t_grid = NULL,
+  parameter_inits = NULL,
+  upper_bounds = NULL,
+  opt_algorithm = "NLOPT_LN_SBPLX",
   nloptr_options = list(maxeval = 400, xtol_rel = 1e-05, maxtime = NULL),
   verbose = TRUE
 )
 }
 \arguments{
-\item{xgrid}{a vector of grid values for x}
+\item{data}{a matrix or data frame of times and locations in the form (time, x, y).}
 
-\item{ygrid}{a vector of gridyvalues for y}
+\item{x_grid}{a vector of grid values for x.}
 
-\item{tgrid}{a vector of grid values for t}
+\item{y_grid}{a vector of grid values for y.}
 
-\item{data}{a matrix of times and locations}
+\item{t_grid}{a vector of grid values for t.}
 
-\item{parameter_inits}{a vector of parameter initialization values}
+\item{parameter_inits}{a vector of parameter initialization values.}
 
-\item{bounds}{a vector of bounds for time, x, and y}
+\item{upper_bounds}{a vector of upper bounds for time, x, and y.}
 
-\item{opt_algorithm}{the NLopt algorithm to use for maximization}
+\item{opt_algorithm}{the NLopt algorithm to use for optimization.}
 
-\item{nloptr_options}{a list of named options including "maxeval", "xtol_rel", and "maxtime"}
+\item{nloptr_options}{a list of named options for nloptr including "maxeval", "xtol_rel", and "maxtime".}
 
-\item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of optimization}
+\item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of optimization.}
 }
 \value{
-an nloptr object with details of the optimization including solution
+an nloptr object with details of the optimization including solution.
 }
 \description{
 Estimate the parameters of the self-correcting model using nloptr given a formatted dataset.
