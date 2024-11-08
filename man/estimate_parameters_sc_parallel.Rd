@@ -12,7 +12,7 @@ estimate_parameters_sc_parallel(
   delta_values = NULL,
   parameter_inits = NULL,
   upper_bounds = NULL,
-  opt_algorithm = "NLOPT_GN_DIRECT_L",
+  opt_algorithm = "NLOPT_LN_SBPLX",
   nloptr_options = list(maxeval = 400, xtol_rel = 1e-05, maxtime = NULL),
   verbose = TRUE,
   num_cores = parallel::detectCores() - 1,

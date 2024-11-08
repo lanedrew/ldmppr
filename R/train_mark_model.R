@@ -68,7 +68,6 @@ train_mark_model <- function(data,
     X$near_nbr_time <- NA
     X$near_nbr_time_all <- NA
     X$near_nbr_time_dist_ratio <- NA
-    colnames(s) <- c("x", "y")
 
     # Calculate distance matrices for selected correction method
     if((correction == "none") | (correction == "truncation")) {
@@ -88,7 +87,7 @@ train_mark_model <- function(data,
         X$avg_nbr_dist[i] <- base::min(distance_matrix[i,][-i])
       }
       X$near_nbr_time[i] <- X$time[base::unique(base::which(distance_matrix[i,] == X$near_nbr_dist[i]))]
-      X$nea_.nbr_time_all[i] <- mean(close_times)
+      X$nea_nbr_time_all[i] <- mean(close_times)
       if(base::length(close_points) == 0){
         X$near_nbr_time_all[i] <- X$time[base::unique(base::which(distance_matrix[i,] == X$near_nbr_dist[i]))]
       }
