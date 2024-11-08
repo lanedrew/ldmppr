@@ -1,4 +1,9 @@
-#' check fit of estimated model on the reference data
+#' Check the fit of estimated self-correcting model on the reference point pattern dataset
+#'
+#' @description
+#' Allows the user to perform global envelope tests for the L, F, G, J, E, and V functions from the \code{spatstat} package.
+#' These tests serve as a goodness of fit measure for the estimated model relative to the reference dataset of interest.
+#'
 #'
 #' @param reference_data a ppp object for the reference dataset.
 #' @param t_min minimum value for time.

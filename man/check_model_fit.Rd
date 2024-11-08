@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_model_fit.R
 \name{check_model_fit}
 \alias{check_model_fit}
-\title{check fit of estimated model on the reference data}
+\title{Check the fit of estimated self-correcting model on the reference point pattern dataset}
 \usage{
 check_model_fit(
   reference_data,
@@ -57,5 +57,6 @@ check_model_fit(
 a list containing various model fit summaries and
 }
 \description{
-check fit of estimated model on the reference data
+Allows the user to perform global envelope tests for the L, F, G, J, E, and V functions from the \code{spatstat} package.
+These tests serve as a goodness of fit measure for the estimated model relative to the reference dataset of interest.
 }
