@@ -29,14 +29,14 @@ estimate_parameters_sc <- function(data,
                                    verbose = TRUE)  {
 
   # Check the arguments
-  if(!is.data.frame(data) & !is.matrix(data)) stop("Provide a matrix or data frame of times and locations in the form (time, x, y) for the data argument.")
+  if(!is.data.frame(data) & !is.matrix(data)) stop("Provide a matrix or data frame of times and locations in the form (time, x, y) for the data argument.", .call = FALSE)
   if(is.data.frame(data)) {
     data <- as.matrix(data)
   }
-  if(is.null(x_grid) | is.null(y_grid) | is.null(t_grid)) stop("Provide grid values for the x_grid, y_grid, and t_grid arguments.")
-  if(length(parameter_inits) != 8 | anyNA(parameter_inits) | any(parameter_inits[2:8] < 0)) stop("Provide valid initialization values for the parameter_inits argument.")
-  if(is.null(upper_bounds) | !(length(upper_bounds) == 3)) stop("Provide upper bounds for t, x, and y in the form of (b_t, b_x, b_y) for the upper_bounds argument.")
-  if(upper_bounds[1] < max(t_grid) | upper_bounds[2] < max(x_grid) | upper_bounds[3] < max(y_grid)) stop("Grid values for t, x, or y exceed upper bounds.")
+  if(is.null(x_grid) | is.null(y_grid) | is.null(t_grid)) stop("Provide grid values for the x_grid, y_grid, and t_grid arguments.", .call = FALSE)
+  if(length(parameter_inits) != 8 | anyNA(parameter_inits) | any(parameter_inits[2:8] < 0)) stop("Provide valid initialization values for the parameter_inits argument.", .call = FALSE)
+  if(is.null(upper_bounds) | !(length(upper_bounds) == 3)) stop("Provide upper bounds for t, x, and y in the form of (b_t, b_x, b_y) for the upper_bounds argument.", .call = FALSE)
+  if(upper_bounds[1] < max(t_grid) | upper_bounds[2] < max(x_grid) | upper_bounds[3] < max(y_grid)) stop("Grid values for t, x, or y exceed upper bounds.", .call = FALSE)
 
 
   # Define a function to evaluate the self-correcting model full likelihood given a set of parameter values

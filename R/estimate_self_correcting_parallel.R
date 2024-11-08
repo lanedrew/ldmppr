@@ -28,7 +28,7 @@ estimate_parameters_sc_parallel <- function(data,
                                             delta_values = NULL,
                                             parameter_inits = NULL,
                                             upper_bounds = NULL,
-                                            opt_algorithm = "NLOPT_GN_DIRECT_L",
+                                            opt_algorithm = "NLOPT_LN_SBPLX",
                                             nloptr_options = list(maxeval = 400,
                                                                   xtol_rel = 1e-5,
                                                                   maxtime = NULL),
@@ -37,12 +37,12 @@ estimate_parameters_sc_parallel <- function(data,
                                             set_future_plan = FALSE) {
 
   # Check the arguments
-  if(!is.data.frame(data)) stop("Provide a data frame of locations and sizes in the form (x, y, size) for the data argument.")
-  if(is.null(x_grid) | is.null(y_grid) | is.null(t_grid)) stop("Provide grid values for the x_grid, y_grid, and t_grid arguments.")
-  if(is.null(delta_values) | any(delta_values < 0)) stop("Provide valid delta values for the size time mapping for the delta_values argument.")
-  if(length(parameter_inits) != 8 | anyNA(parameter_inits) | any(parameter_inits[2:8] < 0)) stop("Provide valid initialization values for the parameter_inits argument.")
-  if(is.null(upper_bounds) | !(length(upper_bounds) == 3)) stop("Provide upper bounds for t, x, and y in the form of (b_t, b_x, b_y) for the upper_bounds argument.")
-  if(upper_bounds[1] < max(t_grid) | upper_bounds[2] < max(x_grid) | upper_bounds[3] < max(y_grid)) stop("Grid values for t, x, or y exceed upper bounds.")
+  if(!is.data.frame(data)) stop("Provide a data frame of locations and sizes in the form (x, y, size) for the data argument.", .call = FALSE)
+  if(is.null(x_grid) | is.null(y_grid) | is.null(t_grid)) stop("Provide grid values for the x_grid, y_grid, and t_grid arguments.", .call = FALSE)
+  if(is.null(delta_values) | any(delta_values < 0)) stop("Provide valid delta values for the size time mapping for the delta_values argument.", .call = FALSE)
+  if(length(parameter_inits) != 8 | anyNA(parameter_inits) | any(parameter_inits[2:8] < 0)) stop("Provide valid initialization values for the parameter_inits argument.", .call = FALSE)
+  if(is.null(upper_bounds) | !(length(upper_bounds) == 3)) stop("Provide upper bounds for t, x, and y in the form of (b_t, b_x, b_y) for the upper_bounds argument.", .call = FALSE)
+  if(upper_bounds[1] < max(t_grid) | upper_bounds[2] < max(x_grid) | upper_bounds[3] < max(y_grid)) stop("Grid values for t, x, or y exceed upper bounds.", .call = FALSE)
 
 
   # Save the original plan and restore it on exit

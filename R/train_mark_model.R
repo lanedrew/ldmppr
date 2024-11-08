@@ -33,13 +33,13 @@ train_mark_model <- function(data,
                              correction = "none",
                              verbose = TRUE){
 
-  if(!is.data.frame(data)) stop("Provide a data frame of the form (x, y, size, time) for the data argument.")
-  if(is.null(raster_list) | !is.list(raster_list)) stop("Provide a list of rasters for the raster_list argument.")
-  if(is.null(xy_bounds) | !(length(xy_bounds) == 4)) stop("Provide (x, y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.")
-  if(xy_bounds[2] > xy_bounds[1] | xy_bounds[4] > xy_bounds[3]) stop("Provide (x, y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.")
-  if(save_model == TRUE & is.null(save_path)) stop("Provide a path for saving the bundled model object.")
-  if(!correction %in% c("none", "toroidal", "truncation")) stop("Provide a valid correction type for the correction argument.")
-  if(include_comp_inds == TRUE & (is.null(competition_radius) | competition_radius < 0)) stop("Provide the desired radius for competition_indices argument.")
+  if(!is.data.frame(data)) stop("Provide a data frame of the form (x, y, size, time) for the data argument.", .call = FALSE)
+  if(is.null(raster_list) | !is.list(raster_list)) stop("Provide a list of rasters for the raster_list argument.", .call = FALSE)
+  if(is.null(xy_bounds) | !(length(xy_bounds) == 4)) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
+  if(xy_bounds[2] < xy_bounds[1] | xy_bounds[4] < xy_bounds[3]) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
+  if(save_model == TRUE & is.null(save_path)) stop("Provide a path for saving the bundled model object.", .call = FALSE)
+  if(!correction %in% c("none", "toroidal", "truncation")) stop("Provide a valid correction type for the correction argument.", .call = FALSE)
+  if(include_comp_inds == TRUE & (is.null(competition_radius) | competition_radius < 0)) stop("Provide the desired radius for competition_indices argument.", .call = FALSE)
 
 
   # Initialize parallelization for model training

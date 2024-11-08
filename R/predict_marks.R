@@ -20,13 +20,13 @@ predict_marks <- function(sim_realization,
                           correction = "none"){
 
   # Check the arguments
-  if(!is.data.frame(sim_realization)) stop("Provide a thinned or unthinned simulation realization from simulate sc for the sim_realization argument.")
-  if(is.null(raster_list) | !is.list(raster_list)) stop("Provide a list of rasters for the raster_list argument.")
-  if(is.null(mark_model)) stop("Provide an unbundled mark model for the mark_model argument.")
-  if(is.null(xy_bounds) | !(length(xy_bounds) == 4)) stop("Provide (x, y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.")
-  if(xy_bounds[2] > xy_bounds[1] | xy_bounds[4] > xy_bounds[3]) stop("Provide (x, y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.")
-  if(!correction %in% c("none", "toroidal")) stop("Provide a valid correction type.")
-  if(include_comp_inds == TRUE & (is.null(competition_radius) | competition_radius < 0)) stop("Provide the desired radius for competition indices.")
+  if(!is.data.frame(sim_realization)) stop("Provide a thinned or unthinned simulation realization from simulate sc for the sim_realization argument.", .call = FALSE)
+  if(is.null(raster_list) | !is.list(raster_list)) stop("Provide a list of rasters for the raster_list argument.", .call = FALSE)
+  if(is.null(mark_model)) stop("Provide an unbundled mark model for the mark_model argument.", .call = FALSE)
+  if(is.null(xy_bounds) | !(length(xy_bounds) == 4)) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
+  if(xy_bounds[2] < xy_bounds[1] | xy_bounds[4] < xy_bounds[3]) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
+  if(!correction %in% c("none", "toroidal")) stop("Provide a valid correction type.", .call = FALSE)
+  if(include_comp_inds == TRUE & (is.null(competition_radius) | competition_radius < 0)) stop("Provide the desired radius for competition indices.", .call = FALSE)
 
   # Obtain a matrix of (x, y) locations
   s <- sim_realization[,c("x", "y")]
