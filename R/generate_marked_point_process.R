@@ -19,8 +19,8 @@ generate_mpp <- function(locations, marks = NULL, xy_bounds = NULL){
   if(xy_bounds[2] < xy_bounds[1] | xy_bounds[4] < xy_bounds[3]) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
 
   # Create a point process object with marks
-  marked_pp <- spatstat.geom::ppp(locations[,c("x")],
-                                  locations[,c("y")],
+  marked_pp <- spatstat.geom::ppp(locations$x,
+                                  locations$y,
                                   xy_bounds[1:2], xy_bounds[3:4],
                                   marks = marks)
 
