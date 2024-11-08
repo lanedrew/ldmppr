@@ -1,18 +1,27 @@
 #' Generate a marked process given locations and marks
 #'
-#' @param location_data a set of locations
-#' @param marks a vector of marks
-#' @param window a vector of window bounds (2 for x, 2 for y)
+#' @description
+#' Creates an object of class "ppp" that represents a marked point pattern in the two-dimensional plane.
 #'
-#' @return a ppp object with marks
+#' @param locations a data frame of (x,y) locations with names "x" and "y".
+#' @param marks a vector of marks.
+#' @param xy_bounds a vector of domain bounds (2 for x, 2 for y).
+#'
+#' @return a ppp object with marks.
 #' @export
 #'
-generate_mpp <- function(location_data, marks, window){
+generate_mpp <- function(locations, marks = NULL, xy_bounds = NULL){
 
-  location_data <- base::as.data.frame(location_data)
-  marked_pp <- spatstat.geom::ppp(location_data[,c("x")],
-                                  location_data[,c("y")],
-                                  window[1:2], window[3:4],
+  # Check arguments
+  if(!is.data.frame(locations)) stop("Provide a data frame with columns x and y for the locations argument.")
+  if(is.null(marks)) stop("Provide a vector of marks with length matching the number of locations provided for the marks argument.")
+  if(is.null(xy_bounds) | !(length(xy_bounds) == 4)) stop("Provide (x, y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.")
+  if(xy_bounds[2] > xy_bounds[1] | xy_bounds[4] > xy_bounds[3]) stop("Provide (x, y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.")
+
+  # Create a point process object with marks
+  marked_pp <- spatstat.geom::ppp(locations[,c("x")],
+                                  locations[,c("y")],
+                                  xy_bounds[1:2], xy_bounds[3:4],
                                   marks = marks)
 
   return(marked_pp)
