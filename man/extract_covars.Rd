@@ -4,15 +4,15 @@
 \alias{extract_covars}
 \title{Extract covariate values from a set of rasters}
 \usage{
-extract_covars(x, raster_list)
+extract_covars(locations, raster_list)
 }
 \arguments{
-\item{x}{a 2-column matrix or data.frame(x, y) or (lon, lat)}
+\item{locations}{a data frame of (x,y) locations with names "x" and "y".}
 
-\item{raster_list}{a list of raster objects}
+\item{raster_list}{a list of raster objects.}
 }
 \value{
-a matrix of covariates drawn from the provided rasters
+a matrix of covariates drawn from the provided rasters.
 }
 \description{
 Extract covariate values from a set of rasters

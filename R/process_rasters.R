@@ -1,8 +1,8 @@
 #' Scale a set of rasters
 #'
-#' @param raster_list the list of raster objects
+#' @param raster_list a list of raster objects.
 #'
-#' @return a list of scaled raster objects
+#' @return a list of scaled raster objects.
 #' @export
 #'
 #' @examples
@@ -21,10 +21,15 @@
 #' rast_list <- list(rast_a, rast_b)
 #' scale_rasters(rast_list)
 scale_rasters <- function(raster_list) {
-  scaled_rasters <- base::lapply(raster_list, terra::scale)
-  raster_extents <- base::lapply(scaled_rasters, terra::ext)
-  new_raster_extents <- base::lapply(raster_extents, function(x) c(0, x[2] - x[1], 0, x[4] - x[3]))
 
+  # Scale the rasters
+  scaled_rasters <- base::lapply(raster_list, terra::scale)
+
+  # Obtain the raster extents
+  raster_extents <- base::lapply(scaled_rasters, terra::ext)
+
+  # Replace the old extents with adjust extents
+  new_raster_extents <- base::lapply(raster_extents, function(x) c(0, x[2] - x[1], 0, x[4] - x[3]))
   for(i in 1:base::length(scaled_rasters)){
     terra::ext(scaled_rasters[[i]]) <- new_raster_extents[[i]]
   }
@@ -35,13 +40,14 @@ scale_rasters <- function(raster_list) {
 
 #' Extract covariate values from a set of rasters
 #'
-#' @param x a 2-column matrix or data.frame(x, y) or (lon, lat)
-#' @param raster_list a list of raster objects
+#' @param locations a data frame of (x,y) locations with names "x" and "y".
+#' @param raster_list a list of raster objects.
 #'
-#' @return a matrix of covariates drawn from the provided rasters
+#' @return a matrix of covariates drawn from the provided rasters.
 #' @export
 #'
-extract_covars <- function(x, raster_list) {
+extract_covars <- function(locations, raster_list) {
+  # Extract covariate values from the raster list and collate into a data frame
   base::do.call(base::cbind, base::lapply(raster_list,  function(q) terra::extract(q, y = x, method = "bilinear")))
 }
 

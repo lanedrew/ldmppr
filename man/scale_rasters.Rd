@@ -7,10 +7,10 @@
 scale_rasters(raster_list)
 }
 \arguments{
-\item{raster_list}{the list of raster objects}
+\item{raster_list}{a list of raster objects.}
 }
 \value{
-a list of scaled raster objects
+a list of scaled raster objects.
 }
 \description{
 Scale a set of rasters
