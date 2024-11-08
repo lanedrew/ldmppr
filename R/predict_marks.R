@@ -35,7 +35,7 @@ predict_marks <- function(sim_realization,
   raster_trans <- scale_rasters(raster_list)
 
   # Obtain the location specific covariate values from the scaled rasters
-  X <- extract_covars(x = s, raster_list = raster_trans)
+  X <- extract_covars(locations = s, raster_list = raster_trans)
   X$x <- sim_realization$x
   X$y <- sim_realization$y
   X$time <- sim_realization$time

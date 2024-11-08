@@ -54,7 +54,7 @@ train_mark_model <- function(data,
   raster_trans <- scale_rasters(raster_list)
 
   # Obtain the location specific covariate values from the scaled rasters
-  X <- extract_covars(x = s, raster_list = raster_trans)
+  X <- extract_covars(locations = s, raster_list = raster_trans)
   X$x <- s[,1]
   X$y <- s[,2]
   X$time <- data$time
