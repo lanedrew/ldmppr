@@ -4,18 +4,18 @@
 \alias{generate_mpp}
 \title{Generate a marked process given locations and marks}
 \usage{
-generate_mpp(location_data, marks, window)
+generate_mpp(locations, marks = NULL, xy_bounds = NULL)
 }
 \arguments{
-\item{location_data}{a set of locations}
+\item{locations}{a data frame of (x,y) locations with names "x" and "y".}
 
-\item{marks}{a vector of marks}
+\item{marks}{a vector of marks.}
 
-\item{window}{a vector of window bounds (2 for x, 2 for y)}
+\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y).}
 }
 \value{
-a ppp object with marks
+a ppp object with marks.
 }
 \description{
-Generate a marked process given locations and marks
+Creates an object of class "ppp" that represents a marked point pattern in the two-dimensional plane.
 }

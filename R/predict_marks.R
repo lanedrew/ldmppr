@@ -5,14 +5,18 @@
 #' @param size_model a predictive model
 #' @param xy_bounds a vector of domain bounds (2 for x, 2 for y)
 #' @param include_comp_inds `TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates
+#' @param competition_radius distance for competition radius if \code{include_comp_inds} is `TRUE`.
 #' @param correction type of correction to apply ("none" or "toroidal")
 #'
 #' @return a vector of predicted mark values
 #' @export
 #'
-predict_marks <- function(sim_realization, raster_list,
-                          size_model, xy_bounds,
+predict_marks <- function(sim_realization,
+                          raster_list,
+                          size_model,
+                          xy_bounds,
                           include_comp_inds = FALSE,
+                          competition_radius = 15,
                           correction = "none"){
 
   s <- sim_realization[,c("x", "y")]

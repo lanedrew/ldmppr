@@ -10,6 +10,7 @@ predict_marks(
   size_model,
   xy_bounds,
   include_comp_inds = FALSE,
+  competition_radius = 15,
   correction = "none"
 )
 }
@@ -23,6 +24,8 @@ predict_marks(
 \item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y)}
 
 \item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates}
+
+\item{competition_radius}{distance for competition radius if \code{include_comp_inds} is `TRUE`.}
 
 \item{correction}{type of correction to apply ("none" or "toroidal")}
 }

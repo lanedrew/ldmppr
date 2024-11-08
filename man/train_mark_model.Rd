@@ -2,7 +2,7 @@
 % Please edit documentation in R/train_mark_model.R
 \name{train_mark_model}
 \alias{train_mark_model}
-\title{Train an ML model for the mark distribution}
+\title{Train a flexible model for the mark distribution}
 \usage{
 train_mark_model(
   data,
@@ -13,7 +13,7 @@ train_mark_model(
   save_path = NULL,
   parallel = TRUE,
   include_comp_inds = FALSE,
-  competition_radius = NULL,
+  competition_radius = 15,
   correction = "none",
   verbose = TRUE
 )
@@ -45,5 +45,7 @@ train_mark_model(
 a bundled model object.
 }
 \description{
-Train an ML model for the mark distribution
+Trains a predictive model for the mark distribution of a spatio-temporal process.
+Allows the user to incorporate location specific information and competition indices as
+covariates in the mark model.
 }

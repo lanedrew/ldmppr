@@ -4,22 +4,29 @@
 \alias{simulate_sc}
 \title{Simulate from the self-correcting model}
 \usage{
-simulate_sc(Tmin = 0, Tmax = 1, params, M_n, xy_bounds)
+simulate_sc(
+  t_min = 0,
+  t_max = 1,
+  sc_params = NULL,
+  anchor_point = NULL,
+  xy_bounds = NULL
+)
 }
 \arguments{
-\item{Tmin}{minimum value for T}
+\item{t_min}{minimum value for time.}
 
-\item{Tmax}{maximum value for T}
+\item{t_max}{maximum value for time.}
 
-\item{params}{vector of parameter estimates}
+\item{sc_params}{vector of parameter values (alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).}
 
-\item{M_n}{point to condition on}
+\item{anchor_point}{vector of (x,y) coordinates of point to condition on.}
 
-\item{xy_bounds}{vector of lower and upper bounds for the domain (2 for x, 2 for y)}
+\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y).}
 }
 \value{
-a list of simulated values both thinned and unthinned
+a list containing the thinned and unthinned simulation realizations.
 }
 \description{
-Simulate from the self-correcting model
+Allows the user to simulate a realization from the self-correcting model
+given a set of parameters and a point to condition on.
 }
