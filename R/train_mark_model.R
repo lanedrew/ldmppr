@@ -16,6 +16,7 @@
 #' @param include_comp_inds `TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates.
 #' @param competition_radius distance for competition radius if \code{include_comp_inds} is `TRUE`.
 #' @param correction type of correction to apply ("none", "toroidal", or "truncation").
+#' @param selection_metric metric to use for identifying the optimal model ("rmse", "mae", or "rsq").
 #' @param verbose `TRUE` or `FALSE` indicating whether to show progress of model training.
 #'
 #' @return a bundled model object.
@@ -31,6 +32,7 @@ train_mark_model <- function(data,
                              include_comp_inds = FALSE,
                              competition_radius = 15,
                              correction = "none",
+                             selection_metric = "rmse",
                              verbose = TRUE){
 
   if(!is.data.frame(data)) stop("Provide a data frame of the form (x, y, size, time) for the data argument.", .call = FALSE)
@@ -40,6 +42,7 @@ train_mark_model <- function(data,
   if(save_model == TRUE & is.null(save_path)) stop("Provide a path for saving the bundled model object.", .call = FALSE)
   if(!correction %in% c("none", "toroidal", "truncation")) stop("Provide a valid correction type for the correction argument.", .call = FALSE)
   if(include_comp_inds == TRUE & (is.null(competition_radius) | competition_radius < 0)) stop("Provide the desired radius for competition_indices argument.", .call = FALSE)
+  if(!selection_metric %in% c("rmse", "mae", "rsq")) stop("Provide a valid correction type for the correction argument.", .call = FALSE)
 
 
   # Initialize parallelization for model training
@@ -141,7 +144,7 @@ train_mark_model <- function(data,
     xgboost_model <-
       parsnip::boost_tree(
         mode = "regression",
-        trees = 1000,
+        trees = hardhat::tune(),
         min_n = hardhat::tune(),
         tree_depth = hardhat::tune(),
         learn_rate = hardhat::tune(),
@@ -152,6 +155,7 @@ train_mark_model <- function(data,
     # Specify the XGBoost hyperparameters for tuning
     xgboost_params <-
       dials::parameters(
+        dials::trees(),
         dials::min_n(),
         dials::tree_depth(),
         dials::learn_rate(),
@@ -182,7 +186,7 @@ train_mark_model <- function(data,
 
     # Obtain the best model by "mae"
     xgboost_best_params <- xgboost_tuned %>%
-      tune::select_best(metric = "mae")
+      tune::select_best(metric = selection_metric)
 
     # Obtain the finalized model
     xgboost_model_final <- xgboost_model %>%
@@ -239,7 +243,7 @@ train_mark_model <- function(data,
 
     # Obtain the best model by "mae"
     rf_best_params <- rf_tuned %>%
-      tune::select_best(metric = "mae")
+      tune::select_best(metric = selection_metric)
 
     # Obtain the finalized model
     rf_model_final <- rf_model %>%

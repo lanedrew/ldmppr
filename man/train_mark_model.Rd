@@ -15,6 +15,7 @@ train_mark_model(
   include_comp_inds = FALSE,
   competition_radius = 15,
   correction = "none",
+  selection_metric = "rmse",
   verbose = TRUE
 )
 }
@@ -38,6 +39,8 @@ train_mark_model(
 \item{competition_radius}{distance for competition radius if \code{include_comp_inds} is `TRUE`.}
 
 \item{correction}{type of correction to apply ("none", "toroidal", or "truncation").}
+
+\item{selection_metric}{metric to use for identifying the optimal model ("rmse", "mae", or "rsq").}
 
 \item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of model training.}
 }
