@@ -1,10 +1,10 @@
 #' Optimized function to compute toroidal distance matrix over a rectangular domain
 #'
-#' @param location_matrix a 2 column matrix of (x, y) coordinates
-#' @param x_bound the upper bound for the x dimension
-#' @param y_bound the upper bound for the y dimension
+#' @param location_matrix a 2 column matrix of (x,y) coordinates.
+#' @param x_bound the upper bound for the x dimension.
+#' @param y_bound the upper bound for the y dimension.
 #'
-#' @return a matrix of toroidal distances
+#' @return a matrix of toroidal distances.
 #' @export
 #'
 toroidal_dist_matrix_optimized <- function(location_matrix, x_bound, y_bound) {

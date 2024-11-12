@@ -7,14 +7,14 @@
 toroidal_dist_matrix_optimized(location_matrix, x_bound, y_bound)
 }
 \arguments{
-\item{location_matrix}{a 2 column matrix of (x, y) coordinates}
+\item{location_matrix}{a 2 column matrix of (x,y) coordinates.}
 
-\item{x_bound}{the upper bound for the x dimension}
+\item{x_bound}{the upper bound for the x dimension.}
 
-\item{y_bound}{the upper bound for the y dimension}
+\item{y_bound}{the upper bound for the y dimension.}
 }
 \value{
-a matrix of toroidal distances
+a matrix of toroidal distances.
 }
 \description{
 Optimized function to compute toroidal distance matrix over a rectangular domain
