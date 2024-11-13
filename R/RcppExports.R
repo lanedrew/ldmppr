@@ -8,11 +8,11 @@
 #'
 #' @returns distance between the two vectors
 #' @keywords internal
-pdistCVec <- function(x, y) {
-    .Call('_ldmppr_pdistCVec', PACKAGE = 'ldmppr', x, y)
+vec_dist <- function(x, y) {
+    .Call('_ldmppr_vec_dist', PACKAGE = 'ldmppr', x, y)
 }
 
-#' calculates full product
+#' calculates full product for one grid point
 #'
 #' @param xgrid a vector of grid values for x
 #' @param ygrid a vector of grid values for y
@@ -22,8 +22,8 @@ pdistCVec <- function(x, y) {
 #'
 #' @returns returns the product
 #' @keywords internal
-prodFullCpp <- function(xgrid, ygrid, tgrid, data, params) {
-    .Call('_ldmppr_prodFullCpp', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params)
+full_product <- function(xgrid, ygrid, tgrid, data, params) {
+    .Call('_ldmppr_full_product', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params)
 }
 
 #' calculates c_theta
@@ -37,80 +37,65 @@ prodFullCpp <- function(xgrid, ygrid, tgrid, data, params) {
 #'
 #' @returns returns the product
 #' @keywords internal
-Ctheta2i <- function(xgrid, ygrid, tgrid, data, params, bounds) {
-    .Call('_ldmppr_Ctheta2i', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params, bounds)
+C_theta2_i <- function(xgrid, ygrid, tgrid, data, params, bounds) {
+    .Call('_ldmppr_C_theta2_i', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params, bounds)
 }
 
 #' calculates sum of values < t
 #'
-#' @param obst a vector of observed t
-#' @param evalt a t value
+#' @param obs_t a vector of observed t
+#' @param eval_t a t value
 #' @param y a vector of values
 #'
 #' @returns the sum
 #' @keywords internal
-CondSumCpp <- function(obst, evalt, y) {
-    .Call('_ldmppr_CondSumCpp', PACKAGE = 'ldmppr', obst, evalt, y)
+conditional_sum <- function(obs_t, eval_t, y) {
+    .Call('_ldmppr_conditional_sum', PACKAGE = 'ldmppr', obs_t, eval_t, y)
 }
 
 #' calculates sum of values < t
 #'
-#' @param obst a vector of observed t
-#' @param evalt a t value
+#' @param obs_t a vector of observed t
+#' @param eval_t a t value
 #' @param y a vector of values
 #'
 #' @returns the sum
 #' @keywords internal
-CondSumCppR <- function(obst, evalt, y) {
-    .Call('_ldmppr_CondSumCppR', PACKAGE = 'ldmppr', obst, evalt, y)
+conditional_sum_logical <- function(obs_t, eval_t, y) {
+    .Call('_ldmppr_conditional_sum_logical', PACKAGE = 'ldmppr', obs_t, eval_t, y)
 }
 
-#' calculates euclidean distance
+#' calculates euclidean distance between a vector and a matrix
 #'
-#' @param evalu a vector
-#' @param obsu a matrix
+#' @param eval_u a vector
+#' @param obs_u a matrix
 #'
 #' @returns distance between a vector and each row of a matrix
 #' @keywords internal
-pdistC <- function(evalu, obsu) {
-    .Call('_ldmppr_pdistC', PACKAGE = 'ldmppr', evalu, obsu)
+vec_to_mat_dist <- function(eval_u, obs_u) {
+    .Call('_ldmppr_vec_to_mat_dist', PACKAGE = 'ldmppr', eval_u, obs_u)
 }
 
 #' calculates distance in one dim
 #'
-#' @param evalt a t value
-#' @param obst a vector of t
+#' @param eval_t a t value
+#' @param obs_t a vector of t
 #'
-#' @returns distance between a t and all t
+#' @returns distance between a single t and the vector of all t
 #' @keywords internal
-rdistC <- function(evalt, obst) {
-    .Call('_ldmppr_rdistC', PACKAGE = 'ldmppr', evalt, obst)
-}
-
-#' calculates part 2
-#'
-#' @param xgrid a vector of grid values for x
-#' @param ygrid a vector of grid values for y
-#' @param tgrid a vector of grid values for t
-#' @param data a matrix of times and locations
-#' @param params a vector of parameters
-#' @param bounds a vector of bounds for time, x, and y
-#'
-#' @returns second part of likelihood
-#' @keywords internal
-Part2FullCpp <- function(xgrid, ygrid, tgrid, data, params, bounds) {
-    .Call('_ldmppr_Part2FullCpp', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params, bounds)
+dist_one_dim <- function(eval_t, obs_t) {
+    .Call('_ldmppr_dist_one_dim', PACKAGE = 'ldmppr', eval_t, obs_t)
 }
 
 #' calculates part 1-1 full
 #'
 #' @param data a matrix of locations and times
-#' @param paramt a vector of parameters
+#' @param params a vector of parameters
 #'
 #' @returns full likelihood for part 1
 #' @keywords internal
-Part1_1FullCpp <- function(data, paramt) {
-    .Call('_ldmppr_Part1_1FullCpp', PACKAGE = 'ldmppr', data, paramt)
+part_1_1_full <- function(data, params) {
+    .Call('_ldmppr_part_1_1_full', PACKAGE = 'ldmppr', data, params)
 }
 
 #' calculates part 1-2 full
@@ -120,8 +105,8 @@ Part1_1FullCpp <- function(data, paramt) {
 #'
 #' @returns full likelihood for part 2
 #' @keywords internal
-Part1_2FullCpp <- function(data, params) {
-    .Call('_ldmppr_Part1_2FullCpp', PACKAGE = 'ldmppr', data, params)
+part_1_2_full <- function(data, params) {
+    .Call('_ldmppr_part_1_2_full', PACKAGE = 'ldmppr', data, params)
 }
 
 #' calculates part 1-3
@@ -135,22 +120,22 @@ Part1_2FullCpp <- function(data, params) {
 #'
 #' @returns full likelihood for part 3
 #' @keywords internal
-Part1_3FullCpp <- function(xgrid, ygrid, tgrid, data, params, bounds) {
-    .Call('_ldmppr_Part1_3FullCpp', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params, bounds)
+part_1_3_full <- function(xgrid, ygrid, tgrid, data, params, bounds) {
+    .Call('_ldmppr_part_1_3_full', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params, bounds)
 }
 
 #' calculates part 1-4
 #'
 #' @param data a matrix of times and locations
-#' @param paramg a vector of parameters
+#' @param params a vector of parameters
 #'
 #' @returns full likelihood for part 4
 #' @keywords internal
-Part1_4FullCpp <- function(data, paramg) {
-    .Call('_ldmppr_Part1_4FullCpp', PACKAGE = 'ldmppr', data, paramg)
+part_1_4_full <- function(data, params) {
+    .Call('_ldmppr_part_1_4_full', PACKAGE = 'ldmppr', data, params)
 }
 
-#' calculates part 1
+#' calculates part 1 of the likelihood
 #'
 #' @param xgrid a vector of grid values for x
 #' @param ygrid a vector of grid values for y
@@ -161,8 +146,23 @@ Part1_4FullCpp <- function(data, paramg) {
 #'
 #' @returns first part of likelihood
 #' @keywords internal
-Part1FullCpp <- function(xgrid, ygrid, tgrid, data, params, bounds) {
-    .Call('_ldmppr_Part1FullCpp', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params, bounds)
+part_1_full <- function(xgrid, ygrid, tgrid, data, params, bounds) {
+    .Call('_ldmppr_part_1_full', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params, bounds)
+}
+
+#' calculates part 2 of the likelihood
+#'
+#' @param xgrid a vector of grid values for x
+#' @param ygrid a vector of grid values for y
+#' @param tgrid a vector of grid values for t
+#' @param data a matrix of times and locations
+#' @param params a vector of parameters
+#' @param bounds a vector of bounds for time, x, and y
+#'
+#' @returns evaluted second part of likelihood
+#' @keywords internal
+part_2_full <- function(xgrid, ygrid, tgrid, data, params, bounds) {
+    .Call('_ldmppr_part_2_full', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, data, params, bounds)
 }
 
 #' calculates full self-correcting log-likelihood
@@ -185,35 +185,35 @@ full_sc_lhood <- function(xgrid, ygrid, tgrid, tobs, data, params, bounds) {
 #'
 #' @param Hist a matrix of points
 #' @param newp a new point vector
-#' @param par a vector of parameters
+#' @param params a vector of parameters
 #'
 #' @returns probability of new point
 #' @keywords internal
-interactionCpp <- function(Hist, newp, par) {
-    .Call('_ldmppr_interactionCpp', PACKAGE = 'ldmppr', Hist, newp, par)
+spat_interaction <- function(Hist, newp, params) {
+    .Call('_ldmppr_spat_interaction', PACKAGE = 'ldmppr', Hist, newp, params)
 }
 
 #' calculates spatio-temporal interaction
 #'
 #' @param data a matrix of times and locations
-#' @param paramg a vector of parameters
+#' @param params a vector of parameters
 #'
 #' @returns interaction probabilities for every point
 #' @keywords internal
-interactionCpp_st <- function(data, paramg) {
-    .Call('_ldmppr_interactionCpp_st', PACKAGE = 'ldmppr', data, paramg)
+interaction_st <- function(data, params) {
+    .Call('_ldmppr_interaction_st', PACKAGE = 'ldmppr', data, params)
 }
 
 #' calculates temporal likelihood
 #'
-#' @param par a vector of parameters (alpha_1, beta_1, gamma_1)
-#' @param evalt a t value
-#' @param obst a vector of t
+#' @param params a vector of parameters (alpha_1, beta_1, gamma_1)
+#' @param eval_t a t value
+#' @param obs_t a vector of t
 #'
 #' @returns full temporal likelihood evaluation
 #' @keywords internal
-temporal_sc_cpp <- function(par, evalt, obst) {
-    .Call('_ldmppr_temporal_sc_cpp', PACKAGE = 'ldmppr', par, evalt, obst)
+temporal_sc <- function(params, eval_t, obs_t) {
+    .Call('_ldmppr_temporal_sc', PACKAGE = 'ldmppr', params, eval_t, obs_t)
 }
 
 #' Simulate the temporal component of the self-correcting model
@@ -224,8 +224,8 @@ temporal_sc_cpp <- function(par, evalt, obst) {
 #'
 #' @return a vector of thinned and temporal samples
 #' @keywords internal
-sim_temporal_sc_cpp <- function(Tmin = 0, Tmax = 1, params = as.numeric( c(0, 0, 0))) {
-    .Call('_ldmppr_sim_temporal_sc_cpp', PACKAGE = 'ldmppr', Tmin, Tmax, params)
+sim_temporal_sc <- function(Tmin = 0, Tmax = 1, params = as.numeric( c(0, 0, 0))) {
+    .Call('_ldmppr_sim_temporal_sc', PACKAGE = 'ldmppr', Tmin, Tmax, params)
 }
 
 #' Simulate the spatial component of the self-correcting model
@@ -237,7 +237,7 @@ sim_temporal_sc_cpp <- function(Tmin = 0, Tmax = 1, params = as.numeric( c(0, 0,
 #'
 #' @return a matrix of point locations in the (x,y)-plane
 #' @keywords internal
-sim_spatial_sc_cpp <- function(M_n, params, nsim_t, xy_bounds) {
-    .Call('_ldmppr_sim_spatial_sc_cpp', PACKAGE = 'ldmppr', M_n, params, nsim_t, xy_bounds)
+sim_spatial_sc <- function(M_n, params, nsim_t, xy_bounds) {
+    .Call('_ldmppr_sim_spatial_sc', PACKAGE = 'ldmppr', M_n, params, nsim_t, xy_bounds)
 }
 

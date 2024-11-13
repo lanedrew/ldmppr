@@ -29,13 +29,13 @@ simulate_sc <- function(t_min = 0,
 
 
   # Simulate times and locations
-  sim_times = stats::na.omit(sim_temporal_sc_cpp(t_min, t_max, sc_params[1:3]))
-  sim_locs =  sim_spatial_sc_cpp(anchor_point, sc_params[4:5], length(sim_times), xy_bounds)
+  sim_times = stats::na.omit(sim_temporal_sc(t_min, t_max, sc_params[1:3]))
+  sim_locs =  sim_spatial_sc(anchor_point, sc_params[4:5], length(sim_times), xy_bounds)
   sim_times[1] = 0
   txy_sim = base::cbind(sim_times, sim_locs)
 
   # Perform the thinning process
-  thin_vals = (stats::runif(base::nrow(txy_sim), 0, 1) < interactionCpp_st(txy_sim, sc_params[6:8]))
+  thin_vals = (stats::runif(base::nrow(txy_sim), 0, 1) < interaction_st(txy_sim, sc_params[6:8]))
   txy_sim_thin = txy_sim[thin_vals,]
 
   # Compile the thinned and unthinned results
