@@ -13,7 +13,7 @@ estimation, model fit assessment, visualization, and simulation for
 marked point processes with dependence between the marks and locations
 and regularity in the pattern.
 
-### Workflow
+### Example Workflow
 
 ### Installation
 
@@ -30,3 +30,7 @@ You can install the stable version of `ldmppr` from CRAN:
 ``` r
 install.packages("ldmppr")
 ```
+
+For details on how to install the `terra` package that `ldmppr` depends
+on, please visit the [`terra` installation
+page](https://github.com/rspatial/terra).
