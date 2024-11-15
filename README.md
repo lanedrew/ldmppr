@@ -5,6 +5,7 @@
 
 <!-- badges: start -->
 
+[![R-CMD-check](https://github.com/lanedrew/ldmppr/actions/workflows/r.yml/badge.svg)](https://github.com/lanedrew/ldmppr/actions/workflows/r.yml)
 <!-- badges: end -->
 
 `ldmppr` is an `R` package for working with location dependent marked
