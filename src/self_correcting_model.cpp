@@ -9,7 +9,7 @@ using namespace Rcpp;
 //' @returns distance between the two vectors
 //' @keywords internal
 // [[Rcpp::export]]
-double vec_dist(NumericVector x, NumericVector y)
+double vec_dist(const NumericVector& x, const NumericVector& y)
 {
   double out = sqrt(pow(x[0] - y[0], 2) + pow(x[1] - y[1], 2));
   return(out);
@@ -27,8 +27,8 @@ double vec_dist(NumericVector x, NumericVector y)
 //' @returns returns the product
 //' @keywords internal
 // [[Rcpp::export]]
-double full_product(double xgrid, double ygrid, double tgrid,
-                    NumericMatrix data, NumericVector params)
+double full_product(const double xgrid, const double ygrid, const double tgrid,
+                    const NumericMatrix& data, const NumericVector& params)
 {
   double alpha2 = params[0];
   double beta2 = params[1];
@@ -61,9 +61,12 @@ double full_product(double xgrid, double ygrid, double tgrid,
 //' @returns returns the product
 //' @keywords internal
 // [[Rcpp::export]]
-double C_theta2_i(NumericVector xgrid, NumericVector ygrid, double tgrid,
-                 NumericMatrix data, NumericVector params,
-                 NumericVector bounds)
+double C_theta2_i(const NumericVector& xgrid,
+                  const NumericVector& ygrid,
+                  const double tgrid,
+                  const NumericMatrix& data,
+                  const NumericVector& params,
+                  const NumericVector& bounds)
 {
   int K = xgrid.size();
   int L = ygrid.size();
@@ -87,7 +90,9 @@ double C_theta2_i(NumericVector xgrid, NumericVector ygrid, double tgrid,
 //' @returns the sum
 //' @keywords internal
 // [[Rcpp::export]]
-double conditional_sum(NumericVector obs_t, double eval_t, NumericVector y)
+double conditional_sum(const NumericVector& obs_t,
+                       const double eval_t,
+                       const NumericVector& y)
 {
   double cond_sum = 0;
   int n = obs_t.size();
@@ -109,7 +114,9 @@ double conditional_sum(NumericVector obs_t, double eval_t, NumericVector y)
 //' @returns the sum
 //' @keywords internal
 // [[Rcpp::export]]
-double conditional_sum_logical(NumericVector obs_t, double eval_t, LogicalVector y)
+double conditional_sum_logical(const NumericVector& obs_t,
+                               const double eval_t,
+                               const LogicalVector& y)
 {
   double cond_sum = 0;
   int n = obs_t.size();
@@ -125,19 +132,22 @@ double conditional_sum_logical(NumericVector obs_t, double eval_t, LogicalVector
 
 //' calculates euclidean distance between a vector and a matrix
 //'
-//' @param eval_u a vector
-//' @param obs_u a matrix
+//' @param eval_u a vector of x and y coordinates.
+//' @param x_col a vector of x coordinates.
+//' @param y_col a vector of y coordinates.
 //'
 //' @returns distance between a vector and each row of a matrix
 //' @keywords internal
 // [[Rcpp::export]]
-NumericVector vec_to_mat_dist(NumericVector eval_u, NumericMatrix obs_u)
+NumericVector vec_to_mat_dist(const NumericVector& eval_u,
+                              const NumericVector& x_col,
+                              const NumericVector& y_col)
 {
-  int n = obs_u.nrow();
+  int n = x_col.size();
   NumericVector out(n);
   for(int i = 0; i < n; i++)
   {
-    out[i] = sqrt(pow(eval_u[0] - obs_u(i, 0) , 2) + pow(eval_u[1] - obs_u(i, 1), 2));
+    out[i] = sqrt(pow(eval_u[0] - x_col[i] , 2) + pow(eval_u[1] - y_col[i], 2));
   }
   return(out);
 }
@@ -150,7 +160,7 @@ NumericVector vec_to_mat_dist(NumericVector eval_u, NumericMatrix obs_u)
 //' @returns distance between a single t and the vector of all t
 //' @keywords internal
 // [[Rcpp::export]]
-NumericVector dist_one_dim(double eval_t, NumericVector obs_t)
+NumericVector dist_one_dim(const double eval_t, const NumericVector& obs_t)
 {
   int n = obs_t.size();
   NumericVector out(n);
@@ -169,7 +179,8 @@ NumericVector dist_one_dim(double eval_t, NumericVector obs_t)
 //' @returns full likelihood for part 1
 //' @keywords internal
 // [[Rcpp::export]]
-double part_1_1_full(NumericMatrix data, NumericVector params)
+double part_1_1_full(const NumericMatrix& data,
+                     const NumericVector& params)
 {
   double alpha1 = params[0];
   double beta1  = params[1];
@@ -192,7 +203,8 @@ double part_1_1_full(NumericMatrix data, NumericVector params)
 //' @returns full likelihood for part 2
 //' @keywords internal
 // [[Rcpp::export]]
-double part_1_2_full(NumericMatrix data, NumericVector params)
+double part_1_2_full(const NumericMatrix& data,
+                     const NumericVector& params)
 {
   double alpha2 = params[0];
   double beta2 = params[1];
@@ -223,9 +235,12 @@ double part_1_2_full(NumericMatrix data, NumericVector params)
 //' @returns full likelihood for part 3
 //' @keywords internal
 // [[Rcpp::export]]
-double part_1_3_full(NumericVector xgrid, NumericVector ygrid,
-                     NumericVector tgrid, NumericMatrix data, NumericVector params,
-                     NumericVector bounds)
+double part_1_3_full(const NumericVector& xgrid,
+                     const NumericVector& ygrid,
+                     const NumericVector& tgrid,
+                     const NumericMatrix& data,
+                     const NumericVector& params,
+                     const NumericVector& bounds)
 {
   double part_1_3_result = 0;
   int n = tgrid.size();
@@ -245,7 +260,8 @@ double part_1_3_full(NumericVector xgrid, NumericVector ygrid,
 //' @returns full likelihood for part 4
 //' @keywords internal
 // [[Rcpp::export]]
-double part_1_4_full(NumericMatrix data, NumericVector params)
+double part_1_4_full(const NumericMatrix& data,
+                     const NumericVector& params)
 {
   double alpha3 = params[0];
   double beta3  = params[1];
@@ -278,8 +294,12 @@ double part_1_4_full(NumericMatrix data, NumericVector params)
 //' @returns first part of likelihood
 //' @keywords internal
 // [[Rcpp::export]]
-double part_1_full(NumericVector xgrid, NumericVector ygrid, NumericVector tgrid,
-                   NumericMatrix data, NumericVector params, NumericVector bounds)
+double part_1_full(const NumericVector& xgrid,
+                   const NumericVector& ygrid,
+                   const NumericVector& tgrid,
+                   const NumericMatrix& data,
+                   const NumericVector& params,
+                   const NumericVector& bounds)
 {
   double alpha1 = params[0];
   double beta1  = params[1];
@@ -312,10 +332,12 @@ double part_1_full(NumericVector xgrid, NumericVector ygrid, NumericVector tgrid
 //' @returns evaluted second part of likelihood
 //' @keywords internal
 // [[Rcpp::export]]
-double part_2_full(NumericVector xgrid, NumericVector ygrid,
-                   NumericVector tgrid, NumericMatrix data,
-                   NumericVector params,
-                    NumericVector bounds)
+double part_2_full(const NumericVector& xgrid,
+                   const NumericVector& ygrid,
+                   const NumericVector& tgrid,
+                   const NumericMatrix& data,
+                   const NumericVector& params,
+                   const NumericVector& bounds)
 {
   double alpha1 = params[0];
   double beta1  = params[1];
@@ -337,7 +359,8 @@ double part_2_full(NumericVector xgrid, NumericVector ygrid,
     {
       for(int l = 0; l < L; ++l)
       {
-        NumericVector twoDist = vec_to_mat_dist(NumericVector::create(xgrid[k], ygrid[l]), data(_, Range(1, 2)));
+        // NumericVector twoDist = vec_to_mat_dist(NumericVector::create(xgrid[k], ygrid[l]), data(_, Range(1, 2)));
+        NumericVector twoDist = vec_to_mat_dist(NumericVector::create(xgrid[k], ygrid[l]), data(_, 1), data(_, 2));
         NumericVector oneDist = dist_one_dim(tgrid[m], data(_, 0));
         i_result += (exp(alpha1 + beta1 * tgrid[m] - gamma1 * conditional_sum(data(_, 0), tgrid[m], rep(1.0, n)))
                       * ( full_product(xgrid[k], ygrid[l], tgrid[m], data, NumericVector::create(alpha2, beta2))
@@ -363,9 +386,13 @@ double part_2_full(NumericVector xgrid, NumericVector ygrid,
 //' @returns full log-likelihood
 //' @keywords internal
 // [[Rcpp::export]]
-double full_sc_lhood(NumericVector xgrid, NumericVector ygrid, NumericVector tgrid,
-                     NumericVector tobs, NumericMatrix data, NumericVector params,
-                     NumericVector bounds)
+double full_sc_lhood(const NumericVector& xgrid,
+                     const NumericVector& ygrid,
+                     const NumericVector& tgrid,
+                     const NumericVector& tobs,
+                     const NumericMatrix& data,
+                     const NumericVector& params,
+                     const NumericVector& bounds)
 {
   double full_likeli;
 
@@ -386,8 +413,9 @@ double full_sc_lhood(NumericVector xgrid, NumericVector ygrid, NumericVector tgr
 //' @returns probability of new point
 //' @keywords internal
 // [[Rcpp::export]]
-double spat_interaction(NumericMatrix Hist, NumericVector newp,
-                        NumericVector params) {
+double spat_interaction(const NumericMatrix& Hist,
+                        const NumericVector& newp,
+                        const NumericVector& params) {
   double alpha2 = params[0];
   double beta2  = params[1];
   double result = 1;
@@ -409,7 +437,8 @@ double spat_interaction(NumericMatrix Hist, NumericVector newp,
 //' @returns interaction probabilities for every point
 //' @keywords internal
 // [[Rcpp::export]]
-NumericVector interaction_st(NumericMatrix data, NumericVector params) {
+NumericVector interaction_st(const NumericMatrix& data,
+                             const NumericVector& params) {
   double alpha4 = params[0];
   double beta4  = params[1];
   double gamma4 = params[2];
@@ -446,7 +475,9 @@ NumericVector interaction_st(NumericMatrix data, NumericVector params) {
 //' @returns full temporal likelihood evaluation
 //' @keywords internal
 // [[Rcpp::export]]
-double temporal_sc(NumericVector params, double eval_t, NumericVector obs_t) {
+double temporal_sc(const NumericVector& params,
+                   const double eval_t,
+                   const NumericVector& obs_t) {
   double alpha1 = params[0];
   double beta1 =  params[1];
   double gamma1 = params[2];
@@ -469,7 +500,9 @@ double temporal_sc(NumericVector params, double eval_t, NumericVector obs_t) {
 //' @return a vector of thinned and temporal samples
 //' @keywords internal
 // [[Rcpp::export]]
-NumericVector sim_temporal_sc(double Tmin = 0, double Tmax = 1, NumericVector params = NumericVector::create(0, 0, 0)) {
+NumericVector sim_temporal_sc(double Tmin = 0,
+                              double Tmax = 1,
+                              const NumericVector& params = NumericVector::create(0, 0, 0)) {
   double alpha1 = params[0];
   double beta1  = params[1];
 
@@ -523,8 +556,10 @@ NumericVector sim_temporal_sc(double Tmin = 0, double Tmax = 1, NumericVector pa
 //' @return a matrix of point locations in the (x,y)-plane
 //' @keywords internal
 //[[Rcpp::export]]
-NumericMatrix sim_spatial_sc(NumericVector M_n, NumericVector params, int nsim_t, NumericVector xy_bounds){
-  // NumericMatrix Loc(1,2);
+NumericMatrix sim_spatial_sc(const NumericVector& M_n,
+                             const NumericVector& params,
+                             int nsim_t,
+                             const NumericVector& xy_bounds){
   arma::mat Loc(1,2);
   Loc(0,0) = M_n(0);
   Loc(0,1) = M_n(1);

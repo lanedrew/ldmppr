@@ -67,13 +67,14 @@ conditional_sum_logical <- function(obs_t, eval_t, y) {
 
 #' calculates euclidean distance between a vector and a matrix
 #'
-#' @param eval_u a vector
-#' @param obs_u a matrix
+#' @param eval_u a vector of x and y coordinates.
+#' @param x_col a vector of x coordinates.
+#' @param y_col a vector of y coordinates.
 #'
 #' @returns distance between a vector and each row of a matrix
 #' @keywords internal
-vec_to_mat_dist <- function(eval_u, obs_u) {
-    .Call('_ldmppr_vec_to_mat_dist', PACKAGE = 'ldmppr', eval_u, obs_u)
+vec_to_mat_dist <- function(eval_u, x_col, y_col) {
+    .Call('_ldmppr_vec_to_mat_dist', PACKAGE = 'ldmppr', eval_u, x_col, y_col)
 }
 
 #' calculates distance in one dim

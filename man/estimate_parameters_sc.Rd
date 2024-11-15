@@ -41,3 +41,37 @@ an nloptr object with details of the optimization including solution.
 \description{
 Estimate the parameters of the self-correcting model using nloptr given a formatted dataset.
 }
+\examples{
+# Load the spatstat library and spruces dataset
+library(spatstat)
+data(spruces)
+
+# Create the example_data data frame
+example_data <- data.frame(x = spruces$x, y = spruces$y, size = spruces$marks)
+
+# Define the grid values
+x_grid <- seq(0, 56, out.length = 5)
+y_grid <- seq(0, 38, out.length = 5)
+t_grid <- seq(0, 1, out.length = 5)
+
+# Define the parameter initialization values
+parameter_inits <- c(5, 20, 0.025, 2, 3.5, 0.15, 2, 0.05)
+
+# Define the upper bounds
+upper_bounds <- c(1, 56, 38)
+
+# Estimate the parameters
+estimate_parameters_sc(data = example_data,
+                      x_grid = x_grid,
+                      y_grid = y_grid,
+                      t_grid = t_grid,
+                      parameter_inits = parameter_inits,
+                      upper_bounds = upper_bounds,
+                      opt_algorithm = "NLOPT_LN_SBPLX",
+                      nloptr_options = list(maxeval = 300,
+                      xtol_rel = 1e-3,
+                      maxtime = NULL),
+                      verbose = TRUE)
+
+
+}

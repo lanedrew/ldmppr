@@ -4,12 +4,14 @@
 \alias{vec_to_mat_dist}
 \title{calculates euclidean distance between a vector and a matrix}
 \usage{
-vec_to_mat_dist(eval_u, obs_u)
+vec_to_mat_dist(eval_u, x_col, y_col)
 }
 \arguments{
-\item{eval_u}{a vector}
+\item{eval_u}{a vector of x and y coordinates.}
 
-\item{obs_u}{a matrix}
+\item{x_col}{a vector of x coordinates.}
+
+\item{y_col}{a vector of y coordinates.}
 }
 \value{
 distance between a vector and each row of a matrix
