@@ -7,19 +7,26 @@
 
 <!-- badges: end -->
 
-`ldmppr` is an R package for working with location dependent marked
-point processes. The package includes functions for parameter
-estimation, simulation, and model assessment/visualization for marked
-point processes with dependence between the marks and locations.
+`ldmppr` is an `R` package for working with location dependent marked
+point processes. The package includes a suit of tools for model
+estimation, model fit assessment, visualization, and simulation for
+marked point processes with dependence between the marks and locations
+and regularity in the pattern.
 
 ### Workflow
 
 ### Installation
 
-You can install the development version of ldmppr from
+You can install the development version of `ldmppr` from
 [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("lanedrew/ldmppr")
+```
+
+You can install the stable version of `ldmppr` from CRAN:
+
+``` r
+install.packages("ldmppr")
 ```
