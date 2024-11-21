@@ -40,22 +40,24 @@
 #'
 #' # Load example locations
 #' locations <- small_example_data %>%
-#' dplyr::slice(1:50) %>%
-#' dplyr::mutate(time = power_law_mapping(size, .5))
+#'   dplyr::slice(1:50) %>%
+#'   dplyr::mutate(time = power_law_mapping(size, .5))
 #'
 #' # Train the model
-#' train_mark_model(data = locations,
-#'                 raster_list = scaled_raster_list,
-#'                 model_type = "xgboost",
-#'                 xy_bounds = c(0, 25, 0, 25),
-#'                 parallel = FALSE,
-#'                 include_comp_inds = FALSE,
-#'                 competition_radius = 10,
-#'                 correction = "none",
-#'                 selection_metric = "rmse",
-#'                 cv_folds = 2,
-#'                 tuning_grid_size = 10,
-#'                 verbose = TRUE)
+#' train_mark_model(
+#'   data = locations,
+#'   raster_list = scaled_raster_list,
+#'   model_type = "xgboost",
+#'   xy_bounds = c(0, 25, 0, 25),
+#'   parallel = FALSE,
+#'   include_comp_inds = FALSE,
+#'   competition_radius = 10,
+#'   correction = "none",
+#'   selection_metric = "rmse",
+#'   cv_folds = 2,
+#'   tuning_grid_size = 10,
+#'   verbose = TRUE
+#' )
 #'
 train_mark_model <- function(data,
                              raster_list = NULL,
@@ -70,27 +72,26 @@ train_mark_model <- function(data,
                              selection_metric = "rmse",
                              cv_folds = 5,
                              tuning_grid_size = 200,
-                             verbose = TRUE){
-
-  if(!is.data.frame(data)) stop("Provide a data frame of the form (x, y, size, time) for the data argument.", .call = FALSE)
-  if(is.null(raster_list) | !is.list(raster_list)) stop("Provide a list of rasters for the raster_list argument.", .call = FALSE)
-  if(is.null(xy_bounds) | !(length(xy_bounds) == 4)) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
-  if(xy_bounds[2] < xy_bounds[1] | xy_bounds[4] < xy_bounds[3]) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
-  if(save_model == TRUE & is.null(save_path)) stop("Provide a path for saving the bundled model object.", .call = FALSE)
-  if(!correction %in% c("none", "toroidal", "truncation")) stop("Provide a valid correction type for the correction argument.", .call = FALSE)
-  if(include_comp_inds == TRUE & (is.null(competition_radius) | competition_radius < 0)) stop("Provide the desired radius for competition_indices argument.", .call = FALSE)
-  if(!selection_metric %in% c("rmse", "mae", "rsq")) stop("Provide a valid correction type for the correction argument.", .call = FALSE)
-  if(!model_type %in% c("xgboost", "random_forest")) stop("Provide a valid model type for the model_type argument.", .call = FALSE)
-  if(!is.logical(parallel)) stop("Provide a logical value for the parallel argument.", .call = FALSE)
-  if(!is.logical(include_comp_inds)) stop("Provide a logical value for the include_comp_inds argument.", .call = FALSE)
-  if(!is.logical(save_model)) stop("Provide a logical value for the save_model argument.", .call = FALSE)
-  if(!is.logical(verbose)) stop("Provide a logical value for the verbose argument.", .call = FALSE)
-  if(!is.numeric(cv_folds) | cv_folds < 2) stop("Provide a numeric value greater than 1 for the cv_folds argument.", .call = FALSE)
-  if(!is.numeric(tuning_grid_size) | tuning_grid_size < 1) stop("Provide a numeric value greater than 0 for the tuning_grid_size argument.", .call = FALSE)
+                             verbose = TRUE) {
+  if (!is.data.frame(data)) stop("Provide a data frame of the form (x, y, size, time) for the data argument.", .call = FALSE)
+  if (is.null(raster_list) | !is.list(raster_list)) stop("Provide a list of rasters for the raster_list argument.", .call = FALSE)
+  if (is.null(xy_bounds) | !(length(xy_bounds) == 4)) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
+  if (xy_bounds[2] < xy_bounds[1] | xy_bounds[4] < xy_bounds[3]) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
+  if (save_model == TRUE & is.null(save_path)) stop("Provide a path for saving the bundled model object.", .call = FALSE)
+  if (!correction %in% c("none", "toroidal", "truncation")) stop("Provide a valid correction type for the correction argument.", .call = FALSE)
+  if (include_comp_inds == TRUE & (is.null(competition_radius) | competition_radius < 0)) stop("Provide the desired radius for competition_indices argument.", .call = FALSE)
+  if (!selection_metric %in% c("rmse", "mae", "rsq")) stop("Provide a valid correction type for the correction argument.", .call = FALSE)
+  if (!model_type %in% c("xgboost", "random_forest")) stop("Provide a valid model type for the model_type argument.", .call = FALSE)
+  if (!is.logical(parallel)) stop("Provide a logical value for the parallel argument.", .call = FALSE)
+  if (!is.logical(include_comp_inds)) stop("Provide a logical value for the include_comp_inds argument.", .call = FALSE)
+  if (!is.logical(save_model)) stop("Provide a logical value for the save_model argument.", .call = FALSE)
+  if (!is.logical(verbose)) stop("Provide a logical value for the verbose argument.", .call = FALSE)
+  if (!is.numeric(cv_folds) | cv_folds < 2) stop("Provide a numeric value greater than 1 for the cv_folds argument.", .call = FALSE)
+  if (!is.numeric(tuning_grid_size) | tuning_grid_size < 1) stop("Provide a numeric value greater than 0 for the tuning_grid_size argument.", .call = FALSE)
 
 
   # Initialize parallelization for model training
-  if(parallel) {
+  if (parallel) {
     doParallel::registerDoParallel()
   }
 
@@ -102,12 +103,11 @@ train_mark_model <- function(data,
 
   # Obtain the location specific covariate values from the scaled rasters
   X <- extract_covars(locations = s, raster_list = raster_trans)
-  X$x <- s[,1]
-  X$y <- s[,2]
+  X$x <- s[, 1]
+  X$y <- s[, 2]
   X$time <- data$time
 
-  if(include_comp_inds == TRUE){
-
+  if (include_comp_inds == TRUE) {
     # Calculate competition indices in a 15 unit radius
     X$near_nbr_dist <- NA
     X$near_nbr_num <- NA
@@ -117,28 +117,28 @@ train_mark_model <- function(data,
     X$near_nbr_time_dist_ratio <- NA
 
     # Calculate distance matrices for selected correction method
-    if((correction == "none") | (correction == "truncation")) {
+    if ((correction == "none") | (correction == "truncation")) {
       distance_matrix <- base::as.matrix(stats::dist(s, method = "euclidean"))
-    }else if(correction == "toroidal") {
+    } else if (correction == "toroidal") {
       distance_matrix <- toroidal_dist_matrix_optimized(s, xy_bounds[2] - xy_bounds[1], xy_bounds[4] - xy_bounds[3])
     }
 
 
-    for(i in 1:base::nrow(X)){
-      close_points <- base::unique(base::which(distance_matrix[i,] < competition_radius & distance_matrix[i,] != 0))
+    for (i in 1:base::nrow(X)) {
+      close_points <- base::unique(base::which(distance_matrix[i, ] < competition_radius & distance_matrix[i, ] != 0))
       close_times <- X$time[close_points]
-      X$near_nbr_dist[i] <- base::min(distance_matrix[i,][-i])
+      X$near_nbr_dist[i] <- base::min(distance_matrix[i, ][-i])
       X$near_nbr_num[i] <- base::length(close_points)
-      X$avg_nbr_dist[i] <- base::mean(distance_matrix[i,][close_points])
-      if(base::length(close_points) == 0){
-        X$avg_nbr_dist[i] <- base::min(distance_matrix[i,][-i])
+      X$avg_nbr_dist[i] <- base::mean(distance_matrix[i, ][close_points])
+      if (base::length(close_points) == 0) {
+        X$avg_nbr_dist[i] <- base::min(distance_matrix[i, ][-i])
       }
-      X$near_nbr_time[i] <- X$time[base::unique(base::which(distance_matrix[i,] == X$near_nbr_dist[i]))]
+      X$near_nbr_time[i] <- X$time[base::unique(base::which(distance_matrix[i, ] == X$near_nbr_dist[i]))]
       X$near_nbr_time_all[i] <- mean(close_times)
-      if(base::length(close_points) == 0){
-        X$near_nbr_time_all[i] <- X$time[base::unique(base::which(distance_matrix[i,] == X$near_nbr_dist[i]))]
+      if (base::length(close_points) == 0) {
+        X$near_nbr_time_all[i] <- X$time[base::unique(base::which(distance_matrix[i, ] == X$near_nbr_dist[i]))]
       }
-      X$near_nbr_time_dist_ratio[i] <- X$near_nbr_time[i]/X$near_nbr_dist[i]
+      X$near_nbr_time_dist_ratio[i] <- X$near_nbr_time[i] / X$near_nbr_dist[i]
     }
   }
 
@@ -146,14 +146,14 @@ train_mark_model <- function(data,
   ## Define the model data for fitting the size model
   model_data <- data.frame(size = data$size, X)
 
-  if(correction == "truncation"){
+  if (correction == "truncation") {
     model_data <- model_data[(model_data$x > 15 &
-                              model_data$x < (xy_bounds[2] - xy_bounds[1]) - 15 &
-                              model_data$y > 15 &
-                              model_data$y < (xy_bounds[4] - xy_bounds[3]) - 15),]
+      model_data$x < (xy_bounds[2] - xy_bounds[1]) - 15 &
+      model_data$y > 15 &
+      model_data$y < (xy_bounds[4] - xy_bounds[3]) - 15), ]
   }
 
-  if(verbose) {
+  if (verbose) {
     base::message("Processing data...")
   }
 
@@ -178,9 +178,8 @@ train_mark_model <- function(data,
     rsample::vfold_cv(v = cv_folds)
 
 
-  if(model_type == "xgboost"){
-
-    if(verbose) {
+  if (model_type == "xgboost") {
+    if (verbose) {
       base::message("Training XGBoost model...")
     }
 
@@ -242,9 +241,8 @@ train_mark_model <- function(data,
         formula = size ~ .,
         data    = model_data
       )
-  }else if(model_type == "random_forest"){
-
-    if(verbose) {
+  } else if (model_type == "random_forest") {
+    if (verbose) {
       base::message("Training Random Forest model...")
     }
     # Specify the Ranger random forest model
@@ -299,11 +297,11 @@ train_mark_model <- function(data,
         formula = size ~ .,
         data    = model_data
       )
-  }else {
+  } else {
     stop("Please provide xgboost or random_forest argument for model_type.")
   }
 
-  if(verbose) {
+  if (verbose) {
     base::message("Training complete!")
   }
 
@@ -312,12 +310,11 @@ train_mark_model <- function(data,
     mark_model %>%
     bundle::bundle()
 
-  if(save_model == TRUE){
+  if (save_model == TRUE) {
     # Save the bundled model object
     base::saveRDS(bundled_mod, file = save_path)
   }
 
   # Return a list containing the raw model and bundled model
   return(base::list(raw_model = mark_model, bundled_model = bundled_mod))
-
 }

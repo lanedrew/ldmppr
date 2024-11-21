@@ -19,13 +19,13 @@
 #'
 #' # Load example locations
 #' locations <- small_example_data %>%
-#'  dplyr::select(x, y) %>%
-#'  as.matrix()
+#'   dplyr::select(x, y) %>%
+#'   as.matrix()
 #'
 #' # Extract covariates
 #' extract_covars(locations, scaled_raster_list)
 #'
 extract_covars <- function(locations, raster_list) {
   # Extract covariate values from the raster list and collate into a data frame
-  base::do.call(base::cbind, base::lapply(raster_list,  function(q) terra::extract(q, y = locations, method = "bilinear")))
+  base::do.call(base::cbind, base::lapply(raster_list, function(q) terra::extract(q, y = locations, method = "bilinear")))
 }

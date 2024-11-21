@@ -17,15 +17,19 @@ Scale a set of rasters
 }
 \examples{
 # Create two example rasters
-rast_a <- terra::rast(ncol = 10, nrow = 10,
- xmin = 0, xmax = 10,
- ymin = 0, ymax = 10,
-  vals = runif(100))
-
-rast_b <- terra::rast(ncol = 10, nrow = 10,
- xmin = 0, xmax = 10,
+rast_a <- terra::rast(
+  ncol = 10, nrow = 10,
+  xmin = 0, xmax = 10,
   ymin = 0, ymax = 10,
-   vals = runif(100))
+  vals = runif(100)
+)
+
+rast_b <- terra::rast(
+  ncol = 10, nrow = 10,
+  xmin = 0, xmax = 10,
+  ymin = 0, ymax = 10,
+  vals = runif(100)
+)
 
 # Scale example rasters in a list
 rast_list <- list(rast_a, rast_b)

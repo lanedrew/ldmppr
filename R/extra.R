@@ -3,5 +3,5 @@
 #' @exportPattern "^[[:alpha:]]+"
 NULL
 
-utils::globalVariables('size')
-utils::globalVariables('time')
+utils::globalVariables("size")
+utils::globalVariables("time")

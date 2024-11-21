@@ -12,8 +12,8 @@ new_ext <- c(a_x, b_x, a_y, b_y)
 # Load the raster images
 south <- terra::rast("https://data.ess-dive.lbl.gov/catalog/d1/mn/v2/object/ess-dive-c3c46ff25d50885-20240513T173925432")
 wet <- terra::rast("https://data.ess-dive.lbl.gov/catalog/d1/mn/v2/object/ess-dive-dffdeec81023d23-20240513T173925427")
-slope <- terra::rast('https://data.ess-dive.lbl.gov/catalog/d1/mn/v2/object/ess-dive-8a59960f4ffd550-20240513T173925429')
-DEM <- terra::rast('https://data.ess-dive.lbl.gov/catalog/d1/mn/v2/object/ess-dive-f6d46b0898ecb21-20240513T173925433')
+slope <- terra::rast("https://data.ess-dive.lbl.gov/catalog/d1/mn/v2/object/ess-dive-8a59960f4ffd550-20240513T173925429")
+DEM <- terra::rast("https://data.ess-dive.lbl.gov/catalog/d1/mn/v2/object/ess-dive-f6d46b0898ecb21-20240513T173925433")
 raster_list <- list(south, wet, slope, DEM)
 cropped_rasters <- lapply(raster_list, terra::crop, y = new_ext)
 names(cropped_rasters[[1]]) <- "Snodgrass_aspect_southness_1m"

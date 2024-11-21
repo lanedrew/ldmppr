@@ -9,18 +9,19 @@
 #' @examples
 #' # Load example data
 #' data(small_example_data)
-#' mpp_data <- generate_mpp(locations = small_example_data %>% dplyr::select(x, y),
-#'                          marks = small_example_data$size,
-#'                          xy_bounds = c(0, 25, 0, 25))
+#' mpp_data <- generate_mpp(
+#'   locations = small_example_data %>% dplyr::select(x, y),
+#'   marks = small_example_data$size,
+#'   xy_bounds = c(0, 25, 0, 25)
+#' )
 #'
 #' # Plot the marked point process
 #' plot_mpp(mpp_data, pattern_type = "reference")
 #'
-plot_mpp <- function(mpp_data, pattern_type){
-
-  if(pattern_type == "simulated"){
+plot_mpp <- function(mpp_data, pattern_type) {
+  if (pattern_type == "simulated") {
     plot_title <- "Simulated Data"
-  } else if(pattern_type == "reference"){
+  } else if (pattern_type == "reference") {
     plot_title <- "Reference Data"
   } else {
     stop("Provide a valid pattern type ('reference' or 'simulated').", .call = FALSE)

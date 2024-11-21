@@ -15,11 +15,13 @@
 #' # Simulate a realization
 #' generating_parameters <- c(2, 8, .02, 2.5, 3, 1, 2.5, .2)
 #' M_n <- matrix(c(10, 14), ncol = 1)
-#' generated_locs <- simulate_sc(t_min = 0,
-#'                               t_max = 1,
-#'                               sc_params = generating_parameters,
-#'                               anchor_point = M_n,
-#'                               xy_bounds = c(0, 25, 0, 25))
+#' generated_locs <- simulate_sc(
+#'   t_min = 0,
+#'   t_max = 1,
+#'   sc_params = generating_parameters,
+#'   anchor_point = M_n,
+#'   xy_bounds = c(0, 25, 0, 25)
+#' )
 #'
 #' # Load the raster files
 #' file_path <- system.file("extdata", "Snodgrass_aspect_southness_1m.tif", package = "ldmppr")
@@ -43,13 +45,15 @@
 #' mark_model <- bundle::unbundle(example_mark_model)
 #'
 #' # Predict the mark values
-#' predict_marks(sim_realization = generated_locs$thinned,
-#'               raster_list = scaled_raster_list,
-#'               mark_model = mark_model,
-#'               xy_bounds = c(0, 25, 0, 25),
-#'               include_comp_inds = TRUE,
-#'               competition_radius = 10,
-#'               correction = "none")
+#' predict_marks(
+#'   sim_realization = generated_locs$thinned,
+#'   raster_list = scaled_raster_list,
+#'   mark_model = mark_model,
+#'   xy_bounds = c(0, 25, 0, 25),
+#'   include_comp_inds = TRUE,
+#'   competition_radius = 10,
+#'   correction = "none"
+#' )
 #'
 predict_marks <- function(sim_realization,
                           raster_list = NULL,
@@ -57,19 +61,18 @@ predict_marks <- function(sim_realization,
                           xy_bounds = NULL,
                           include_comp_inds = FALSE,
                           competition_radius = 15,
-                          correction = "none"){
-
+                          correction = "none") {
   # Check the arguments
-  if(!is.data.frame(sim_realization)) stop("Provide a thinned or unthinned simulation realization from simulate sc for the sim_realization argument.", .call = FALSE)
-  if(is.null(raster_list) | !is.list(raster_list)) stop("Provide a list of rasters for the raster_list argument.", .call = FALSE)
-  if(is.null(mark_model)) stop("Provide an unbundled mark model for the mark_model argument.", .call = FALSE)
-  if(is.null(xy_bounds) | !(length(xy_bounds) == 4)) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
-  if(xy_bounds[2] < xy_bounds[1] | xy_bounds[4] < xy_bounds[3]) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
-  if(!correction %in% c("none", "toroidal")) stop("Provide a valid correction type.", .call = FALSE)
-  if(include_comp_inds == TRUE & (is.null(competition_radius) | competition_radius < 0)) stop("Provide the desired radius for competition indices.", .call = FALSE)
+  if (!is.data.frame(sim_realization)) stop("Provide a thinned or unthinned simulation realization from simulate sc for the sim_realization argument.", .call = FALSE)
+  if (is.null(raster_list) | !is.list(raster_list)) stop("Provide a list of rasters for the raster_list argument.", .call = FALSE)
+  if (is.null(mark_model)) stop("Provide an unbundled mark model for the mark_model argument.", .call = FALSE)
+  if (is.null(xy_bounds) | !(length(xy_bounds) == 4)) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
+  if (xy_bounds[2] < xy_bounds[1] | xy_bounds[4] < xy_bounds[3]) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
+  if (!correction %in% c("none", "toroidal")) stop("Provide a valid correction type.", .call = FALSE)
+  if (include_comp_inds == TRUE & (is.null(competition_radius) | competition_radius < 0)) stop("Provide the desired radius for competition indices.", .call = FALSE)
 
   # Obtain a matrix of (x, y) locations
-  s <- sim_realization[,c("x", "y")]
+  s <- sim_realization[, c("x", "y")]
 
   # Scale the provided rasters in the raster_list
   raster_trans <- scale_rasters(raster_list)
@@ -80,8 +83,7 @@ predict_marks <- function(sim_realization,
   X$y <- sim_realization$y
   X$time <- sim_realization$time
 
-  if(include_comp_inds == TRUE){
-
+  if (include_comp_inds == TRUE) {
     # Calculate competition indices in a 15 unit radius
     X$near_nbr_dist <- NA
     X$near_nbr_num <- NA
@@ -92,28 +94,28 @@ predict_marks <- function(sim_realization,
     colnames(s) <- c("x", "y")
 
     # Calculate distance matrices for selected correction method
-    if(correction == "none") {
+    if (correction == "none") {
       distance_matrix <- base::as.matrix(stats::dist(s, method = "euclidean"))
-    }else if(correction == "toroidal") {
+    } else if (correction == "toroidal") {
       distance_matrix <- toroidal_dist_matrix_optimized(s, xy_bounds[2] - xy_bounds[1], xy_bounds[4] - xy_bounds[3])
     }
 
 
-    for(i in 1:base::nrow(X)){
-      close_points <- base::unique(base::which(distance_matrix[i,] < competition_radius & distance_matrix[i,] != 0))
+    for (i in 1:base::nrow(X)) {
+      close_points <- base::unique(base::which(distance_matrix[i, ] < competition_radius & distance_matrix[i, ] != 0))
       close_times <- X$time[close_points]
-      X$near_nbr_dist[i] <- base::min(distance_matrix[i,][-i])
+      X$near_nbr_dist[i] <- base::min(distance_matrix[i, ][-i])
       X$near_nbr_num[i] <- base::length(close_points)
-      X$avg_nbr_dist[i] <- base::mean(distance_matrix[i,][close_points])
-      if(base::length(close_points) == 0){
-        X$avg_nbr_dist[i] <- base::min(distance_matrix[i,][-i])
+      X$avg_nbr_dist[i] <- base::mean(distance_matrix[i, ][close_points])
+      if (base::length(close_points) == 0) {
+        X$avg_nbr_dist[i] <- base::min(distance_matrix[i, ][-i])
       }
-      X$near_nbr_time[i] <- X$time[base::unique(base::which(distance_matrix[i,] == X$near_nbr_dist[i]))]
+      X$near_nbr_time[i] <- X$time[base::unique(base::which(distance_matrix[i, ] == X$near_nbr_dist[i]))]
       X$near_nbr_time_all[i] <- mean(close_times)
-      if(base::length(close_points) == 0){
-        X$near_nbr_time_all[i] <- X$time[base::unique(base::which(distance_matrix[i,] == X$near_nbr_dist[i]))]
+      if (base::length(close_points) == 0) {
+        X$near_nbr_time_all[i] <- X$time[base::unique(base::which(distance_matrix[i, ] == X$near_nbr_dist[i]))]
       }
-      X$near_nbr_time_dist_ratio[i] <- X$near_nbr_time[i]/X$near_nbr_dist[i]
+      X$near_nbr_time_dist_ratio[i] <- X$near_nbr_time[i] / X$near_nbr_dist[i]
     }
   }
 

@@ -17,7 +17,6 @@
 #' toroidal_dist_matrix_optimized(location_matrix, x_bound, y_bound)
 #'
 toroidal_dist_matrix_optimized <- function(location_matrix, x_bound, y_bound) {
-
   # Extract x and y coordinates
   x <- location_matrix[, 1]
   y <- location_matrix[, 2]

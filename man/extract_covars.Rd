@@ -30,8 +30,8 @@ scaled_raster_list <- scale_rasters(raster_list)
 
 # Load example locations
 locations <- small_example_data \%>\%
- dplyr::select(x, y) \%>\%
- as.matrix()
+  dplyr::select(x, y) \%>\%
+  as.matrix()
 
 # Extract covariates
 extract_covars(locations, scaled_raster_list)

@@ -74,21 +74,23 @@ scaled_raster_list <- scale_rasters(raster_list)
 
 # Load example locations
 locations <- small_example_data \%>\%
-dplyr::slice(1:50) \%>\%
-dplyr::mutate(time = power_law_mapping(size, .5))
+  dplyr::slice(1:50) \%>\%
+  dplyr::mutate(time = power_law_mapping(size, .5))
 
 # Train the model
-train_mark_model(data = locations,
-                raster_list = scaled_raster_list,
-                model_type = "xgboost",
-                xy_bounds = c(0, 25, 0, 25),
-                parallel = FALSE,
-                include_comp_inds = FALSE,
-                competition_radius = 10,
-                correction = "none",
-                selection_metric = "rmse",
-                cv_folds = 2,
-                tuning_grid_size = 10,
-                verbose = TRUE)
+train_mark_model(
+  data = locations,
+  raster_list = scaled_raster_list,
+  model_type = "xgboost",
+  xy_bounds = c(0, 25, 0, 25),
+  parallel = FALSE,
+  include_comp_inds = FALSE,
+  competition_radius = 10,
+  correction = "none",
+  selection_metric = "rmse",
+  cv_folds = 2,
+  tuning_grid_size = 10,
+  verbose = TRUE
+)
 
 }

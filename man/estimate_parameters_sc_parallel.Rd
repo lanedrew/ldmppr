@@ -75,18 +75,22 @@ parameter_inits <- c(1.5, 8.5, .015, 1.5, 3.2, .75, 3, .08)
 upper_bounds <- c(1, 25, 25)
 
 # Estimate the parameters in parallel
-estimate_parameters_sc_parallel(data = small_example_data,
-                                x_grid = x_grid,
-                                y_grid = y_grid,
-                                t_grid = t_grid,
-                                delta_values = delta_values,
-                                parameter_inits = parameter_inits,
-                                upper_bounds = upper_bounds,
-                                opt_algorithm = "NLOPT_LN_SBPLX",
-                                nloptr_options = list(maxeval = 50,
-                                                      xtol_rel = 1e-2),
-                                verbose = TRUE,
-                                set_future_plan = TRUE)
+estimate_parameters_sc_parallel(
+  data = small_example_data,
+  x_grid = x_grid,
+  y_grid = y_grid,
+  t_grid = t_grid,
+  delta_values = delta_values,
+  parameter_inits = parameter_inits,
+  upper_bounds = upper_bounds,
+  opt_algorithm = "NLOPT_LN_SBPLX",
+  nloptr_options = list(
+    maxeval = 50,
+    xtol_rel = 1e-2
+  ),
+  verbose = TRUE,
+  set_future_plan = TRUE
+)
 }
 
 }

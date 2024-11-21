@@ -8,10 +8,10 @@
 library(ldmppr)
 
 # Read in the raster files
-south <- terra::rast('./extdata/Snodgrass_aspect_southness_1m.tif')
-wet <- terra::rast('./extdata/Snodgrass_wetness_index_1m.tif')
-slope <- terra::rast('./extdata/Snodgrass_slope_1m.tif')
-DEM <- terra::rast('./extdata/Snodgrass_DEM_1m.tif')
+south <- terra::rast("./extdata/Snodgrass_aspect_southness_1m.tif")
+wet <- terra::rast("./extdata/Snodgrass_wetness_index_1m.tif")
+slope <- terra::rast("./extdata/Snodgrass_slope_1m.tif")
+DEM <- terra::rast("./extdata/Snodgrass_DEM_1m.tif")
 raster_list <- list(south, wet, slope, DEM)
 scaled_raster_list <- scale_rasters(raster_list)
 
@@ -31,10 +31,10 @@ generated_locs <- simulate_sc(t_min = 0, t_max = 1, sc_params = generating_param
 size_coeffs <- c(2, 1, -.5, -1)
 
 # Generate the covariates
-covars <- as.matrix(cbind(generated_locs$thinned$time, extract_covars(as.matrix(generated_locs$thinned[,2:3]), scaled_raster_list)))
+covars <- as.matrix(cbind(generated_locs$thinned$time, extract_covars(as.matrix(generated_locs$thinned[, 2:3]), scaled_raster_list)))
 
 # Generate the size values given arrival times and the location specific covariates
-size_preds <- 900 * exp(- 3 * covars[,1]) + covars[,-1]%*%size_coeffs + rnorm(nrow(covars), sd = 2)
+size_preds <- 900 * exp(-3 * covars[, 1]) + covars[, -1] %*% size_coeffs + rnorm(nrow(covars), sd = 2)
 
 # Create the example dataset and save it
 small_example_data <- generated_locs$thinned %>%
@@ -53,20 +53,22 @@ Ygrid <- seq(0, 25, length = ngridy)
 Tgrid <- seq(0, 1, length = ngridt)
 
 # Define the parameter initialization values
-x_0 = c(1.5, 8.5, .015, 1.5, 3.2, .75, 3, .08)
+x_0 <- c(1.5, 8.5, .015, 1.5, 3.2, .75, 3, .08)
 
 # Estimate the parameters in parallel
-estimate_demo_params <- estimate_parameters_sc_parallel(x_grid = Xgrid,
-                                                        y_grid = Ygrid,
-                                                        t_grid = Tgrid,
-                                                        data = small_example_data,
-                                                        delta_values = c(.35, .5, .65, .9 , 1),
-                                                        parameter_inits = x_0,
-                                                        upper_bounds = c(1, 25, 25),
-                                                        opt_algorithm = "NLOPT_LN_SBPLX",
-                                                        nloptr_options = list(maxeval = 300, xtol_rel = 1e-03),
-                                                        verbose = TRUE,
-                                                        set_future_plan = TRUE)
+estimate_demo_params <- estimate_parameters_sc_parallel(
+  x_grid = Xgrid,
+  y_grid = Ygrid,
+  t_grid = Tgrid,
+  data = small_example_data,
+  delta_values = c(.35, .5, .65, .9, 1),
+  parameter_inits = x_0,
+  upper_bounds = c(1, 25, 25),
+  opt_algorithm = "NLOPT_LN_SBPLX",
+  nloptr_options = list(maxeval = 300, xtol_rel = 1e-03),
+  verbose = TRUE,
+  set_future_plan = TRUE
+)
 
 # Generate the time values using the power law mapping with optimal delta
 # selected from the parameter estimation above
@@ -74,15 +76,17 @@ model_training_data <- small_example_data %>%
   dplyr::mutate(time = power_law_mapping(size, .65))
 
 # Train the model
-train_mark_mod <- train_mark_model(data = model_training_data ,
-                                   raster_list = scaled_raster_list,
-                                   model_type = "xgboost",
-                                   xy_bounds = c(0, 25, 0, 25),
-                                   parallel = TRUE,
-                                   include_comp_inds = TRUE,
-                                   competition_radius = 10,
-                                   correction = "none",
-                                   selection_metric = "rmse")
+train_mark_mod <- train_mark_model(
+  data = model_training_data,
+  raster_list = scaled_raster_list,
+  model_type = "xgboost",
+  xy_bounds = c(0, 25, 0, 25),
+  parallel = TRUE,
+  include_comp_inds = TRUE,
+  competition_radius = 10,
+  correction = "none",
+  selection_metric = "rmse"
+)
 
 # Save the trained model
 example_mark_model <- train_mark_mod$bundled_model

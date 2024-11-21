@@ -48,8 +48,8 @@ This function estimates the parameters of the self-correcting model presented in
 # Load the small example data
 data(small_example_data)
 small_example_data <- small_example_data \%>\%
- dplyr::mutate(time = power_law_mapping(size, 1)) \%>\%
- dplyr::select(time, x, y)
+  dplyr::mutate(time = power_law_mapping(size, 1)) \%>\%
+  dplyr::select(time, x, y)
 
 # Define the grid values
 x_grid <- seq(0, 25, out.length = 3)
@@ -63,16 +63,20 @@ parameter_inits <- c(1.5, 8.5, .015, 1.5, 3.2, .75, 3, .08)
 upper_bounds <- c(1, 25, 25)
 
 # Estimate the parameters
-estimate_parameters_sc(data = small_example_data,
-                       x_grid = x_grid,
-                       y_grid = y_grid,
-                       t_grid = t_grid,
-                       parameter_inits = parameter_inits,
-                       upper_bounds = upper_bounds,
-                       opt_algorithm = "NLOPT_LN_SBPLX",
-                       nloptr_options = list(maxeval = 25,
-                                             xtol_rel = 1e-2),
-                       verbose = TRUE)
+estimate_parameters_sc(
+  data = small_example_data,
+  x_grid = x_grid,
+  y_grid = y_grid,
+  t_grid = t_grid,
+  parameter_inits = parameter_inits,
+  upper_bounds = upper_bounds,
+  opt_algorithm = "NLOPT_LN_SBPLX",
+  nloptr_options = list(
+    maxeval = 25,
+    xtol_rel = 1e-2
+  ),
+  verbose = TRUE
+)
 
 }
 \references{

@@ -91,9 +91,11 @@ raster_list <- list(south, wet, slope, DEM)
 scaled_raster_list <- scale_rasters(raster_list)
 
 # Generate the reference pattern
-reference_data <- generate_mpp(locations = small_example_data[,c("x", "y")],
-                               marks = small_example_data$size,
-                               xy_bounds = c(0, 25, 0, 25))
+reference_data <- generate_mpp(
+  locations = small_example_data[, c("x", "y")],
+  marks = small_example_data$size,
+  xy_bounds = c(0, 25, 0, 25)
+)
 
 # Define an anchor point
 M_n <- as.matrix(small_example_data[1, c("x", "y")])
@@ -101,26 +103,30 @@ M_n <- as.matrix(small_example_data[1, c("x", "y")])
 # Specify the estimated parameters of the self-correcting process
 # Note: These would generally be estimated using estimate_parameters_sc
 # or estimate_parameters_sc_parallel
-estimated_parameters <- c(1.29398567, 6.09197246, 0.01784865, 2.21433824,
-                          2.11325680, 0.97944460, 2.44347284, 0.15188858)
+estimated_parameters <- c(
+  1.29398567, 6.09197246, 0.01784865, 2.21433824,
+  2.11325680, 0.97944460, 2.44347284, 0.15188858
+)
 
 # Check the model fit
-example_model_fit <- check_model_fit(reference_data = reference_data,
-                                    t_min = 0,
-                                    t_max = 1,
-                                    sc_params = estimated_parameters,
-                                    anchor_point = M_n,
-                                    raster_list = scaled_raster_list,
-                                    mark_model = mark_model,
-                                    xy_bounds = c(0, 25, 0, 25),
-                                    include_comp_inds = TRUE,
-                                    thinning = TRUE,
-                                    correction = "none",
-                                    competition_radius = 10,
-                                    n_sim = 25,
-                                    save_sims = FALSE,
-                                    verbose = TRUE,
-                                    seed = 90210)
+example_model_fit <- check_model_fit(
+  reference_data = reference_data,
+  t_min = 0,
+  t_max = 1,
+  sc_params = estimated_parameters,
+  anchor_point = M_n,
+  raster_list = scaled_raster_list,
+  mark_model = mark_model,
+  xy_bounds = c(0, 25, 0, 25),
+  include_comp_inds = TRUE,
+  thinning = TRUE,
+  correction = "none",
+  competition_radius = 10,
+  n_sim = 25,
+  save_sims = FALSE,
+  verbose = TRUE,
+  seed = 90210
+)
 
 plot(example_model_fit$combined_env)
 

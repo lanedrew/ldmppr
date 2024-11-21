@@ -38,10 +38,12 @@ generating_parameters <- c(2, 8, .02, 2.5, 3, 1, 2.5, .2)
 M_n <- matrix(c(10, 14), ncol = 1)
 
 # Simulate the self-correcting process
-generated_locs <- simulate_sc(t_min = 0,
-                              t_max = 1,
-                              sc_params = generating_parameters,
-                              anchor_point = M_n,
-                              xy_bounds = c(0, 25, 0, 25))
+generated_locs <- simulate_sc(
+  t_min = 0,
+  t_max = 1,
+  sc_params = generating_parameters,
+  anchor_point = M_n,
+  xy_bounds = c(0, 25, 0, 25)
+)
 
 }
