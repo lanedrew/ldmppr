@@ -16,6 +16,8 @@ train_mark_model(
   competition_radius = 15,
   correction = "none",
   selection_metric = "rmse",
+  cv_folds = 5,
+  tuning_grid_size = 200,
   verbose = TRUE
 )
 }
@@ -42,6 +44,10 @@ train_mark_model(
 
 \item{selection_metric}{metric to use for identifying the optimal model ("rmse", "mae", or "rsq").}
 
+\item{cv_folds}{number of cross-validation folds to use in model training.}
+
+\item{tuning_grid_size}{size of the tuning grid for hyperparameter tuning.}
+
 \item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of model training.}
 }
 \value{
@@ -51,4 +57,38 @@ a bundled model object.
 Trains a predictive model for the mark distribution of a spatio-temporal process.
 Allows the user to incorporate location specific information and competition indices as
 covariates in the mark model.
+}
+\examples{
+# Load example raster data
+file_path <- system.file("extdata", "Snodgrass_aspect_southness_1m.tif", package = "ldmppr")
+south <- terra::rast(file_path)
+file_path <- system.file("extdata", "Snodgrass_wetness_index_1m.tif", package = "ldmppr")
+wet <- terra::rast(file_path)
+file_path <- system.file("extdata", "Snodgrass_slope_1m.tif", package = "ldmppr")
+slope <- terra::rast(file_path)
+file_path <- system.file("extdata", "Snodgrass_DEM_1m.tif", package = "ldmppr")
+DEM <- terra::rast(file_path)
+
+raster_list <- list(south, wet, slope, DEM)
+scaled_raster_list <- scale_rasters(raster_list)
+
+# Load example locations
+locations <- small_example_data \%>\%
+dplyr::slice(1:50) \%>\%
+dplyr::mutate(time = power_law_mapping(size, .5))
+
+# Train the model
+train_mark_model(data = locations,
+                raster_list = scaled_raster_list,
+                model_type = "xgboost",
+                xy_bounds = c(0, 25, 0, 25),
+                parallel = FALSE,
+                include_comp_inds = FALSE,
+                competition_radius = 10,
+                correction = "none",
+                selection_metric = "rmse",
+                cv_folds = 2,
+                tuning_grid_size = 10,
+                verbose = TRUE)
+
 }

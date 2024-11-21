@@ -9,7 +9,7 @@
 <!-- badges: end -->
 
 `ldmppr` is an `R` package for working with location dependent marked
-point processes. The package includes a suit of tools for model
+point processes. The package includes a suite of tools for model
 estimation, model fit assessment, visualization, and simulation for
 marked point processes with dependence between the marks and locations
 and regularity in the pattern.

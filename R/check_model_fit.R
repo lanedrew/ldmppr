@@ -20,9 +20,80 @@
 #' @param n_sim number of simulated datasets to generate.
 #' @param save_sims `TRUE` or `FALSE` indicating whether to save and return the simulated datasets.
 #' @param verbose `TRUE` or `FALSE` indicating whether to show progress of model checking.
+#' @param seed an integer value to set the seed for reproducibility.
 #'
 #' @return a list containing various model fit summaries and
 #' @export
+#'
+#' @details
+#' This function relies on the \code{spatstat} package for the calculation of the point pattern metrics
+#' and the \code{GET} package for the global envelope tests. The L, F, G, J, E, and V functions are a collection of
+#' non-parametric summary statistics that describe the spatial distribution of points and marks in a point pattern.
+#'
+#' @references
+#' Baddeley, A., Rubak, E., & Turner, R. (2015). *Spatial Point Patterns:
+#' Methodology and Applications with R*. Chapman and Hall/CRC Press, London.
+#' ISBN 9781482210200. Available at:
+#' \url{https://www.routledge.com/Spatial-Point-Patterns-Methodology-and-Applications-with-R/Baddeley-Rubak-Turner/p/book/9781482210200}.
+#'
+#' Myllymäki, M., & Mrkvička, T. (2023). GET: Global envelopes in R.
+#' \emph{arXiv:1911.06583 [stat.ME]}. \doi{10.48550/arXiv.1911.06583}.
+#'
+#' @examples
+#' # Load the small example data
+#' data(small_example_data)
+#'
+#' # Load the example mark model
+#' file_path <- system.file("extdata", "example_mark_model.rds", package = "ldmppr")
+#' mark_model <- bundle::unbundle(readRDS(file_path))
+#'
+#' # Load the raster files
+#' file_path <- system.file("extdata", "Snodgrass_aspect_southness_1m.tif", package = "ldmppr")
+#' south <- terra::rast(file_path)
+#' file_path <- system.file("extdata", "Snodgrass_wetness_index_1m.tif", package = "ldmppr")
+#' wet <- terra::rast(file_path)
+#' file_path <- system.file("extdata", "Snodgrass_slope_1m.tif", package = "ldmppr")
+#' slope <- terra::rast(file_path)
+#' file_path <- system.file("extdata", "Snodgrass_DEM_1m.tif", package = "ldmppr")
+#' DEM <- terra::rast(file_path)
+#'
+#' # Scale the rasters
+#' raster_list <- list(south, wet, slope, DEM)
+#' scaled_raster_list <- scale_rasters(raster_list)
+#'
+#' # Generate the reference pattern
+#' reference_data <- generate_mpp(locations = small_example_data[,c("x", "y")],
+#'                                marks = small_example_data$size,
+#'                                xy_bounds = c(0, 25, 0, 25))
+#'
+#' # Define an anchor point
+#' M_n <- as.matrix(small_example_data[1, c("x", "y")])
+#'
+#' # Specify the estimated parameters of the self-correcting process
+#' # Note: These would generally be estimated using estimate_parameters_sc
+#' # or estimate_parameters_sc_parallel
+#' estimated_parameters <- c(1.29398567, 6.09197246, 0.01784865, 2.21433824,
+#'                           2.11325680, 0.97944460, 2.44347284, 0.15188858)
+#'
+#' # Check the model fit
+#' example_model_fit <- check_model_fit(reference_data = reference_data,
+#'                                     t_min = 0,
+#'                                     t_max = 1,
+#'                                     sc_params = estimated_parameters,
+#'                                     anchor_point = M_n,
+#'                                     raster_list = scaled_raster_list,
+#'                                     mark_model = mark_model,
+#'                                     xy_bounds = c(0, 25, 0, 25),
+#'                                     include_comp_inds = TRUE,
+#'                                     thinning = TRUE,
+#'                                     correction = "none",
+#'                                     competition_radius = 10,
+#'                                     n_sim = 25,
+#'                                     save_sims = FALSE,
+#'                                     verbose = TRUE,
+#'                                     seed = 90210)
+#'
+#' plot(example_model_fit$combined_env)
 #'
 check_model_fit <- function(reference_data,
                             t_min = 0,
@@ -38,7 +109,8 @@ check_model_fit <- function(reference_data,
                             competition_radius = 15,
                             n_sim = 2500,
                             save_sims = TRUE,
-                            verbose = TRUE){
+                            verbose = TRUE,
+                            seed = 0){
 
   # Check the arguments
   if(!spatstat.geom::is.ppp(reference_data)) stop("Provide a ppp object containing the reference data pattern for the reference_data argument.", .call = FALSE)
@@ -52,6 +124,8 @@ check_model_fit <- function(reference_data,
   if(!correction %in% c("none", "toroidal")) stop("Provide a valid correction type for the correction argument.", .call = FALSE)
   if(include_comp_inds == TRUE & (is.null(competition_radius) | competition_radius < 0)) stop("Provide the desired radius for competition_indices argument.", .call = FALSE)
 
+  # Set the seed
+  set.seed(seed)
 
   # Obtain the radius to use in obtaining the various estimates using the reference data
   K_ref <- spatstat.explore::Kest(spatstat.geom::unmark(reference_data))
@@ -202,21 +276,22 @@ check_model_fit <- function(reference_data,
   r_envG <- GET::global_envelope_test(C_ref_G, type = "rank")
 
   # Obtain the global envelope test for the J function
-  J_val <- base::min(c(base::min(base::apply(F_PP, 2, function(x) base::sum(x < 1))),
-                       base::min(base::apply(G_PP, 2, function(x) base::sum(x < 1))),
+  J_val <- base::min(c(base::min(base::apply(F_PP, 2, function(x) base::sum(x < 1, na.rm = TRUE))),
+                       base::min(base::apply(G_PP, 2, function(x) base::sum(x < 1, na.rm = TRUE))),
                        base::sum(!base::is.na(spatstat.explore::Jest(spatstat.geom::unmark(reference_data),
                                                                      r = d)$rs))))
+  J_scale <- base::max(base::apply(J_PP[1:J_val,], 1, base::max))
 
   if (any(is.infinite(J_PP[1:J_val,]) | is.na(J_PP[1:J_val,]))) {
     warning("J_PP contains Inf or NA values.")
   }
+
   C_ref_J <- GET::create_curve_set(base::list(r = d[1:J_val],
-                                              obs = spatstat.explore::Jest(spatstat.geom::unmark(reference_data),
-                                                                           r = d[1:J_val])$rs - 1,
+                                              obs = (spatstat.explore::Jest(spatstat.geom::unmark(reference_data),
+                                                                           r = d[1:J_val])$rs - 1)/J_scale,
                                               theo = spatstat.explore::Jest(spatstat.geom::unmark(reference_data),
-                                                                           r = d[1:J_val])$theo - 1,
-                                              sim_m = J_PP[1:J_val,]),
-                                   allfinite = FALSE
+                                                                            r = d[1:J_val])$theo - 1,
+                                              sim_m = (J_PP[1:J_val,])/J_scale)
                                    )
   r_envJ <- GET::global_envelope_test(C_ref_J, type = "rank")
 
@@ -235,55 +310,43 @@ check_model_fit <- function(reference_data,
   r_envV <- GET::global_envelope_test(C_ref_V, type = "rank")
 
   # Obtain the global envelope test for the combined L, F, G, and J functions
-  rComb <- c(d,
-             d[1:F_val] + base::max(d),
-             d[1:G_val] + base::max(d[1:F_val] + base::max(d)),
-             d[1:J_val] + base::max(d[1:G_val] + base::max(d[1:F_val] + base::max(d)))
-  )
-  K_data <- spatstat.explore::Kest(reference_data,
-                                   correction = "isotropic",
-                                   r = d)$iso
-  F_data <- spatstat.explore::Fest(reference_data,
-                                   correction = "rs",
-                                   r = d[1:F_val])$rs
-  G_data <- spatstat.explore::Gest(reference_data,
-                                   correction = "rs",
-                                   r = d[1:G_val])$rs
-  J_data <- spatstat.explore::Jest(reference_data,
-                                   correction = "rs",
-                                   r = d[1:J_val])$rs - 1
-  J_scale <- base::max(base::apply(J_PP[1:J_val,], 1, base::max))
-  Comb_data <- c(sqrt(K_data / pi) - d,
-                 F_data,
-                 G_data,
-                 J_data / J_scale)
-  Comb_ref <- GET::create_curve_set(base::list(r = rComb,
-                                               obs = Comb_data,
-                                               sim_m = base::rbind(sqrt(K_PP / pi) - d,
-                                                                   F_PP[1:F_val,],
-                                                                   G_PP[1:G_val,],
-                                                                   J_PP[1:J_val,] / J_scale)
-                                               )
-                                   )
-  r_envComb <-  GET::global_envelope_test(Comb_ref, type = "rank")
+  r_envComb <-  GET::global_envelope_test(curve_sets = list(L = C_ref_L,
+                                                            F = C_ref_F,
+                                                            G = C_ref_G,
+                                                            J = C_ref_J,
+                                                            E = C_ref_E,
+                                                            V = C_ref_V),
+                                          type = "rank")
 
   if(save_sims){
-    results_list <- base::list(global_envelope_tests = list(L_env = r_envL,
+    results_list <- base::list(global_envelope_tests = list(combined_env = r_envComb,
+                                                            curve_sets = list(L = C_ref_L,
+                                                                              F = C_ref_F,
+                                                                              G = C_ref_G,
+                                                                              J = C_ref_J,
+                                                                              E = C_ref_E,
+                                                                              V = C_ref_V),
+                                                            L_env = r_envL,
                                                             F_env = r_envF,
                                                             G_env = r_envG,
                                                             J_env = r_envJ,
                                                             E_env = r_envE,
-                                                            V_env = r_envV,
-                                                            Combined_env = r_envComb),
+                                                            V_env = r_envV),
                                sim_metric_values = sim_list)
   } else{
-    results_list <- base::list(L_env = r_envL,
+    results_list <- base::list(combined_env = r_envComb,
+                               curve_sets = list(L = C_ref_L,
+                                                 F = C_ref_F,
+                                                 G = C_ref_G,
+                                                 J = C_ref_J,
+                                                 E = C_ref_E,
+                                                 V = C_ref_V),
+                               L_env = r_envL,
                                F_env = r_envF,
                                G_env = r_envG,
                                J_env = r_envJ,
                                E_env = r_envE,
-                               V_env = r_envV,
-                               Combined_env = r_envComb)
+                               V_env = r_envV)
   }
 
   return(results_list)

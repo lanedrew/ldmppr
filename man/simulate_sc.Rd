@@ -30,3 +30,18 @@ a list containing the thinned and unthinned simulation realizations.
 Allows the user to simulate a realization from the self-correcting model
 given a set of parameters and a point to condition on.
 }
+\examples{
+# Specify the generating parameters of the self-correcting process
+generating_parameters <- c(2, 8, .02, 2.5, 3, 1, 2.5, .2)
+
+# Specify an anchor point
+M_n <- matrix(c(10, 14), ncol = 1)
+
+# Simulate the self-correcting process
+generated_locs <- simulate_sc(t_min = 0,
+                              t_max = 1,
+                              sc_params = generating_parameters,
+                              anchor_point = M_n,
+                              xy_bounds = c(0, 25, 0, 25))
+
+}

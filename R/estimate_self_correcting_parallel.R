@@ -21,6 +21,48 @@
 #' @return a list containing the optimal obtained values and the full results.
 #' @export
 #'
+#' @references
+#' Møller, J., Ghorbani, M., & Rubak, E. (2016). Mechanistic spatio-temporal point process models
+#' for marked point processes, with a view to forest stand data. \emph{Biometrics}, 72(3), 687–696.
+#' \doi{10.1111/biom.12466}.
+#'
+#' @examples
+#'
+#' # Note: This function is designed to be run in parallel and may be computationally intensive.
+#'
+#' \dontrun{
+#' # Load the small example data
+#' data(small_example_data)
+#'
+#' # Define the grid values
+#' x_grid <- seq(0, 25, out.length = 3)
+#' y_grid <- seq(0, 25, out.length = 3)
+#' t_grid <- seq(0, 1, out.length = 3)
+#'
+#' # Define the delta values
+#' delta_values <- seq(0.75, 1, by = 0.25)
+#'
+#' # Define the parameter initialization values
+#' parameter_inits <- c(1.5, 8.5, .015, 1.5, 3.2, .75, 3, .08)
+#'
+#' # Define the upper bounds
+#' upper_bounds <- c(1, 25, 25)
+#'
+#' # Estimate the parameters in parallel
+#' estimate_parameters_sc_parallel(data = small_example_data,
+#'                                 x_grid = x_grid,
+#'                                 y_grid = y_grid,
+#'                                 t_grid = t_grid,
+#'                                 delta_values = delta_values,
+#'                                 parameter_inits = parameter_inits,
+#'                                 upper_bounds = upper_bounds,
+#'                                 opt_algorithm = "NLOPT_LN_SBPLX",
+#'                                 nloptr_options = list(maxeval = 50,
+#'                                                       xtol_rel = 1e-2),
+#'                                 verbose = TRUE,
+#'                                 set_future_plan = TRUE)
+#' }
+#'
 estimate_parameters_sc_parallel <- function(data,
                                             x_grid = NULL,
                                             y_grid = NULL,

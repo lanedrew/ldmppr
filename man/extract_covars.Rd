@@ -17,3 +17,23 @@ a matrix of covariates drawn from the provided rasters.
 \description{
 Extract covariate values from a set of rasters
 }
+\examples{
+# Load example raster data
+file_path <- system.file("extdata", "Snodgrass_aspect_southness_1m.tif", package = "ldmppr")
+south <- terra::rast(file_path)
+file_path <- system.file("extdata", "Snodgrass_wetness_index_1m.tif", package = "ldmppr")
+wet <- terra::rast(file_path)
+
+# Scale the rasters
+raster_list <- list(south, wet)
+scaled_raster_list <- scale_rasters(raster_list)
+
+# Load example locations
+locations <- small_example_data \%>\%
+ dplyr::select(x, y) \%>\%
+ as.matrix()
+
+# Extract covariates
+extract_covars(locations, scaled_raster_list)
+
+}

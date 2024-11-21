@@ -17,10 +17,45 @@
 #' @param competition_radius distance for competition radius if \code{include_comp_inds} is `TRUE`.
 #' @param correction type of correction to apply ("none", "toroidal", or "truncation").
 #' @param selection_metric metric to use for identifying the optimal model ("rmse", "mae", or "rsq").
+#' @param cv_folds number of cross-validation folds to use in model training.
+#' @param tuning_grid_size size of the tuning grid for hyperparameter tuning.
 #' @param verbose `TRUE` or `FALSE` indicating whether to show progress of model training.
 #'
 #' @return a bundled model object.
 #' @export
+#'
+#' @examples
+#' # Load example raster data
+#' file_path <- system.file("extdata", "Snodgrass_aspect_southness_1m.tif", package = "ldmppr")
+#' south <- terra::rast(file_path)
+#' file_path <- system.file("extdata", "Snodgrass_wetness_index_1m.tif", package = "ldmppr")
+#' wet <- terra::rast(file_path)
+#' file_path <- system.file("extdata", "Snodgrass_slope_1m.tif", package = "ldmppr")
+#' slope <- terra::rast(file_path)
+#' file_path <- system.file("extdata", "Snodgrass_DEM_1m.tif", package = "ldmppr")
+#' DEM <- terra::rast(file_path)
+#'
+#' raster_list <- list(south, wet, slope, DEM)
+#' scaled_raster_list <- scale_rasters(raster_list)
+#'
+#' # Load example locations
+#' locations <- small_example_data %>%
+#' dplyr::slice(1:50) %>%
+#' dplyr::mutate(time = power_law_mapping(size, .5))
+#'
+#' # Train the model
+#' train_mark_model(data = locations,
+#'                 raster_list = scaled_raster_list,
+#'                 model_type = "xgboost",
+#'                 xy_bounds = c(0, 25, 0, 25),
+#'                 parallel = FALSE,
+#'                 include_comp_inds = FALSE,
+#'                 competition_radius = 10,
+#'                 correction = "none",
+#'                 selection_metric = "rmse",
+#'                 cv_folds = 2,
+#'                 tuning_grid_size = 10,
+#'                 verbose = TRUE)
 #'
 train_mark_model <- function(data,
                              raster_list = NULL,
@@ -33,6 +68,8 @@ train_mark_model <- function(data,
                              competition_radius = 15,
                              correction = "none",
                              selection_metric = "rmse",
+                             cv_folds = 5,
+                             tuning_grid_size = 200,
                              verbose = TRUE){
 
   if(!is.data.frame(data)) stop("Provide a data frame of the form (x, y, size, time) for the data argument.", .call = FALSE)
@@ -43,6 +80,13 @@ train_mark_model <- function(data,
   if(!correction %in% c("none", "toroidal", "truncation")) stop("Provide a valid correction type for the correction argument.", .call = FALSE)
   if(include_comp_inds == TRUE & (is.null(competition_radius) | competition_radius < 0)) stop("Provide the desired radius for competition_indices argument.", .call = FALSE)
   if(!selection_metric %in% c("rmse", "mae", "rsq")) stop("Provide a valid correction type for the correction argument.", .call = FALSE)
+  if(!model_type %in% c("xgboost", "random_forest")) stop("Provide a valid model type for the model_type argument.", .call = FALSE)
+  if(!is.logical(parallel)) stop("Provide a logical value for the parallel argument.", .call = FALSE)
+  if(!is.logical(include_comp_inds)) stop("Provide a logical value for the include_comp_inds argument.", .call = FALSE)
+  if(!is.logical(save_model)) stop("Provide a logical value for the save_model argument.", .call = FALSE)
+  if(!is.logical(verbose)) stop("Provide a logical value for the verbose argument.", .call = FALSE)
+  if(!is.numeric(cv_folds) | cv_folds < 2) stop("Provide a numeric value greater than 1 for the cv_folds argument.", .call = FALSE)
+  if(!is.numeric(tuning_grid_size) | tuning_grid_size < 1) stop("Provide a numeric value greater than 0 for the tuning_grid_size argument.", .call = FALSE)
 
 
   # Initialize parallelization for model training
@@ -131,7 +175,7 @@ train_mark_model <- function(data,
       preprocessing_recipe,
       new_data = rsample::training(data_split)
     ) %>%
-    rsample::vfold_cv(v = 5)
+    rsample::vfold_cv(v = cv_folds)
 
 
   if(model_type == "xgboost"){
@@ -166,7 +210,7 @@ train_mark_model <- function(data,
     xgboost_grid <-
       dials::grid_space_filling(
         xgboost_params,
-        size = 200
+        size = tuning_grid_size
       )
 
     # Establish the model fitting workflow

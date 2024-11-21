@@ -9,7 +9,7 @@ Maintainer: Lane Drew <lanetdrew@gmail.com>
 Description: A suit of tools for estimating, assessing model fit, simulating from, and visualizing location dependent marked point processes with regularity in the pattern. You provide a reference marked point process, a set of raster images containing location specific covarites, and select the estimation algorithm and type of mark model. 'ldmppr` estimates the process and mark models and allows you to check the appropriateness of the model using a variety of diagnostic tools. Once a satisfactory model fit is achieved, you can simulate from the model and visualize the results.
 License: GPL (>= 3)
 Encoding: UTF-8
-LazyData: false
+LazyData: true
 Imports: 
     Rcpp (>= 1.0.12),
     terra,
@@ -41,3 +41,9 @@ LinkingTo:
 URL: https://github.com/lanedrew/ldmppr
 BugReports: https://github.com/lanedrew/ldmppr/issues
 RoxygenNote: 7.3.2
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Depends: 
+    R (>= 3.5.0)

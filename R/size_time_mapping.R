@@ -1,10 +1,17 @@
 #' Gentle decay (power-law) mapping function from sizes to arrival times
 #'
-#' @param sizes vector of sizes to be mapped into arrival times
-#' @param delta numeric value (greater than 0) for the exponent in the mapping function
+#' @param sizes vector of sizes to be mapped to arrival times.
+#' @param delta numeric value (greater than 0) for the exponent in the mapping function.
 #'
-#' @return vector of arrival times
+#' @return vector of arrival times.
 #' @export
+#'
+#' @examples
+#' # Generate a vector of sizes
+#' sizes <- runif(100, 0, 100)
+#'
+#' # Map the sizes to arrival times using a power-law mapping with delta = .5
+#' power_law_mapping(sizes, .5)
 #'
 power_law_mapping <- function(sizes, delta) {
   # Check if delta value is within the appropriate support

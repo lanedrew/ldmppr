@@ -1,31 +1,35 @@
-#' Plot simulated data realization
+#' Plot a marked point process
 #'
-#' @param sim_data ppp object with marks or dataframe with (x, y, size)
+#' @param mpp_data ppp object with marks or data frame with columns (x, y, size).
+#' @param pattern_type type of pattern to plot ("reference" or "simulated").
 #'
-#' @return ggplot object of the simulated data realization
+#' @return a ggplot object of the marked point process.
 #' @export
 #'
-plot_sim <- function(sim_data){
-  sim_plot <- base::as.data.frame(sim_data) |>
-    ggplot2::ggplot(ggplot2::aes(x = sim_data$x, y = sim_data$y, size = sim_data$marks)) +
-    ggplot2::geom_point(alpha = .5) +
-    ggplot2::labs(x = "", y = "", title = "Simulated Data", size = "Mark") +
-    ggplot2::theme_bw()
-  return(sim_plot)
-}
+#' @examples
+#' # Load example data
+#' data(small_example_data)
+#' mpp_data <- generate_mpp(locations = small_example_data %>% dplyr::select(x, y),
+#'                          marks = small_example_data$size,
+#'                          xy_bounds = c(0, 25, 0, 25))
+#'
+#' # Plot the marked point process
+#' plot_mpp(mpp_data, pattern_type = "reference")
+#'
+plot_mpp <- function(mpp_data, pattern_type){
 
-#' Plot reference data
-#'
-#' @param ref_data ppp object with marks or dataframe with (x, y, size)
-#'
-#' @return ggplot object of the reference data
-#' @export
-#'
-plot_refdata <- function(ref_data){
-  ref_plot <- base::as.data.frame(ref_data) |>
-    ggplot2::ggplot(ggplot2::aes(x = ref_data$x, y = ref_data$y, size = ref_data$marks)) +
+  if(pattern_type == "simulated"){
+    plot_title <- "Simulated Data"
+  } else if(pattern_type == "reference"){
+    plot_title <- "Reference Data"
+  } else {
+    stop("Provide a valid pattern type ('reference' or 'simulated').", .call = FALSE)
+  }
+
+  mpp_plot <- base::as.data.frame(mpp_data) |>
+    ggplot2::ggplot(ggplot2::aes(x = mpp_data$x, y = mpp_data$y, size = mpp_data$marks)) +
     ggplot2::geom_point(alpha = .5) +
-    ggplot2::labs(x = "", y = "", title = "Reference Data", size = "Mark") +
+    ggplot2::labs(x = "", y = "", title = plot_title, size = "Mark") +
     ggplot2::theme_bw()
-  return(ref_plot)
+  return(mpp_plot)
 }

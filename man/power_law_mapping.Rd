@@ -7,13 +7,21 @@
 power_law_mapping(sizes, delta)
 }
 \arguments{
-\item{sizes}{vector of sizes to be mapped into arrival times}
+\item{sizes}{vector of sizes to be mapped to arrival times.}
 
-\item{delta}{numeric value (greater than 0) for the exponent in the mapping function}
+\item{delta}{numeric value (greater than 0) for the exponent in the mapping function.}
 }
 \value{
-vector of arrival times
+vector of arrival times.
 }
 \description{
 Gentle decay (power-law) mapping function from sizes to arrival times
+}
+\examples{
+# Generate a vector of sizes
+sizes <- runif(100, 0, 100)
+
+# Map the sizes to arrival times using a power-law mapping with delta = .5
+power_law_mapping(sizes, .5)
+
 }

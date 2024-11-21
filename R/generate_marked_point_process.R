@@ -10,6 +10,15 @@
 #' @return a ppp object with marks.
 #' @export
 #'
+#' @examples
+#' # Load example data
+#' data(small_example_data)
+#'
+#' # Generate a marked point process
+#' generate_mpp(locations = small_example_data %>% dplyr::select(x, y),
+#'              marks = small_example_data$size,
+#'              xy_bounds = c(0, 25, 0, 25))
+#'
 generate_mpp <- function(locations, marks = NULL, xy_bounds = NULL){
 
   # Check arguments

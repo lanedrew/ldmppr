@@ -35,3 +35,44 @@ a vector of predicted mark values.
 \description{
 Predict values from the mark distribution
 }
+\examples{
+# Simulate a realization
+generating_parameters <- c(2, 8, .02, 2.5, 3, 1, 2.5, .2)
+M_n <- matrix(c(10, 14), ncol = 1)
+generated_locs <- simulate_sc(t_min = 0,
+                              t_max = 1,
+                              sc_params = generating_parameters,
+                              anchor_point = M_n,
+                              xy_bounds = c(0, 25, 0, 25))
+
+# Load the raster files
+file_path <- system.file("extdata", "Snodgrass_aspect_southness_1m.tif", package = "ldmppr")
+south <- terra::rast(file_path)
+file_path <- system.file("extdata", "Snodgrass_wetness_index_1m.tif", package = "ldmppr")
+wet <- terra::rast(file_path)
+file_path <- system.file("extdata", "Snodgrass_slope_1m.tif", package = "ldmppr")
+slope <- terra::rast(file_path)
+file_path <- system.file("extdata", "Snodgrass_DEM_1m.tif", package = "ldmppr")
+DEM <- terra::rast(file_path)
+
+# Scale the rasters
+raster_list <- list(south, wet, slope, DEM)
+scaled_raster_list <- scale_rasters(raster_list)
+
+# Load the example mark model
+file_path <- system.file("extdata", "example_mark_model.rds", package = "ldmppr")
+example_mark_model <- readRDS(file_path)
+
+# Unbundle the model
+mark_model <- bundle::unbundle(example_mark_model)
+
+# Predict the mark values
+predict_marks(sim_realization = generated_locs$thinned,
+              raster_list = scaled_raster_list,
+              mark_model = mark_model,
+              xy_bounds = c(0, 25, 0, 25),
+              include_comp_inds = TRUE,
+              competition_radius = 10,
+              correction = "none")
+
+}
