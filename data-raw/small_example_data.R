@@ -8,12 +8,9 @@
 library(ldmppr)
 
 # Read in the raster files
-south <- terra::rast("./extdata/Snodgrass_aspect_southness_1m.tif")
-wet <- terra::rast("./extdata/Snodgrass_wetness_index_1m.tif")
-slope <- terra::rast("./extdata/Snodgrass_slope_1m.tif")
-DEM <- terra::rast("./extdata/Snodgrass_DEM_1m.tif")
-raster_list <- list(south, wet, slope, DEM)
-scaled_raster_list <- scale_rasters(raster_list)
+raster_paths <- list.files(system.file("extdata", package = "ldmppr"), pattern = "\\.tif$", full.names = TRUE)
+rasters <- lapply(raster_paths, terra::rast)
+scaled_raster_list <- scale_rasters(rasters)
 
 # Set a seed for reproducibility
 set.seed(90210)

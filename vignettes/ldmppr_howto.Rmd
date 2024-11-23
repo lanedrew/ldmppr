@@ -1,0 +1,201 @@
+---
+title: "Example `ldmppr` Workflow on Simulated Data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ldmppr_howto}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(ldmppr)
+```
+
+# Data
+
+To illustrate the use of the `ldmppr` package, we will be using the included `small_example_data` dataset. This dataset consists of locations and sizes for 88 points in a 25x25 square domain.
+
+```{r showdata}
+# Load the data
+data("small_example_data")
+
+# Display the first few rows of the dataset
+nrow(small_example_data)
+head(small_example_data)
+```
+
+We also include a collection of example raster files obtained from the following ESS-DIVE repository: https://data.ess-dive.lbl.gov/view/doi:10.15485/1652536.
+
+Details for generating and obtaining these datasets can be found in the `data-raw` directory of the package repository.
+
+# Introduction
+
+The `ldmppr` package provides tools for estimating marked point processes with regularity and dependence between the marks and the locations using self-correcting point processes, training mark models, assessing model fit, and simulating spatio-temporal datasets. This vignette demonstrates the core functionality of the package through an example workflow. The approach we take in fitting a location dependent marked point process is to equate it to a spatio-temporal process where the marks (i.e. sizes) can be mapped to arrival times of events. This allows us to use the machinery of spatio-temporal point processes to estimate the parameters of the marked point process using a likelihood based approach that is computationally feasible.
+
+## Workflow Overview
+
+1. Estimate the parameters of a self-correcting point process given a reference dataset.
+2. Train a mark model using simulated or real-world data.
+3. Check the fit of the model using various non-parametric summaries for point processes and global envelope tests.
+4. Simulate and visualize datasets from the fitted model.
+
+---
+
+# Example: Analyzing Location Dependent Marked Point Processes Using Mechanistic Spatio-Temporal Point Process Models
+
+## Step 1: Estimating a Self-Correcting Point Process
+
+We start by estimating the parameters of a self-correcting spatio-temporal point process using the `estimate_parameters_sc` function. This function makes use of a user specified optimization algorithm in the `nloptr` function to perform estimation through log-likelihood optimization. The function requires the observed locations and observed arrival times, which are generated from the observed sizes using a power law mapping function. The power law mapping function depends on the hyperparameter `delta`, which controls the shape of the mapping relationship between sizes and arrival times. The function also requires the grid values for the optimization process, the initial parameter values, the upper bounds for the parameters, and the optimization algorithm to use. The function returns the optimal parameter estimates for the self-correcting point process.
+
+```{r estimate_sc}
+# Map the observed sizes to arrival times using the power_law_mapping function
+parameter_estimation_data <- small_example_data %>%
+  dplyr::mutate(time = power_law_mapping(size = size, delta = 1)) %>%
+  dplyr::select(time, x, y)
+
+# Define the grid values
+x_grid <- seq(0, 25, out.length = 3)
+y_grid <- seq(0, 25, out.length = 3)
+t_grid <- seq(0, 1, out.length = 3)
+
+# Define the parameter initialization values
+parameter_inits <- c(1.5, 8.5, .015, 1.5, 3.2, .75, 3, .08)
+
+# Define the upper bounds
+upper_bounds <- c(1, 25, 25)
+
+# Estimate the parameters
+estimated_sc <- estimate_parameters_sc(
+  data = parameter_estimation_data,
+  x_grid = x_grid,
+  y_grid = y_grid,
+  t_grid = t_grid,
+  parameter_inits = parameter_inits,
+  upper_bounds = upper_bounds,
+  opt_algorithm = "NLOPT_LN_SBPLX",
+  nloptr_options = list(
+    maxeval = 25,
+    xtol_rel = 1e-2
+  ),
+  verbose = FALSE
+)
+
+# Obtain the optimal parameter estimates
+optimal_parameters <- estimated_sc$solution
+print(optimal_parameters)
+```
+
+In practice, we recommend using a denser grid for the optimization process to ensure that the global optimum is found. We also note that the function `estimate_parameters_sc_parallel()` can be used to fit the model for varying values of `delta` in parallel to identify the optimal mapping between sizes and arrival times.
+
+## Step 2: Training a Mark Model
+Next, we use the `train_mark_model` function to train a suitably flexible mark model using location specific covariates and the generated arrival times to predict sizes. The function uses the `xgboost` or `ranger` engines to train the model and may be run in parallel if desired. The user has control over the choice of a Gradient Boosting Machine (GBM) or Random Forest (RF) model, the bounds of the spatial domain, the inclusion of competition indices, the competition radius, the correction method, the final model selection metric, the number of cross validation folds, and the size of the parameter tuning grid for the model.
+
+```{r train_mark_model}
+# Load the example raster files
+raster_paths <- list.files(system.file("extdata", package = "ldmppr"), pattern = "\\.tif$", full.names = TRUE)
+rasters <- lapply(raster_paths, terra::rast)
+scaled_rasters <- scale_rasters(rasters)
+
+# Generate the time values using the power law mapping with optimal delta
+model_training_data <- small_example_data %>%
+  dplyr::mutate(time = power_law_mapping(size, 1))
+
+# Train the model
+example_mark_model <- train_mark_model(
+  data = model_training_data,
+  raster_list = scaled_rasters,
+  model_type = "xgboost",
+  xy_bounds = c(0, 25, 0, 25),
+  parallel = FALSE,
+  include_comp_inds = FALSE,
+  competition_radius = 10,
+  correction = "none",
+  selection_metric = "rmse",
+  cv_folds = 2,
+  tuning_grid_size = 10,
+  verbose = TRUE
+)
+
+# Unbundle the model
+example_mark_model <- bundle::unbundle(example_mark_model$bundled_model)
+```
+
+The `train_mark_model` function returns a trained mark model object that can be used to predict sizes for new locations. The model object contains the trained model, the optimal hyperparameters, the cross-validated performance metrics, and the feature importance values. In practice, we recommend taking advantage of the parallelization capabilities of the function to speed up the training process, in addition to using more cross-validation folds and a denser tuning grid to obtain a more robust model.
+
+## Step 3: Checking the Fit of the Model
+Now that we have an estimated self-correcting point process and a trained mark model, we can check the fit of the model using the `check_model_fit` function. This function provides a variety of non-parametric summaries for point processes and global envelope tests to assess the goodness of fit of the model. The package provides individual envelope tests for the L, F, G, J, E, and V statistics, or a combined envelope test for all statistics simultaneously by making use of the functionality of the `spatstat` and `GET` packages. By plotting the combined envelope test, we can visually assess the goodness of fit of the model and obtain a p-value measuring how well the estimated model captures the relationships observed in the reference data. Typically a p-value less than 0.05 indicates a poor fit of the model to the data, and the authors of the `GET` package recommend a minimum of 2500 simulations to obtain a valid p-value at the .05 level.
+
+```{r check_model_fit}
+# Generate the reference pattern
+reference_data <- generate_mpp(
+  locations = small_example_data[, c("x", "y")],
+  marks = small_example_data$size,
+  xy_bounds = c(0, 25, 0, 25)
+)
+
+# Define an anchor point
+M_n <- as.matrix(small_example_data[1, c("x", "y")])
+
+# Specify the estimated parameters of the self-correcting process
+estimated_parameters <- optimal_parameters
+
+# Check the model fit
+example_model_fit <- check_model_fit(
+  reference_data = reference_data,
+  t_min = 0,
+  t_max = 1,
+  sc_params = estimated_parameters,
+  anchor_point = M_n,
+  raster_list = scaled_rasters,
+  mark_model = example_mark_model,
+  xy_bounds = c(0, 25, 0, 25),
+  include_comp_inds = FALSE,
+  thinning = TRUE,
+  correction = "none",
+  competition_radius = 10,
+  n_sim = 100,
+  save_sims = FALSE,
+  verbose = TRUE,
+  seed = 90210
+)
+
+# Plot the combined global envelope test results
+plot(example_model_fit$combined_env)
+```
+
+The combined envelope test provides a visual summary of the goodness of fit of the model to the reference data. The p-value of the test can be used to assess how well the fitted model reflects the reference data. If the p-value is less than 0.05, the model may not be a good fit for the data.
+
+## Step 4: Simulating and Visualizing Datasets
+Finally, we can simulate datasets from the fitted model using the `simulate_mpp` function. This function generates a realization of a marked point process given the estimated parameters of the self-correcting process and a trained mark model. The function allows for the specification of the number of points to simulate, the time range to simulate over, the spatial domain to simulate over, and the inclusion of competition indices. The function returns a list containing the marked point process object and a data frame containing the simulated locations, marks, and arrival times. The realization can be visualized using the `plot_mpp` function.
+
+```{r simulate_mpp}
+# Simulate a marked point process
+simulated_mpp <- simulate_mpp(
+  sc_params = estimated_parameters,
+  t_min = 0,
+  t_max = 1,
+  anchor_point = M_n,
+  raster_list = scaled_rasters,
+  mark_model = example_mark_model,
+  xy_bounds = c(0, 25, 0, 25),
+  include_comp_inds = TRUE,
+  competition_radius = 10,
+  correction = "none",
+  thinning = TRUE
+)
+
+# Plot the simulated marked point process
+plot_mpp(
+  mpp_data = simulated_mpp$mpp,
+  pattern_type = "simulated"
+)
+```
+
+The `plot_mpp` function provides a visual representation of the simulated marked point process.

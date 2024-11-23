@@ -1,7 +1,7 @@
 #' Estimate parameters of the self-correcting model using log-likelihood maximization in parallel
 #'
 #' @description
-#' Estimate the parameters of the self-correcting model using nloptr given a set of delta values.
+#' Estimate the parameters of the self-correcting model using [nloptr::nloptr()] given a set of delta values.
 #' Makes use of parallel computation to allow the user to identify the optimal delta value more quickly
 #' given available computational resources.
 #'

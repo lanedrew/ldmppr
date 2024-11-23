@@ -1,6 +1,7 @@
 #' Scale a set of rasters
 #'
 #' @param raster_list a list of raster objects.
+#' @param reference_resolution the resolution to resample the rasters to.
 #'
 #' @return a list of scaled raster objects.
 #' @export
@@ -24,7 +25,8 @@
 #' # Scale example rasters in a list
 #' rast_list <- list(rast_a, rast_b)
 #' scale_rasters(rast_list)
-scale_rasters <- function(raster_list) {
+#'
+scale_rasters <- function(raster_list, reference_resolution = NULL) {
   # Rescale each raster
   scaled_rasters <- lapply(raster_list, function(r) {
     # Scale the raster values
@@ -39,9 +41,14 @@ scale_rasters <- function(raster_list) {
     new_extent <- c(0, x_range, 0, y_range)
 
     # Align raster to the new extent
-    r_rescaled <- terra::wrap(r_scaled, extent = terra::ext(new_extent))
+    terra::ext(r_scaled) <- new_extent
 
-    return(r_rescaled)
+    # Resample if reference resolution is provided
+    if (!is.null(reference_resolution)) {
+      r_scaled <- terra::resample(r_scaled, reference_resolution)
+    }
+
+    return(r_scaled)
   })
 
   return(scaled_rasters)

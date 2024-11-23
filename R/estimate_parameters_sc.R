@@ -1,7 +1,7 @@
 #' Estimate parameters of the self-correcting model using log-likelihood optimization
 #'
 #' @description
-#' Estimate the parameters of the self-correcting model using the [nloptr::nloptr] function given a formatted dataset.
+#' Estimate the parameters of the self-correcting model using the [nloptr::nloptr()] function given a formatted dataset.
 #'
 #' @param data a matrix or data frame of times and locations in the form (time, x, y).
 #' @param x_grid a vector of grid values for x.
@@ -10,15 +10,14 @@
 #' @param parameter_inits a vector of parameter initialization values.
 #' @param upper_bounds a vector of upper bounds for time, x, and y.
 #' @param opt_algorithm the NLopt algorithm to use for optimization.
-#' @param nloptr_options a list of named options for [nloptr::nloptr] including "maxeval", "xtol_rel", and "maxtime".
+#' @param nloptr_options a list of named options for [nloptr::nloptr()] including "maxeval", "xtol_rel", and "maxtime".
 #' @param verbose `TRUE` or `FALSE` indicating whether to show progress of optimization.
 #'
-#' @return an [nloptr::nloptr] object with details of the optimization including solution.
+#' @return an [nloptr::nloptr()] object with details of the optimization including solution.
 #' @export
 #'
 #' @details
-#' This function estimates the parameters of the self-correcting model presented in
-#'
+#' This function estimates the parameters of the self-correcting model presented in Møller et al. (2016) using the full likelihood.
 #'
 #' @references
 #' Møller, J., Ghorbani, M., & Rubak, E. (2016). Mechanistic spatio-temporal point process models

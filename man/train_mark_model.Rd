@@ -60,17 +60,12 @@ covariates in the mark model.
 }
 \examples{
 # Load example raster data
-file_path <- system.file("extdata", "Snodgrass_aspect_southness_1m.tif", package = "ldmppr")
-south <- terra::rast(file_path)
-file_path <- system.file("extdata", "Snodgrass_wetness_index_1m.tif", package = "ldmppr")
-wet <- terra::rast(file_path)
-file_path <- system.file("extdata", "Snodgrass_slope_1m.tif", package = "ldmppr")
-slope <- terra::rast(file_path)
-file_path <- system.file("extdata", "Snodgrass_DEM_1m.tif", package = "ldmppr")
-DEM <- terra::rast(file_path)
+raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
+                           pattern = "\\\\.tif$", full.names = TRUE)
+rasters <- lapply(raster_paths, terra::rast)
 
-raster_list <- list(south, wet, slope, DEM)
-scaled_raster_list <- scale_rasters(raster_list)
+# Scale the rasters
+scaled_raster_list <- scale_rasters(rasters)
 
 # Load example locations
 locations <- small_example_data \%>\%
