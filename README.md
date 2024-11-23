@@ -24,7 +24,7 @@ and regularity in the pattern.
 4.  Simulate and visualize datasets from the fitted model.
 
 For additional details on implementing the package workflow, run
-`vignette("ldmppr")` in `R` after installing the package.
+`vignette("ldmppr_howto")` in `R` after installing the package.
 
 ### Installation
 
