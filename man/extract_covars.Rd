@@ -39,7 +39,8 @@ locations <- small_example_data \%>\%
   as.matrix()
 
 # Extract covariates
-extract_covars(locations, scaled_raster_list)
+example_covars <- extract_covars(locations, scaled_raster_list)
+head(example_covars)
 
 # Load example raster data
 file_path <- system.file("extdata", "Snodgrass_aspect_southness_1m.tif", package = "ldmppr")

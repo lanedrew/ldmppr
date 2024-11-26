@@ -70,7 +70,6 @@ scaled_raster_list <- scale_rasters(rasters)
 
 # Load example locations
 locations <- small_example_data \%>\%
-  dplyr::slice(1:50) \%>\%
   dplyr::mutate(time = power_law_mapping(size, .5))
 
 # Train the model
@@ -84,8 +83,8 @@ train_mark_model(
   competition_radius = 10,
   correction = "none",
   selection_metric = "rmse",
-  cv_folds = 2,
-  tuning_grid_size = 10,
+  cv_folds = 5,
+  tuning_grid_size = 20,
   verbose = TRUE
 )
 

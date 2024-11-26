@@ -22,7 +22,8 @@
 #'   as.matrix()
 #'
 #' # Extract covariates
-#' extract_covars(locations, scaled_raster_list)
+#' example_covars <- extract_covars(locations, scaled_raster_list)
+#' head(example_covars)
 #'
 extract_covars <- function(locations, raster_list) {
   # Extract covariate values from the raster list and collate into a data frame
