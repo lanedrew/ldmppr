@@ -57,7 +57,7 @@ check_model_fit(
 \item{seed}{an integer value to set the seed for reproducibility.}
 }
 \value{
-a list containing various model fit summaries and
+a list containing a combined global envelope test, individual global envelope tests for L, F, G, J, E, and V functions, and simulated metric values (if specified).
 }
 \description{
 Allows the user to perform global envelope tests for the L, F, G, J, E, and V functions from the \code{spatstat} package.
@@ -67,12 +67,15 @@ These tests serve as a goodness of fit measure for the estimated model relative 
 This function relies on the \code{spatstat} package for the calculation of the point pattern metrics
 and the \code{GET} package for the global envelope tests. The L, F, G, J, E, and V functions are a collection of
 non-parametric summary statistics that describe the spatial distribution of points and marks in a point pattern.
+See the documentation for [spatstat.explore::Lest()], [spatstat.explore::Fest()], [spatstat.explore::Gest()],
+[spatstat.explore::Jest()], [spatstat.explore::Emark()], and [spatstat.explore::Vmark()] for more information.
+Also, see the [GET::global_envelope_test()] function for more information on the global envelope tests.
 }
 \examples{
 # Load the small example data
 data(small_example_data)
 
-# Load the example mark model
+# Load the example mark model that previously was trained on the small example data
 file_path <- system.file("extdata", "example_mark_model.rds", package = "ldmppr")
 mark_model <- bundle::unbundle(readRDS(file_path))
 
@@ -96,10 +99,11 @@ M_n <- as.matrix(small_example_data[1, c("x", "y")])
 
 # Specify the estimated parameters of the self-correcting process
 # Note: These would generally be estimated using estimate_parameters_sc
-# or estimate_parameters_sc_parallel
+# or estimate_parameters_sc_parallel. These values are estimates from
+# the small_example_data generating script.
 estimated_parameters <- c(
-  1.29398567, 6.09197246, 0.01784865, 2.21433824,
-  2.11325680, 0.97944460, 2.44347284, 0.15188858
+  1.42936311, 8.59251417, 0.02153924, 1.89763856,
+  2.33256061, 1.09522235, 2.66250000, 0.16499789
 )
 
 # Check the model fit

@@ -18,8 +18,11 @@
 #' @param num_cores number of cores to use in parallel estimation.
 #' @param set_future_plan `TRUE` or `FALSE` indicating whether to change the parallelization plan for use in the function.
 #'
-#' @return a list containing the optimal obtained values and the full results.
+#' @return a list containing the optimal obtained values and the full [nloptr::nloptr()] results for all provided delta values.
 #' @export
+#'
+#' @details
+#' Details regarding the self-correcting model and the estimation procedure can be found in the references.
 #'
 #' @references
 #' Møller, J., Ghorbani, M., & Rubak, E. (2016). Mechanistic spatio-temporal point process models
@@ -35,12 +38,12 @@
 #' data(small_example_data)
 #'
 #' # Define the grid values
-#' x_grid <- seq(0, 25, out.length = 3)
-#' y_grid <- seq(0, 25, out.length = 3)
-#' t_grid <- seq(0, 1, out.length = 3)
+#' x_grid <- seq(0, 25, length.out = 5)
+#' y_grid <- seq(0, 25, length.out = 5)
+#' t_grid <- seq(0, 1, length.out = 5)
 #'
 #' # Define the delta values
-#' delta_values <- seq(0.75, 1, by = 0.25)
+#' delta_values <- seq(0.25, 1, by = 0.25)
 #'
 #' # Define the parameter initialization values
 #' parameter_inits <- c(1.5, 8.5, .015, 1.5, 3.2, .75, 3, .08)

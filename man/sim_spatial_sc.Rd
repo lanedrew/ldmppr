@@ -7,16 +7,16 @@
 sim_spatial_sc(M_n, params, nsim_t, xy_bounds)
 }
 \arguments{
-\item{M_n}{vector of (x,y)-coordinates for largest point}
+\item{M_n}{a vector of (x,y)-coordinates for largest point.}
 
-\item{params}{a vector of parameters (alpha_2, beta_2)}
+\item{params}{a vector of parameters (alpha_2, beta_2).}
 
-\item{nsim_t}{number of points to simulate}
+\item{nsim_t}{number of points to simulate.}
 
-\item{xy_bounds}{vector of lower and upper bounds for the domain (2 for x, 2 for y)}
+\item{xy_bounds}{vector of lower and upper bounds for the domain (2 for x, 2 for y).}
 }
 \value{
-a matrix of point locations in the (x,y)-plane
+a matrix of point locations in the (x,y)-plane.
 }
 \description{
 Simulate the spatial component of the self-correcting model

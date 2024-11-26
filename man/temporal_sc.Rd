@@ -7,14 +7,14 @@
 temporal_sc(params, eval_t, obs_t)
 }
 \arguments{
-\item{params}{a vector of parameters (alpha_1, beta_1, gamma_1)}
+\item{params}{a vector of parameters (alpha_1, beta_1, gamma_1).}
 
-\item{eval_t}{a t value}
+\item{eval_t}{a t value.}
 
-\item{obs_t}{a vector of t}
+\item{obs_t}{a vector of t values.}
 }
 \value{
-full temporal likelihood evaluation
+evaluation of full temporal likelihood.
 }
 \description{
 calculates temporal likelihood

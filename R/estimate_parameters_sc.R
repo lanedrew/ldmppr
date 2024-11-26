@@ -18,6 +18,7 @@
 #'
 #' @details
 #' This function estimates the parameters of the self-correcting model presented in Møller et al. (2016) using the full likelihood.
+#' Details regarding the self-correcting model and the estimation procedure can be found in the references.
 #'
 #' @references
 #' Møller, J., Ghorbani, M., & Rubak, E. (2016). Mechanistic spatio-temporal point process models
@@ -28,13 +29,13 @@
 #' # Load the small example data
 #' data(small_example_data)
 #' small_example_data <- small_example_data %>%
-#'   dplyr::mutate(time = power_law_mapping(size, 1)) %>%
+#'   dplyr::mutate(time = power_law_mapping(size, .5)) %>%
 #'   dplyr::select(time, x, y)
 #'
 #' # Define the grid values
-#' x_grid <- seq(0, 25, out.length = 3)
-#' y_grid <- seq(0, 25, out.length = 3)
-#' t_grid <- seq(0, 1, out.length = 3)
+#' x_grid <- seq(0, 25, length.out = 5)
+#' y_grid <- seq(0, 25, length.out = 5)
+#' t_grid <- seq(0, 1, length.out = 5)
 #'
 #' # Define the parameter initialization values
 #' parameter_inits <- c(1.5, 8.5, .015, 1.5, 3.2, .75, 3, .08)

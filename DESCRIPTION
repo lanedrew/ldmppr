@@ -6,7 +6,7 @@ Authors@R: c(
   person("Lane", "Drew", role = c("aut", "cre", "cph"), email = "lanetdrew@gmail.com", comment = c(ORCID = "0009-0006-5427-4092")),
   person("Andee", "Kaplan", role = "aut", comment = c(ORCID = "0000-0002-2940-889X")))
 Maintainer: Lane Drew <lanetdrew@gmail.com>
-Description: A suit of tools for estimating, assessing model fit, simulating from, and visualizing location dependent marked point processes with regularity in the pattern. You provide a reference marked point process, a set of raster images containing location specific covarites, and select the estimation algorithm and type of mark model. 'ldmppr` estimates the process and mark models and allows you to check the appropriateness of the model using a variety of diagnostic tools. Once a satisfactory model fit is achieved, you can simulate from the model and visualize the results.
+Description: A suite of tools for estimating, assessing model fit, simulating from, and visualizing location dependent marked point processes characterized by regularity in the pattern. You provide a reference marked point process, a set of raster images containing location specific covarites, and select the estimation algorithm and type of mark model. 'ldmppr` estimates the process and mark models and allows you to check the appropriateness of the model using a variety of diagnostic tools. Once a satisfactory model fit is obtained, you can simulate from the model and visualize the results.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
@@ -23,7 +23,6 @@ Imports:
     rsample,
     tune,
     workflows,
-    yardstick,
     magrittr,
     hardhat,
     ggplot2,
@@ -34,7 +33,8 @@ Imports:
     progress,
     dplyr,
     future,
-    furrr
+    furrr,
+    yardstick
 LinkingTo: 
     Rcpp,
     RcppArmadillo

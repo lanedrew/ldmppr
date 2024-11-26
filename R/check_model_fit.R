@@ -22,13 +22,16 @@
 #' @param verbose `TRUE` or `FALSE` indicating whether to show progress of model checking.
 #' @param seed an integer value to set the seed for reproducibility.
 #'
-#' @return a list containing various model fit summaries and
+#' @return a list containing a combined global envelope test, individual global envelope tests for L, F, G, J, E, and V functions, and simulated metric values (if specified).
 #' @export
 #'
 #' @details
 #' This function relies on the \code{spatstat} package for the calculation of the point pattern metrics
 #' and the \code{GET} package for the global envelope tests. The L, F, G, J, E, and V functions are a collection of
 #' non-parametric summary statistics that describe the spatial distribution of points and marks in a point pattern.
+#' See the documentation for [spatstat.explore::Lest()], [spatstat.explore::Fest()], [spatstat.explore::Gest()],
+#' [spatstat.explore::Jest()], [spatstat.explore::Emark()], and [spatstat.explore::Vmark()] for more information.
+#' Also, see the [GET::global_envelope_test()] function for more information on the global envelope tests.
 #'
 #' @references
 #' Baddeley, A., Rubak, E., & Turner, R. (2015). *Spatial Point Patterns:
@@ -43,7 +46,7 @@
 #' # Load the small example data
 #' data(small_example_data)
 #'
-#' # Load the example mark model
+#' # Load the example mark model that previously was trained on the small example data
 #' file_path <- system.file("extdata", "example_mark_model.rds", package = "ldmppr")
 #' mark_model <- bundle::unbundle(readRDS(file_path))
 #'
@@ -67,10 +70,11 @@
 #'
 #' # Specify the estimated parameters of the self-correcting process
 #' # Note: These would generally be estimated using estimate_parameters_sc
-#' # or estimate_parameters_sc_parallel
+#' # or estimate_parameters_sc_parallel. These values are estimates from
+#' # the small_example_data generating script.
 #' estimated_parameters <- c(
-#'   1.29398567, 6.09197246, 0.01784865, 2.21433824,
-#'   2.11325680, 0.97944460, 2.44347284, 0.15188858
+#'   1.42936311, 8.59251417, 0.02153924, 1.89763856,
+#'   2.33256061, 1.09522235, 2.66250000, 0.16499789
 #' )
 #'
 #' # Check the model fit
@@ -199,6 +203,7 @@ check_model_fit <- function(reference_data,
     for (j in 1:n_sim) {
       # Simulate a dataset and predict the marks
       if (thinning) {
+        # Simulate a dataset using the estimated parameters
         sim_j <- simulate_sc(
           t_min = t_min,
           t_max = t_max,
@@ -207,6 +212,7 @@ check_model_fit <- function(reference_data,
           xy_bounds = xy_bounds
         )$thinned
       } else {
+        # Simulate a dataset using the estimated parameters
         sim_j <- simulate_sc(
           t_min = t_min,
           t_max = t_max,
@@ -215,6 +221,8 @@ check_model_fit <- function(reference_data,
           xy_bounds = xy_bounds
         )$unthinned
       }
+
+      # Predict the marks using the provided mark model
       pred_marks_j <- predict_marks(
         sim_realization = sim_j,
         raster_list = scale_rasters(raster_list),

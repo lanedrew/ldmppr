@@ -7,12 +7,12 @@
 vec_dist(x, y)
 }
 \arguments{
-\item{x}{a vector x}
+\item{x}{a vector of x values.}
 
-\item{y}{a vector y}
+\item{y}{a vector of y values.}
 }
 \value{
-distance between the two vectors
+the distance between the two vectors.
 }
 \description{
 calculates euclidean distance

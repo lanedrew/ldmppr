@@ -28,28 +28,29 @@
 #'
 scale_rasters <- function(raster_list, reference_resolution = NULL) {
   # Rescale each raster
-  scaled_rasters <- lapply(raster_list, function(r) {
-    # Scale the raster values
-    r_scaled <- terra::scale(r)
+  scaled_rasters <- lapply(raster_list, terra::scale)
 
-    # Get the current extent
-    current_extent <- terra::ext(r_scaled)
+  # Get the current extent
+  current_extents <- lapply(scaled_rasters, terra::ext)
 
-    # Compute the new extent
-    x_range <- current_extent[2] - current_extent[1]
-    y_range <- current_extent[4] - current_extent[3]
-    new_extent <- c(0, x_range, 0, y_range)
-
-    # Align raster to the new extent
-    terra::ext(r_scaled) <- new_extent
-
-    # Resample if reference resolution is provided
-    if (!is.null(reference_resolution)) {
-      r_scaled <- terra::resample(r_scaled, reference_resolution)
-    }
-
-    return(r_scaled)
+  # Compute the new extent
+  new_extents <- lapply(current_extents, function(ext) {
+    x_range <- ext[2] - ext[1]
+    y_range <- ext[4] - ext[3]
+    new_ext <- c(0, x_range, 0, y_range)
+    return(new_ext)
   })
+
+  # Align raster to the new extent
+  scaled_rasters <- mapply(function(x, y) {
+    terra::ext(x) <- y
+    return(x)
+  }, scaled_rasters, new_extents, SIMPLIFY = FALSE)
+
+  # Resample if reference resolution is provided
+  if (!is.null(reference_resolution)) {
+    scaled_rasters <- lapply(scaled_rasters, function(x) terra::resample(x, reference_resolution))
+  }
 
   return(scaled_rasters)
 }

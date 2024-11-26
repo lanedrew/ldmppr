@@ -19,7 +19,7 @@ set.seed(90210)
 M_n <- matrix(c(10, 14), ncol = 1)
 
 # Specify the generating parameters of the self-correcting process
-generating_parameters <- c(2, 6, .02, 2.5, 3, 1, 2.5, .2)
+generating_parameters <- c(2, 8, .015, 2.5, 3, 1, 2.5, .2)
 
 # Simulate the self-correcting process
 generated_locs <- simulate_sc(t_min = 0, t_max = 1, sc_params = generating_parameters, anchor_point = M_n, xy_bounds = c(0, 25, 0, 25))
@@ -45,9 +45,9 @@ usethis::use_data(small_example_data, overwrite = TRUE)
 ngridx <- 10
 ngridy <- 10
 ngridt <- 10
-Xgrid <- seq(0, 25, length = ngridx)
-Ygrid <- seq(0, 25, length = ngridy)
-Tgrid <- seq(0, 1, length = ngridt)
+Xgrid <- seq(0, 25, length.out = ngridx)
+Ygrid <- seq(0, 25, length.out = ngridy)
+Tgrid <- seq(0, 1, length.out = ngridt)
 
 # Define the parameter initialization values
 x_0 <- c(1.5, 8.5, .015, 1.5, 3.2, .75, 3, .08)
@@ -70,7 +70,7 @@ estimate_demo_params <- estimate_parameters_sc_parallel(
 # Generate the time values using the power law mapping with optimal delta
 # selected from the parameter estimation above
 model_training_data <- small_example_data %>%
-  dplyr::mutate(time = power_law_mapping(size, .65))
+  dplyr::mutate(time = power_law_mapping(size, .5))
 
 # Train the model
 train_mark_mod <- train_mark_model(

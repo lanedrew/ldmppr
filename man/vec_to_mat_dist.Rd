@@ -14,7 +14,7 @@ vec_to_mat_dist(eval_u, x_col, y_col)
 \item{y_col}{a vector of y coordinates.}
 }
 \value{
-distance between a vector and each row of a matrix
+a vector of distances between a vector and each row of a matrix.
 }
 \description{
 calculates euclidean distance between a vector and a matrix

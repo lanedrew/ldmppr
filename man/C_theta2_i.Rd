@@ -7,20 +7,20 @@
 C_theta2_i(xgrid, ygrid, tgrid, data, params, bounds)
 }
 \arguments{
-\item{xgrid}{a vector of grid values for x}
+\item{xgrid}{a vector of grid values for x.}
 
-\item{ygrid}{a vector of grid values for y}
+\item{ygrid}{a vector of grid values for y.}
 
-\item{tgrid}{a t value}
+\item{tgrid}{a t value.}
 
-\item{data}{a matrix of data}
+\item{data}{a matrix of data.}
 
-\item{params}{a vector of parameters}
+\item{params}{a vector of parameters.}
 
-\item{bounds}{a vector of bounds for time, x, and y}
+\item{bounds}{a vector of bounds for time, x, and y.}
 }
 \value{
-returns the product
+returns the product.
 }
 \description{
 calculates c_theta

@@ -56,7 +56,8 @@ M_n <- matrix(c(10, 14), ncol = 1)
 
 # Load the raster files
 raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
-                           pattern = "\\\\.tif$", full.names = TRUE)
+  pattern = "\\\\.tif$", full.names = TRUE
+)
 rasters <- lapply(raster_paths, terra::rast)
 
 # Scale the rasters

@@ -7,12 +7,12 @@
 dist_one_dim(eval_t, obs_t)
 }
 \arguments{
-\item{eval_t}{a t value}
+\item{eval_t}{a t value.}
 
-\item{obs_t}{a vector of t}
+\item{obs_t}{a vector of t values.}
 }
 \value{
-distance between a single t and the vector of all t
+distance between a single t and the vector of all t values.
 }
 \description{
 calculates distance in one dim

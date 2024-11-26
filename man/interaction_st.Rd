@@ -7,12 +7,12 @@
 interaction_st(data, params)
 }
 \arguments{
-\item{data}{a matrix of times and locations}
+\item{data}{a matrix of times and locations.}
 
-\item{params}{a vector of parameters}
+\item{params}{a vector of parameters.}
 }
 \value{
-interaction probabilities for every point
+a vector of interaction probabilities for every point.
 }
 \description{
 calculates spatio-temporal interaction

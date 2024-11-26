@@ -20,7 +20,7 @@ library(ldmppr)
 
 # Data
 
-To illustrate the use of the `ldmppr` package, we will be using the included `small_example_data` dataset. This dataset consists of locations and sizes for 88 points in a 25x25 square domain.
+To illustrate the use of the `ldmppr` package, we will be using the included `small_example_data` dataset. This dataset consists of locations and sizes for 121 points in a (25m x 25m) square domain.
 
 ```{r showdata}
 # Load the data
@@ -57,13 +57,13 @@ We start by estimating the parameters of a self-correcting spatio-temporal point
 ```{r estimate_sc}
 # Map the observed sizes to arrival times using the power_law_mapping function
 parameter_estimation_data <- small_example_data %>%
-  dplyr::mutate(time = power_law_mapping(size = size, delta = 1)) %>%
+  dplyr::mutate(time = power_law_mapping(size = size, delta = .5)) %>%
   dplyr::select(time, x, y)
 
 # Define the grid values
-x_grid <- seq(0, 25, out.length = 3)
-y_grid <- seq(0, 25, out.length = 3)
-t_grid <- seq(0, 1, out.length = 3)
+x_grid <- seq(0, 25, length.out = 5)
+y_grid <- seq(0, 25, length.out = 5)
+t_grid <- seq(0, 1, length.out = 5)
 
 # Define the parameter initialization values
 parameter_inits <- c(1.5, 8.5, .015, 1.5, 3.2, .75, 3, .08)
@@ -81,8 +81,8 @@ estimated_sc <- estimate_parameters_sc(
   upper_bounds = upper_bounds,
   opt_algorithm = "NLOPT_LN_SBPLX",
   nloptr_options = list(
-    maxeval = 25,
-    xtol_rel = 1e-2
+    maxeval = 300,
+    xtol_rel = 1e-3
   ),
   verbose = FALSE
 )
@@ -92,7 +92,7 @@ optimal_parameters <- estimated_sc$solution
 print(optimal_parameters)
 ```
 
-In practice, we recommend using a denser grid for the optimization process to ensure that the global optimum is found. We also note that the function `estimate_parameters_sc_parallel()` can be used to fit the model for varying values of `delta` in parallel to identify the optimal mapping between sizes and arrival times.
+In practice, we recommend using a denser grid for the optimization process to increase the likelihood that the global optimum is found. We also note that the function `estimate_parameters_sc_parallel()` can be used to fit the model for varying values of `delta` in parallel to identify the optimal mapping between sizes and arrival times.
 
 ## Step 2: Training a Mark Model
 Next, we use the `train_mark_model` function to train a suitably flexible mark model using location specific covariates and the generated arrival times to predict sizes. The function uses the `xgboost` or `ranger` engines to train the model and may be run in parallel if desired. The user has control over the choice of a Gradient Boosting Machine (GBM) or Random Forest (RF) model, the bounds of the spatial domain, the inclusion of competition indices, the competition radius, the correction method, the final model selection metric, the number of cross validation folds, and the size of the parameter tuning grid for the model.
@@ -105,7 +105,7 @@ scaled_rasters <- scale_rasters(rasters)
 
 # Generate the time values using the power law mapping with optimal delta
 model_training_data <- small_example_data %>%
-  dplyr::mutate(time = power_law_mapping(size, 1))
+  dplyr::mutate(time = power_law_mapping(size, .5))
 
 # Train the model
 example_mark_model <- train_mark_model(
@@ -118,8 +118,8 @@ example_mark_model <- train_mark_model(
   competition_radius = 10,
   correction = "none",
   selection_metric = "rmse",
-  cv_folds = 2,
-  tuning_grid_size = 10,
+  cv_folds = 5,
+  tuning_grid_size = 30,
   verbose = TRUE
 )
 
@@ -132,7 +132,7 @@ The `train_mark_model` function returns a trained mark model object that can be 
 ## Step 3: Checking the Fit of the Model
 Now that we have an estimated self-correcting point process and a trained mark model, we can check the fit of the model using the `check_model_fit` function. This function provides a variety of non-parametric summaries for point processes and global envelope tests to assess the goodness of fit of the model. The package provides individual envelope tests for the L, F, G, J, E, and V statistics, or a combined envelope test for all statistics simultaneously by making use of the functionality of the `spatstat` and `GET` packages. By plotting the combined envelope test, we can visually assess the goodness of fit of the model and obtain a p-value measuring how well the estimated model captures the relationships observed in the reference data. Typically a p-value less than 0.05 indicates a poor fit of the model to the data, and the authors of the `GET` package recommend a minimum of 2500 simulations to obtain a valid p-value at the .05 level.
 
-```{r check_model_fit}
+```{r check_model_fit, fig.width=6, fig.height=9}
 # Generate the reference pattern
 reference_data <- generate_mpp(
   locations = small_example_data[, c("x", "y")],
@@ -175,7 +175,7 @@ The combined envelope test provides a visual summary of the goodness of fit of t
 ## Step 4: Simulating and Visualizing Datasets
 Finally, we can simulate datasets from the fitted model using the `simulate_mpp` function. This function generates a realization of a marked point process given the estimated parameters of the self-correcting process and a trained mark model. The function allows for the specification of the number of points to simulate, the time range to simulate over, the spatial domain to simulate over, and the inclusion of competition indices. The function returns a list containing the marked point process object and a data frame containing the simulated locations, marks, and arrival times. The realization can be visualized using the `plot_mpp` function.
 
-```{r simulate_mpp}
+```{r simulate_mpp, fig.width=3.5, fig.height=3}
 # Simulate a marked point process
 simulated_mpp <- simulate_mpp(
   sc_params = estimated_parameters,

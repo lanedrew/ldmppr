@@ -21,13 +21,14 @@
 #' @param tuning_grid_size size of the tuning grid for hyperparameter tuning.
 #' @param verbose `TRUE` or `FALSE` indicating whether to show progress of model training.
 #'
-#' @return a bundled model object.
+#' @return a list containing the raw trained model and a bundled model object.
 #' @export
 #'
 #' @examples
 #' # Load example raster data
 #' raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
-#'                            pattern = "\\.tif$", full.names = TRUE)
+#'   pattern = "\\.tif$", full.names = TRUE
+#' )
 #' rasters <- lapply(raster_paths, terra::rast)
 #'
 #' # Scale the rasters

@@ -7,12 +7,12 @@
 part_1_1_full(data, params)
 }
 \arguments{
-\item{data}{a matrix of locations and times}
+\item{data}{a matrix of locations and times.}
 
-\item{params}{a vector of parameters}
+\item{params}{a vector of parameters.}
 }
 \value{
-full likelihood for part 1
+full likelihood evaluation for part 1.
 }
 \description{
 calculates part 1-1 full

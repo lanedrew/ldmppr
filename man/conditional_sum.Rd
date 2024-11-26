@@ -7,14 +7,14 @@
 conditional_sum(obs_t, eval_t, y)
 }
 \arguments{
-\item{obs_t}{a vector of observed t}
+\item{obs_t}{a vector of observed t values.}
 
-\item{eval_t}{a t value}
+\item{eval_t}{a t value.}
 
-\item{y}{a vector of values}
+\item{y}{a vector of values.}
 }
 \value{
-the sum
+the conditional sum.
 }
 \description{
 calculates sum of values < t

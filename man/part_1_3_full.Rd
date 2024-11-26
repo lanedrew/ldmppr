@@ -7,20 +7,20 @@
 part_1_3_full(xgrid, ygrid, tgrid, data, params, bounds)
 }
 \arguments{
-\item{xgrid}{a vector of grid values for x}
+\item{xgrid}{a vector of grid values for x.}
 
-\item{ygrid}{a vector of grid values for y}
+\item{ygrid}{a vector of grid values for y.}
 
-\item{tgrid}{a t value}
+\item{tgrid}{a t value.}
 
-\item{data}{a matrix of times and locations}
+\item{data}{a matrix of times and locations.}
 
-\item{params}{a vector of parameters}
+\item{params}{a vector of parameters.}
 
-\item{bounds}{a vector of time, x, and y bounds}
+\item{bounds}{a vector of time, x, and y bounds.}
 }
 \value{
-full likelihood for part 3
+full likelihood evaluation for part 3.
 }
 \description{
 calculates part 1-3

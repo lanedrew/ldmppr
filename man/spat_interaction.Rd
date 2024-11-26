@@ -7,14 +7,14 @@
 spat_interaction(Hist, newp, params)
 }
 \arguments{
-\item{Hist}{a matrix of points}
+\item{Hist}{a matrix of points.}
 
-\item{newp}{a new point vector}
+\item{newp}{a new point vector.}
 
-\item{params}{a vector of parameters}
+\item{params}{a vector of parameters.}
 }
 \value{
-probability of new point
+calculated probability of new point.
 }
 \description{
 calculates spatial interaction

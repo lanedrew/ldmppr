@@ -51,7 +51,7 @@ train_mark_model(
 \item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of model training.}
 }
 \value{
-a bundled model object.
+a list containing the raw trained model and a bundled model object.
 }
 \description{
 Trains a predictive model for the mark distribution of a spatio-temporal process.
@@ -61,7 +61,8 @@ covariates in the mark model.
 \examples{
 # Load example raster data
 raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
-                           pattern = "\\\\.tif$", full.names = TRUE)
+  pattern = "\\\\.tif$", full.names = TRUE
+)
 rasters <- lapply(raster_paths, terra::rast)
 
 # Scale the rasters

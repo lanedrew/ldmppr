@@ -7,14 +7,14 @@
 sim_temporal_sc(Tmin = 0, Tmax = 1, params = as.numeric(c(0, 0, 0)))
 }
 \arguments{
-\item{Tmin}{minimum time value}
+\item{Tmin}{minimum time value.}
 
-\item{Tmax}{maximum time value}
+\item{Tmax}{maximum time value.}
 
-\item{params}{a vector of parameters (alpha_1, beta_1, gamma_1)}
+\item{params}{a vector of parameters (alpha_1, beta_1, gamma_1).}
 }
 \value{
-a vector of thinned and temporal samples
+a vector of thinned and unthinned temporal samples.
 }
 \description{
 Simulate the temporal component of the self-correcting model

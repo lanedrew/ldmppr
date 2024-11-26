@@ -45,12 +45,15 @@ estimate_parameters_sc_parallel(
 \item{set_future_plan}{`TRUE` or `FALSE` indicating whether to change the parallelization plan for use in the function.}
 }
 \value{
-a list containing the optimal obtained values and the full results.
+a list containing the optimal obtained values and the full [nloptr::nloptr()] results for all provided delta values.
 }
 \description{
 Estimate the parameters of the self-correcting model using [nloptr::nloptr()] given a set of delta values.
 Makes use of parallel computation to allow the user to identify the optimal delta value more quickly
 given available computational resources.
+}
+\details{
+Details regarding the self-correcting model and the estimation procedure can be found in the references.
 }
 \examples{
 
@@ -61,12 +64,12 @@ given available computational resources.
 data(small_example_data)
 
 # Define the grid values
-x_grid <- seq(0, 25, out.length = 3)
-y_grid <- seq(0, 25, out.length = 3)
-t_grid <- seq(0, 1, out.length = 3)
+x_grid <- seq(0, 25, length.out = 5)
+y_grid <- seq(0, 25, length.out = 5)
+t_grid <- seq(0, 1, length.out = 5)
 
 # Define the delta values
-delta_values <- seq(0.75, 1, by = 0.25)
+delta_values <- seq(0.25, 1, by = 0.25)
 
 # Define the parameter initialization values
 parameter_inits <- c(1.5, 8.5, .015, 1.5, 3.2, .75, 3, .08)

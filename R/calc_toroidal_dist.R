@@ -5,7 +5,7 @@
 #' @param y_bound the upper bound for the y dimension.
 #'
 #' @return a matrix of toroidal distances.
-#' @export
+#' @keywords internal
 #'
 #' @examples
 #' # Generate a matrix of locations

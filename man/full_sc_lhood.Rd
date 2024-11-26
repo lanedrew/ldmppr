@@ -7,22 +7,22 @@
 full_sc_lhood(xgrid, ygrid, tgrid, tobs, data, params, bounds)
 }
 \arguments{
-\item{xgrid}{a vector of grid values for x}
+\item{xgrid}{a vector of grid values for x.}
 
-\item{ygrid}{a vector of grid values for y}
+\item{ygrid}{a vector of grid values for y.}
 
-\item{tgrid}{a vector of grid values for t}
+\item{tgrid}{a vector of grid values for t.}
 
-\item{tobs}{a vector of observed values for t}
+\item{tobs}{a vector of observed values for t.}
 
-\item{data}{a matrix of times and locations}
+\item{data}{a matrix of times and locations.}
 
-\item{params}{a vector of parameters}
+\item{params}{a vector of parameters.}
 
-\item{bounds}{a vector of bounds for time, x, and y}
+\item{bounds}{a vector of bounds for time, x, and y.}
 }
 \value{
-full log-likelihood
+evaluation of full log-likelihood.
 }
 \description{
 calculates full self-correcting log-likelihood

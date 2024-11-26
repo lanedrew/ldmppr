@@ -3,10 +3,10 @@ using namespace Rcpp;
 
 //' calculates euclidean distance
 //'
-//' @param x a vector x
-//' @param y a vector y
+//' @param x a vector of x values.
+//' @param y a vector of y values.
 //'
-//' @returns distance between the two vectors
+//' @returns the distance between the two vectors.
 //' @keywords internal
 // [[Rcpp::export]]
 double vec_dist(const NumericVector& x, const NumericVector& y)
@@ -18,13 +18,13 @@ double vec_dist(const NumericVector& x, const NumericVector& y)
 
 //' calculates full product for one grid point
 //'
-//' @param xgrid a vector of grid values for x
-//' @param ygrid a vector of grid values for y
-//' @param tgrid a t value
-//' @param data a matrix of data
-//' @param params a vector of parameters
+//' @param xgrid a vector of grid values for x.
+//' @param ygrid a vector of grid values for y.
+//' @param tgrid a t value.
+//' @param data a matrix of data.
+//' @param params a vector of parameters.
 //'
-//' @returns returns the product
+//' @returns returns the product.
 //' @keywords internal
 // [[Rcpp::export]]
 double full_product(const double xgrid, const double ygrid, const double tgrid,
@@ -51,14 +51,14 @@ double full_product(const double xgrid, const double ygrid, const double tgrid,
 
 //' calculates c_theta
 //'
-//' @param xgrid a vector of grid values for x
-//' @param ygrid a vector of grid values for y
-//' @param tgrid a t value
-//' @param data a matrix of data
-//' @param params a vector of parameters
-//' @param bounds a vector of bounds for time, x, and y
+//' @param xgrid a vector of grid values for x.
+//' @param ygrid a vector of grid values for y.
+//' @param tgrid a t value.
+//' @param data a matrix of data.
+//' @param params a vector of parameters.
+//' @param bounds a vector of bounds for time, x, and y.
 //'
-//' @returns returns the product
+//' @returns returns the product.
 //' @keywords internal
 // [[Rcpp::export]]
 double C_theta2_i(const NumericVector& xgrid,
@@ -83,11 +83,11 @@ double C_theta2_i(const NumericVector& xgrid,
 
 //' calculates sum of values < t
 //'
-//' @param obs_t a vector of observed t
-//' @param eval_t a t value
-//' @param y a vector of values
+//' @param obs_t a vector of observed t values.
+//' @param eval_t a t value.
+//' @param y a vector of values.
 //'
-//' @returns the sum
+//' @returns the conditional sum.
 //' @keywords internal
 // [[Rcpp::export]]
 double conditional_sum(const NumericVector& obs_t,
@@ -107,11 +107,11 @@ double conditional_sum(const NumericVector& obs_t,
 
 //' calculates sum of values < t
 //'
-//' @param obs_t a vector of observed t
-//' @param eval_t a t value
-//' @param y a vector of values
+//' @param obs_t a vector of observed t values.
+//' @param eval_t a t value.
+//' @param y a vector of values.
 //'
-//' @returns the sum
+//' @returns the conditional sum.
 //' @keywords internal
 // [[Rcpp::export]]
 double conditional_sum_logical(const NumericVector& obs_t,
@@ -136,7 +136,7 @@ double conditional_sum_logical(const NumericVector& obs_t,
 //' @param x_col a vector of x coordinates.
 //' @param y_col a vector of y coordinates.
 //'
-//' @returns distance between a vector and each row of a matrix
+//' @returns a vector of distances between a vector and each row of a matrix.
 //' @keywords internal
 // [[Rcpp::export]]
 NumericVector vec_to_mat_dist(const NumericVector& eval_u,
@@ -154,10 +154,10 @@ NumericVector vec_to_mat_dist(const NumericVector& eval_u,
 
 //' calculates distance in one dim
 //'
-//' @param eval_t a t value
-//' @param obs_t a vector of t
+//' @param eval_t a t value.
+//' @param obs_t a vector of t values.
 //'
-//' @returns distance between a single t and the vector of all t
+//' @returns distance between a single t and the vector of all t values.
 //' @keywords internal
 // [[Rcpp::export]]
 NumericVector dist_one_dim(const double eval_t, const NumericVector& obs_t)
@@ -173,10 +173,10 @@ NumericVector dist_one_dim(const double eval_t, const NumericVector& obs_t)
 
 //' calculates part 1-1 full
 //'
-//' @param data a matrix of locations and times
-//' @param params a vector of parameters
+//' @param data a matrix of locations and times.
+//' @param params a vector of parameters.
 //'
-//' @returns full likelihood for part 1
+//' @returns full likelihood evaluation for part 1.
 //' @keywords internal
 // [[Rcpp::export]]
 double part_1_1_full(const NumericMatrix& data,
@@ -197,10 +197,10 @@ double part_1_1_full(const NumericMatrix& data,
 
 //' calculates part 1-2 full
 //'
-//' @param data a matrix of locations and times
-//' @param params a vector of parameters
+//' @param data a matrix of locations and times.
+//' @param params a vector of parameters.
 //'
-//' @returns full likelihood for part 2
+//' @returns full likelihood evaluation for part 2.
 //' @keywords internal
 // [[Rcpp::export]]
 double part_1_2_full(const NumericMatrix& data,
@@ -225,14 +225,14 @@ double part_1_2_full(const NumericMatrix& data,
 
 //' calculates part 1-3
 //'
-//' @param xgrid a vector of grid values for x
-//' @param ygrid a vector of grid values for y
-//' @param tgrid a t value
-//' @param data a matrix of times and locations
-//' @param params a vector of parameters
-//' @param bounds a vector of time, x, and y bounds
+//' @param xgrid a vector of grid values for x.
+//' @param ygrid a vector of grid values for y.
+//' @param tgrid a t value.
+//' @param data a matrix of times and locations.
+//' @param params a vector of parameters.
+//' @param bounds a vector of time, x, and y bounds.
 //'
-//' @returns full likelihood for part 3
+//' @returns full likelihood evaluation for part 3.
 //' @keywords internal
 // [[Rcpp::export]]
 double part_1_3_full(const NumericVector& xgrid,
@@ -254,10 +254,10 @@ double part_1_3_full(const NumericVector& xgrid,
 
 //' calculates part 1-4
 //'
-//' @param data a matrix of times and locations
-//' @param params a vector of parameters
+//' @param data a matrix of times and locations.
+//' @param params a vector of parameters.
 //'
-//' @returns full likelihood for part 4
+//' @returns full likelihood evaluation for part 4.
 //' @keywords internal
 // [[Rcpp::export]]
 double part_1_4_full(const NumericMatrix& data,
@@ -284,14 +284,14 @@ double part_1_4_full(const NumericMatrix& data,
 
 //' calculates part 1 of the likelihood
 //'
-//' @param xgrid a vector of grid values for x
-//' @param ygrid a vector of grid values for y
-//' @param tgrid a t value
-//' @param data a matrix of times and locations
-//' @param params a vector of parameters
-//' @param bounds a vector of bounds for time, x, and y
+//' @param xgrid a vector of grid values for x.
+//' @param ygrid a vector of grid values for y.
+//' @param tgrid a t value.
+//' @param data a matrix of times and locations.
+//' @param params a vector of parameters.
+//' @param bounds a vector of bounds for time, x, and y.
 //'
-//' @returns first part of likelihood
+//' @returns full evaluation of first part of likelihood.
 //' @keywords internal
 // [[Rcpp::export]]
 double part_1_full(const NumericVector& xgrid,
@@ -322,14 +322,14 @@ double part_1_full(const NumericVector& xgrid,
 
 //' calculates part 2 of the likelihood
 //'
-//' @param xgrid a vector of grid values for x
-//' @param ygrid a vector of grid values for y
-//' @param tgrid a vector of grid values for t
-//' @param data a matrix of times and locations
-//' @param params a vector of parameters
-//' @param bounds a vector of bounds for time, x, and y
+//' @param xgrid a vector of grid values for x.
+//' @param ygrid a vector of grid values for y.
+//' @param tgrid a vector of grid values for t.
+//' @param data a matrix of times and locations.
+//' @param params a vector of parameters.
+//' @param bounds a vector of bounds for time, x, and y.
 //'
-//' @returns evaluted second part of likelihood
+//' @returns full evaluation of second part of likelihood.
 //' @keywords internal
 // [[Rcpp::export]]
 double part_2_full(const NumericVector& xgrid,
@@ -375,15 +375,15 @@ double part_2_full(const NumericVector& xgrid,
 
 //' calculates full self-correcting log-likelihood
 //'
-//' @param xgrid a vector of grid values for x
-//' @param ygrid a vector of grid values for y
-//' @param tgrid a vector of grid values for t
-//' @param tobs a vector of observed values for t
-//' @param data a matrix of times and locations
-//' @param params a vector of parameters
-//' @param bounds a vector of bounds for time, x, and y
+//' @param xgrid a vector of grid values for x.
+//' @param ygrid a vector of grid values for y.
+//' @param tgrid a vector of grid values for t.
+//' @param tobs a vector of observed values for t.
+//' @param data a matrix of times and locations.
+//' @param params a vector of parameters.
+//' @param bounds a vector of bounds for time, x, and y.
 //'
-//' @returns full log-likelihood
+//' @returns evaluation of full log-likelihood.
 //' @keywords internal
 // [[Rcpp::export]]
 double full_sc_lhood(const NumericVector& xgrid,
@@ -406,11 +406,11 @@ double full_sc_lhood(const NumericVector& xgrid,
 
 //' calculates spatial interaction
 //'
-//' @param Hist a matrix of points
-//' @param newp a new point vector
-//' @param params a vector of parameters
+//' @param Hist a matrix of points.
+//' @param newp a new point vector.
+//' @param params a vector of parameters.
 //'
-//' @returns probability of new point
+//' @returns calculated probability of new point.
 //' @keywords internal
 // [[Rcpp::export]]
 double spat_interaction(const NumericMatrix& Hist,
@@ -431,10 +431,10 @@ double spat_interaction(const NumericMatrix& Hist,
 
 //' calculates spatio-temporal interaction
 //'
-//' @param data a matrix of times and locations
-//' @param params a vector of parameters
+//' @param data a matrix of times and locations.
+//' @param params a vector of parameters.
 //'
-//' @returns interaction probabilities for every point
+//' @returns a vector of interaction probabilities for every point.
 //' @keywords internal
 // [[Rcpp::export]]
 NumericVector interaction_st(const NumericMatrix& data,
@@ -468,11 +468,11 @@ NumericVector interaction_st(const NumericMatrix& data,
 
 //' calculates temporal likelihood
 //'
-//' @param params a vector of parameters (alpha_1, beta_1, gamma_1)
-//' @param eval_t a t value
-//' @param obs_t a vector of t
+//' @param params a vector of parameters (alpha_1, beta_1, gamma_1).
+//' @param eval_t a t value.
+//' @param obs_t a vector of t values.
 //'
-//' @returns full temporal likelihood evaluation
+//' @returns evaluation of full temporal likelihood.
 //' @keywords internal
 // [[Rcpp::export]]
 double temporal_sc(const NumericVector& params,
@@ -493,11 +493,11 @@ double temporal_sc(const NumericVector& params,
 
 //' Simulate the temporal component of the self-correcting model
 //'
-//' @param Tmin minimum time value
-//' @param Tmax maximum time value
-//' @param params a vector of parameters (alpha_1, beta_1, gamma_1)
+//' @param Tmin minimum time value.
+//' @param Tmax maximum time value.
+//' @param params a vector of parameters (alpha_1, beta_1, gamma_1).
 //'
-//' @return a vector of thinned and temporal samples
+//' @return a vector of thinned and unthinned temporal samples.
 //' @keywords internal
 // [[Rcpp::export]]
 NumericVector sim_temporal_sc(double Tmin = 0,
@@ -548,12 +548,12 @@ NumericVector sim_temporal_sc(double Tmin = 0,
 
 //' Simulate the spatial component of the self-correcting model
 //'
-//' @param M_n vector of (x,y)-coordinates for largest point
-//' @param params a vector of parameters (alpha_2, beta_2)
-//' @param nsim_t number of points to simulate
-//' @param xy_bounds vector of lower and upper bounds for the domain (2 for x, 2 for y)
+//' @param M_n a vector of (x,y)-coordinates for largest point.
+//' @param params a vector of parameters (alpha_2, beta_2).
+//' @param nsim_t number of points to simulate.
+//' @param xy_bounds vector of lower and upper bounds for the domain (2 for x, 2 for y).
 //'
-//' @return a matrix of point locations in the (x,y)-plane
+//' @return a matrix of point locations in the (x,y)-plane.
 //' @keywords internal
 //[[Rcpp::export]]
 NumericMatrix sim_spatial_sc(const NumericVector& M_n,

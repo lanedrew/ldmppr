@@ -29,3 +29,4 @@ y_bound <- 10
 toroidal_dist_matrix_optimized(location_matrix, x_bound, y_bound)
 
 }
+\keyword{internal}
