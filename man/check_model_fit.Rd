@@ -57,10 +57,10 @@ check_model_fit(
 \item{seed}{an integer value to set the seed for reproducibility.}
 }
 \value{
-a list containing a combined global envelope test, individual global envelope tests for L, F, G, J, E, and V functions, and simulated metric values (if specified).
+a list containing a combined global envelope test, individual global envelope tests for the L, F, G, J, E, and V functions, and simulated metric values (if specified).
 }
 \description{
-Allows the user to perform global envelope tests for the L, F, G, J, E, and V functions from the \code{spatstat} package.
+Allows the user to perform global envelope tests for the nonparametric L, F, G, J, E, and V summary functions from the \code{spatstat} package.
 These tests serve as a goodness of fit measure for the estimated model relative to the reference dataset of interest.
 }
 \details{

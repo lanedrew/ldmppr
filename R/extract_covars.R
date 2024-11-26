@@ -8,14 +8,13 @@
 #'
 #' @examples
 #' # Load example raster data
-#' file_path <- system.file("extdata", "Snodgrass_aspect_southness_1m.tif", package = "ldmppr")
-#' south <- terra::rast(file_path)
-#' file_path <- system.file("extdata", "Snodgrass_wetness_index_1m.tif", package = "ldmppr")
-#' wet <- terra::rast(file_path)
+#' raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
+#'   pattern = "\\.tif$", full.names = TRUE
+#' )
+#' rasters <- lapply(raster_paths, terra::rast)
 #'
 #' # Scale the rasters
-#' raster_list <- list(south, wet)
-#' scaled_raster_list <- scale_rasters(raster_list)
+#' scaled_raster_list <- scale_rasters(rasters)
 #'
 #' # Load example locations
 #' locations <- small_example_data %>%
@@ -23,7 +22,8 @@
 #'   as.matrix()
 #'
 #' # Extract covariates
-#' extract_covars(locations, scaled_raster_list)
+#' example_covars <- extract_covars(locations, scaled_raster_list)
+#' head(example_covars)
 #'
 extract_covars <- function(locations, raster_list) {
   # Extract covariate values from the raster list and collate into a data frame
