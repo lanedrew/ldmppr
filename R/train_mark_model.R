@@ -50,7 +50,7 @@
 #'   correction = "none",
 #'   selection_metric = "rmse",
 #'   cv_folds = 5,
-#'   tuning_grid_size = 30,
+#'   tuning_grid_size = 10,
 #'   verbose = TRUE
 #' )
 #'
