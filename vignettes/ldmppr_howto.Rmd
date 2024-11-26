@@ -33,7 +33,7 @@ head(small_example_data)
 
 We also include a collection of example raster files obtained from the following ESS-DIVE repository: https://data.ess-dive.lbl.gov/view/doi:10.15485/1652536.
 
-Details for generating and obtaining these datasets can be found in the `data-raw` directory of the package repository.
+Details related to generating and obtaining these datasets can be found in the help file for the `small_example_data` dataset.
 
 # Introduction
 
