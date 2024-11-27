@@ -84,7 +84,7 @@ train_mark_model(
   correction = "none",
   selection_metric = "rmse",
   cv_folds = 5,
-  tuning_grid_size = 10,
+  tuning_grid_size = 5,
   verbose = TRUE
 )
 

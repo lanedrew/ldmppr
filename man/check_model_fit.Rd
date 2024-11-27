@@ -120,7 +120,7 @@ example_model_fit <- check_model_fit(
   thinning = TRUE,
   correction = "none",
   competition_radius = 10,
-  n_sim = 25,
+  n_sim = 20,
   save_sims = FALSE,
   verbose = TRUE,
   seed = 90210
