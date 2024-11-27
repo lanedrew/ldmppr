@@ -114,12 +114,12 @@ example_mark_model <- train_mark_model(
   model_type = "xgboost",
   xy_bounds = c(0, 25, 0, 25),
   parallel = FALSE,
-  include_comp_inds = FALSE,
+  include_comp_inds = TRUE,
   competition_radius = 10,
   correction = "none",
   selection_metric = "rmse",
   cv_folds = 5,
-  tuning_grid_size = 30,
+  tuning_grid_size = 20,
   verbose = TRUE
 )
 
@@ -156,7 +156,7 @@ example_model_fit <- check_model_fit(
   raster_list = scaled_rasters,
   mark_model = example_mark_model,
   xy_bounds = c(0, 25, 0, 25),
-  include_comp_inds = FALSE,
+  include_comp_inds = TRUE,
   thinning = TRUE,
   correction = "none",
   competition_radius = 10,

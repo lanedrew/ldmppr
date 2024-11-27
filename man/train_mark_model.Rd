@@ -42,7 +42,7 @@ train_mark_model(
 
 \item{correction}{type of correction to apply ("none", "toroidal", or "truncation").}
 
-\item{selection_metric}{metric to use for identifying the optimal model ("rmse", "mae", or "rsq").}
+\item{selection_metric}{metric to use for identifying the optimal model ("rmse" or "mae").}
 
 \item{cv_folds}{number of cross-validation folds to use in model training.}
 

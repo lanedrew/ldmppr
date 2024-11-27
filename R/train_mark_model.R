@@ -16,7 +16,7 @@
 #' @param include_comp_inds `TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates.
 #' @param competition_radius distance for competition radius if \code{include_comp_inds} is `TRUE`.
 #' @param correction type of correction to apply ("none", "toroidal", or "truncation").
-#' @param selection_metric metric to use for identifying the optimal model ("rmse", "mae", or "rsq").
+#' @param selection_metric metric to use for identifying the optimal model ("rmse" or "mae").
 #' @param cv_folds number of cross-validation folds to use in model training.
 #' @param tuning_grid_size size of the tuning grid for hyperparameter tuning.
 #' @param verbose `TRUE` or `FALSE` indicating whether to show progress of model training.
@@ -218,7 +218,7 @@ train_mark_model <- function(data,
       object = xgboost_wf,
       resamples = data_cv_folds,
       grid = xgboost_grid,
-      metrics = yardstick::metric_set(yardstick::rmse, yardstick::rsq, yardstick::mae),
+      metrics = yardstick::metric_set(yardstick::rmse, yardstick::mae),
       control = tune::control_grid(verbose = FALSE)
     )
 
@@ -274,7 +274,7 @@ train_mark_model <- function(data,
       object = rf_wf,
       resamples = data_cv_folds,
       grid = rf_grid,
-      metrics = yardstick::metric_set(yardstick::rmse, yardstick::rsq, yardstick::mae),
+      metrics = yardstick::metric_set(yardstick::rmse, yardstick::mae),
       control = tune::control_grid(verbose = FALSE)
     )
 
