@@ -72,6 +72,8 @@ See the documentation for [spatstat.explore::Lest()], [spatstat.explore::Fest()]
 Also, see the [GET::global_envelope_test()] function for more information on the global envelope tests.
 }
 \examples{
+# Note: The example below is provided for illustrative purposes and may take some time to run.
+\dontrun{
 # Load the small example data
 data(small_example_data)
 
@@ -120,14 +122,14 @@ example_model_fit <- check_model_fit(
   thinning = TRUE,
   correction = "none",
   competition_radius = 10,
-  n_sim = 20,
+  n_sim = 2500,
   save_sims = FALSE,
   verbose = TRUE,
   seed = 90210
 )
 
 plot(example_model_fit$combined_env)
-
+}
 }
 \references{
 Baddeley, A., Rubak, E., & Turner, R. (2015). *Spatial Point Patterns:

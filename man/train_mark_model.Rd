@@ -83,8 +83,8 @@ train_mark_model(
   competition_radius = 10,
   correction = "none",
   selection_metric = "rmse",
-  cv_folds = 5,
-  tuning_grid_size = 5,
+  cv_folds = 3,
+  tuning_grid_size = 2,
   verbose = TRUE
 )
 

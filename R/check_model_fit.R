@@ -43,6 +43,8 @@
 #' \emph{arXiv:1911.06583 [stat.ME]}. \doi{10.48550/arXiv.1911.06583}.
 #'
 #' @examples
+#' # Note: The example below is provided for illustrative purposes and may take some time to run.
+#' \dontrun{
 #' # Load the small example data
 #' data(small_example_data)
 #'
@@ -91,14 +93,14 @@
 #'   thinning = TRUE,
 #'   correction = "none",
 #'   competition_radius = 10,
-#'   n_sim = 20,
+#'   n_sim = 2500,
 #'   save_sims = FALSE,
 #'   verbose = TRUE,
 #'   seed = 90210
 #' )
 #'
 #' plot(example_model_fit$combined_env)
-#'
+#'}
 check_model_fit <- function(reference_data,
                             t_min = 0,
                             t_max = 1,
