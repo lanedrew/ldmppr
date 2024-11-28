@@ -44,7 +44,7 @@
 #'
 #' @examples
 #' # Note: The example below is provided for illustrative purposes and may take some time to run.
-#' \dontrun{
+#' \donttest{
 #' # Load the small example data
 #' data(small_example_data)
 #'
@@ -93,7 +93,7 @@
 #'   thinning = TRUE,
 #'   correction = "none",
 #'   competition_radius = 10,
-#'   n_sim = 2500,
+#'   n_sim = 100,
 #'   save_sims = FALSE,
 #'   verbose = TRUE,
 #'   seed = 90210

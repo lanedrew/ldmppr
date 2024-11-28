@@ -73,7 +73,7 @@ Also, see the [GET::global_envelope_test()] function for more information on the
 }
 \examples{
 # Note: The example below is provided for illustrative purposes and may take some time to run.
-\dontrun{
+\donttest{
 # Load the small example data
 data(small_example_data)
 
@@ -122,7 +122,7 @@ example_model_fit <- check_model_fit(
   thinning = TRUE,
   correction = "none",
   competition_radius = 10,
-  n_sim = 2500,
+  n_sim = 100,
   save_sims = FALSE,
   verbose = TRUE,
   seed = 90210
