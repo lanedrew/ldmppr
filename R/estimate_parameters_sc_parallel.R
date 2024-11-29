@@ -33,7 +33,7 @@
 #'
 #' # Note: This function is designed to be run in parallel and may be computationally intensive.
 #'
-#' \dontrun{
+#' \donttest{
 #' # Load the small example data
 #' data(small_example_data)
 #'
