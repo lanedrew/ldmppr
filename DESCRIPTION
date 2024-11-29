@@ -1,7 +1,7 @@
 Package: ldmppr
 Type: Package
 Title: Estimate and Simulate from Location Dependent Marked Point Processes
-Version: 1.0.2
+Version: 1.0.3
 Authors@R: c(
   person("Lane", "Drew", role = c("aut", "cre", "cph"), email = "lanetdrew@gmail.com", comment = c(ORCID = "0009-0006-5427-4092")),
   person("Andee", "Kaplan", role = "aut", comment = c(ORCID = "0000-0002-2940-889X")))
