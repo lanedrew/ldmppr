@@ -5,6 +5,8 @@
 
 <!-- badges: start -->
 
+[![CRAN
+status](https://www.r-pkg.org/badges/version/ldmppr)](https://CRAN.R-project.org/package=ldmppr)
 [![R-CMD-check](https://github.com/lanedrew/ldmppr/actions/workflows/r.yml/badge.svg)](https://github.com/lanedrew/ldmppr/actions/workflows/r.yml)
 <!-- badges: end -->
 
