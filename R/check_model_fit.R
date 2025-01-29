@@ -11,6 +11,7 @@
 #' @param sc_params vector of parameter values corresponding to (alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).
 #' @param anchor_point vector of (x,y) coordinates of point to condition on.
 #' @param raster_list a list of raster objects.
+#' @param scaled_rasters `TRUE` or `FALSE` indicating whether the rasters have been scaled.
 #' @param mark_model a model object (typically from \code{train_mark_model}).
 #' @param xy_bounds a vector of domain bounds (2 for x, 2 for y).
 #' @param include_comp_inds `TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates.
@@ -87,6 +88,7 @@
 #'   sc_params = estimated_parameters,
 #'   anchor_point = M_n,
 #'   raster_list = scaled_raster_list,
+#'   scaled_rasters = TRUE,
 #'   mark_model = mark_model,
 #'   xy_bounds = c(0, 25, 0, 25),
 #'   include_comp_inds = TRUE,
@@ -107,6 +109,7 @@ check_model_fit <- function(reference_data,
                             sc_params = NULL,
                             anchor_point = NULL,
                             raster_list = NULL,
+                            scaled_rasters = FALSE,
                             mark_model = NULL,
                             xy_bounds = NULL,
                             include_comp_inds = FALSE,
@@ -128,6 +131,11 @@ check_model_fit <- function(reference_data,
   if (xy_bounds[2] < xy_bounds[1] | xy_bounds[4] < xy_bounds[3]) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
   if (!correction %in% c("none", "toroidal")) stop("Provide a valid correction type for the correction argument.", .call = FALSE)
   if (include_comp_inds == TRUE & (is.null(competition_radius) | competition_radius < 0)) stop("Provide the desired radius for competition_indices argument.", .call = FALSE)
+  if (n_sim < 1) stop("Provide a positive integer value for the n_sim argument.", .call = FALSE)
+  if (!is.logical(save_sims)) stop("Provide a logical value for the save_sims argument.", .call = FALSE)
+  if (!is.logical(verbose)) stop("Provide a logical value for the verbose argument.", .call = FALSE)
+  if (!is.numeric(seed) | seed < 0) stop("Provide a positive integer value for the seed argument.", .call = FALSE)
+  if (!is.logical(scaled_rasters)) stop("Provide a logical value for the scaled_rasters argument.", .call = FALSE)
 
   # Set the seed
   set.seed(seed)
@@ -145,6 +153,11 @@ check_model_fit <- function(reference_data,
   E_PP <- base::matrix(0, nrow = d_length, ncol = n_sim)
   V_PP <- base::matrix(0, nrow = d_length, ncol = n_sim)
   n_real <- base::numeric()
+
+  # Scale the rasters if necessary
+  if (scaled_rasters == FALSE) {
+    raster_list <- scale_rasters(raster_list)
+  }
 
   if (verbose) {
     # Create the progress bar
@@ -178,7 +191,8 @@ check_model_fit <- function(reference_data,
       }
       pred_marks_j <- predict_marks(
         sim_realization = sim_j,
-        raster_list = scale_rasters(raster_list),
+        raster_list = raster_list,
+        scaled_rasters = TRUE,
         mark_model = mark_model,
         xy_bounds = xy_bounds,
         include_comp_inds = include_comp_inds,
@@ -227,7 +241,8 @@ check_model_fit <- function(reference_data,
       # Predict the marks using the provided mark model
       pred_marks_j <- predict_marks(
         sim_realization = sim_j,
-        raster_list = scale_rasters(raster_list),
+        raster_list = raster_list,
+        scaled_rasters = TRUE,
         mark_model = mark_model,
         xy_bounds = xy_bounds,
         include_comp_inds = include_comp_inds,

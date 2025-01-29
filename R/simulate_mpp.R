@@ -5,6 +5,7 @@
 #' @param t_max maximum value for time.
 #' @param anchor_point vector of (x,y) coordinates of point to condition on.
 #' @param raster_list list of raster objects.
+#' @param scaled_rasters `TRUE` or `FALSE` indicating whether the rasters have been scaled.
 #' @param mark_model a model object (typically from \code{train_mark_model}).
 #' @param xy_bounds a vector of domain bounds (2 for x, 2 for y).
 #' @param include_comp_inds `TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates.
@@ -42,6 +43,7 @@
 #'   t_max = 1,
 #'   anchor_point = M_n,
 #'   raster_list = scaled_raster_list,
+#'   scaled_rasters = TRUE,
 #'   mark_model = mark_model,
 #'   xy_bounds = c(0, 25, 0, 25),
 #'   include_comp_inds = TRUE,
@@ -58,6 +60,7 @@ simulate_mpp <- function(sc_params = NULL,
                          t_max = 1,
                          anchor_point = NULL,
                          raster_list = NULL,
+                         scaled_rasters = FALSE,
                          mark_model = NULL,
                          xy_bounds = NULL,
                          include_comp_inds = FALSE,
@@ -76,6 +79,7 @@ simulate_mpp <- function(sc_params = NULL,
   if (!correction %in% c("none", "toroidal")) stop("Provide a valid correction type.", .call = FALSE)
   if (include_comp_inds == TRUE & (is.null(competition_radius) | competition_radius < 0)) stop("Provide the desired radius for competition indices.", .call = FALSE)
   if (!is.logical(thinning)) stop("Provide a logical value for the thinning argument.", .call = FALSE)
+  if (!is.logical(scaled_rasters)) stop("Provide a logical value for the scaled_rasters argument.", .call = FALSE)
 
   # Simulate times and locations
   sim_times <- stats::na.omit(sim_temporal_sc(t_min, t_max, sc_params[1:3]))
@@ -99,6 +103,7 @@ simulate_mpp <- function(sc_params = NULL,
     marks <- predict_marks(
       sim_realization = sim_thin_df,
       raster_list = raster_list,
+      scaled_rasters = scaled_rasters,
       mark_model = mark_model,
       xy_bounds = xy_bounds,
       include_comp_inds = include_comp_inds,
@@ -117,6 +122,7 @@ simulate_mpp <- function(sc_params = NULL,
     marks <- predict_marks(
       sim_realization = sim_df,
       raster_list = raster_list,
+      scaled_rasters = scaled_rasters,
       mark_model = mark_model,
       xy_bounds = xy_bounds,
       include_comp_inds = include_comp_inds,

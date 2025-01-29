@@ -7,6 +7,7 @@
 predict_marks(
   sim_realization,
   raster_list = NULL,
+  scaled_rasters = FALSE,
   mark_model = NULL,
   xy_bounds = NULL,
   include_comp_inds = FALSE,
@@ -18,6 +19,8 @@ predict_marks(
 \item{sim_realization}{a data frame containing a thinned or unthinned realization from \code{simulate_sc}.}
 
 \item{raster_list}{a list of raster objects.}
+
+\item{scaled_rasters}{`TRUE` or `FALSE` indicating whether the rasters have been scaled.}
 
 \item{mark_model}{a model object (typically from \code{train_mark_model}).}
 
@@ -67,6 +70,7 @@ mark_model <- bundle::unbundle(example_mark_model)
 predict_marks(
   sim_realization = generated_locs$thinned,
   raster_list = scaled_raster_list,
+  scaled_rasters = TRUE,
   mark_model = mark_model,
   xy_bounds = c(0, 25, 0, 25),
   include_comp_inds = TRUE,

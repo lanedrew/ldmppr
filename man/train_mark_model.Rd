@@ -7,6 +7,7 @@
 train_mark_model(
   data,
   raster_list = NULL,
+  scaled_rasters = FALSE,
   model_type = "xgboost",
   xy_bounds = NULL,
   save_model = FALSE,
@@ -25,6 +26,8 @@ train_mark_model(
 \item{data}{a data frame containing named vectors x, y, size, and time.}
 
 \item{raster_list}{a list of raster objects.}
+
+\item{scaled_rasters}{`TRUE` or `FALSE` indicating whether the rasters have been scaled.}
 
 \item{model_type}{the machine learning model type ("xgboost" or "random_forest").}
 
@@ -76,6 +79,7 @@ locations <- small_example_data \%>\%
 train_mark_model(
   data = locations,
   raster_list = scaled_raster_list,
+  scaled_rasters = TRUE,
   model_type = "xgboost",
   xy_bounds = c(0, 25, 0, 25),
   parallel = FALSE,

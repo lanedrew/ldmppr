@@ -10,6 +10,7 @@ simulate_mpp(
   t_max = 1,
   anchor_point = NULL,
   raster_list = NULL,
+  scaled_rasters = FALSE,
   mark_model = NULL,
   xy_bounds = NULL,
   include_comp_inds = FALSE,
@@ -28,6 +29,8 @@ simulate_mpp(
 \item{anchor_point}{vector of (x,y) coordinates of point to condition on.}
 
 \item{raster_list}{list of raster objects.}
+
+\item{scaled_rasters}{`TRUE` or `FALSE` indicating whether the rasters have been scaled.}
 
 \item{mark_model}{a model object (typically from \code{train_mark_model}).}
 
@@ -74,6 +77,7 @@ example_mpp <- simulate_mpp(
   t_max = 1,
   anchor_point = M_n,
   raster_list = scaled_raster_list,
+  scaled_rasters = TRUE,
   mark_model = mark_model,
   xy_bounds = c(0, 25, 0, 25),
   include_comp_inds = TRUE,

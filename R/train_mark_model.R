@@ -8,6 +8,7 @@
 #'
 #' @param data a data frame containing named vectors x, y, size, and time.
 #' @param raster_list a list of raster objects.
+#' @param scaled_rasters `TRUE` or `FALSE` indicating whether the rasters have been scaled.
 #' @param model_type the machine learning model type ("xgboost" or "random_forest").
 #' @param xy_bounds a vector of domain bounds (2 for x, 2 for y).
 #' @param save_model `TRUE` or `FALSE` indicating whether to save the generated model.
@@ -42,6 +43,7 @@
 #' train_mark_model(
 #'   data = locations,
 #'   raster_list = scaled_raster_list,
+#'   scaled_rasters = TRUE,
 #'   model_type = "xgboost",
 #'   xy_bounds = c(0, 25, 0, 25),
 #'   parallel = FALSE,
@@ -56,6 +58,7 @@
 #'
 train_mark_model <- function(data,
                              raster_list = NULL,
+                             scaled_rasters = FALSE,
                              model_type = "xgboost",
                              xy_bounds = NULL,
                              save_model = FALSE,
@@ -83,6 +86,7 @@ train_mark_model <- function(data,
   if (!is.logical(verbose)) stop("Provide a logical value for the verbose argument.", .call = FALSE)
   if (!is.numeric(cv_folds) | cv_folds < 2) stop("Provide a numeric value greater than 1 for the cv_folds argument.", .call = FALSE)
   if (!is.numeric(tuning_grid_size) | tuning_grid_size < 1) stop("Provide a numeric value greater than 0 for the tuning_grid_size argument.", .call = FALSE)
+  if (!is.logical(scaled_rasters)) stop("Provide a logical value for the scaled_rasters argument.", .call = FALSE)
 
 
   # Initialize parallelization for model training
@@ -93,11 +97,13 @@ train_mark_model <- function(data,
   # Obtain a matrix of (x, y) locations
   s <- base::as.matrix(base::cbind(data$x - xy_bounds[1], data$y - xy_bounds[3]))
 
-  # Scale the provided rasters in the raster_list
-  raster_trans <- scale_rasters(raster_list)
+  # Scale the rasters if not already scaled
+  if (scaled_rasters == FALSE) {
+    raster_list <- scale_rasters(raster_list)
+  }
 
   # Obtain the location specific covariate values from the scaled rasters
-  X <- extract_covars(locations = s, raster_list = raster_trans)
+  X <- extract_covars(locations = s, raster_list = raster_list)
   X$x <- s[, 1]
   X$y <- s[, 2]
   X$time <- data$time
@@ -260,7 +266,7 @@ train_mark_model <- function(data,
     rf_grid <-
       dials::grid_space_filling(
         rf_params,
-        size = 200
+        size = tuning_grid_size
       )
 
     # Establish the model fitting workflow
