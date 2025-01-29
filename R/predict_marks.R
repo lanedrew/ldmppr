@@ -2,6 +2,7 @@
 #'
 #' @param sim_realization a data frame containing a thinned or unthinned realization from \code{simulate_sc}.
 #' @param raster_list a list of raster objects.
+#' @param scaled_rasters `TRUE` or `FALSE` indicating whether the rasters have been scaled.
 #' @param mark_model a model object (typically from \code{train_mark_model}).
 #' @param xy_bounds  a vector of domain bounds (2 for x, 2 for y).
 #' @param include_comp_inds `TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates.
@@ -43,6 +44,7 @@
 #' predict_marks(
 #'   sim_realization = generated_locs$thinned,
 #'   raster_list = scaled_raster_list,
+#'   scaled_rasters = TRUE,
 #'   mark_model = mark_model,
 #'   xy_bounds = c(0, 25, 0, 25),
 #'   include_comp_inds = TRUE,
@@ -52,6 +54,7 @@
 #'
 predict_marks <- function(sim_realization,
                           raster_list = NULL,
+                          scaled_rasters = FALSE,
                           mark_model = NULL,
                           xy_bounds = NULL,
                           include_comp_inds = FALSE,
@@ -65,15 +68,19 @@ predict_marks <- function(sim_realization,
   if (xy_bounds[2] < xy_bounds[1] | xy_bounds[4] < xy_bounds[3]) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
   if (!correction %in% c("none", "toroidal")) stop("Provide a valid correction type.", .call = FALSE)
   if (include_comp_inds == TRUE & (is.null(competition_radius) | competition_radius < 0)) stop("Provide the desired radius for competition indices.", .call = FALSE)
+  if (!is.logical(include_comp_inds)) stop("Provide a logical value for include_comp_inds.", .call = FALSE)
+  if (!is.logical(scaled_rasters)) stop("Provide a logical value for scaled_rasters.", .call = FALSE)
 
   # Obtain a matrix of (x, y) locations
   s <- sim_realization[, c("x", "y")]
 
-  # Scale the provided rasters in the raster_list
-  raster_trans <- scale_rasters(raster_list)
+  # Scale the rasters if not already scaled
+  if (scaled_rasters == FALSE) {
+    raster_list <- scale_rasters(raster_list)
+  }
 
   # Obtain the location specific covariate values from the scaled rasters
-  X <- extract_covars(locations = s, raster_list = raster_trans)
+  X <- extract_covars(locations = s, raster_list = raster_list)
   X$x <- sim_realization$x
   X$y <- sim_realization$y
   X$time <- sim_realization$time
