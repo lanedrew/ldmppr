@@ -109,7 +109,7 @@ train_mark_model <- function(data,
   X$time <- data$time
 
   if (include_comp_inds == TRUE) {
-    # Calculate competition indices in a 15 unit radius
+    # Calculate competition indices in a given radius
     X$near_nbr_dist <- NA
     X$near_nbr_num <- NA
     X$avg_nbr_dist <- NA
