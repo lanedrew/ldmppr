@@ -38,6 +38,8 @@ a_y <- 4311439
 b_x <- 326596 - 50
 b_y <- 4311539 - 50
 
+new_ext <- c(a_x, b_x, a_y, b_y)
+
 # Load the raster images
 south <- terra::rast("https://data.ess-dive.lbl.gov/catalog/d1/mn/v2/object/ess-dive-c3c46ff25d50885-20240513T173925432")
 wet <- terra::rast("https://data.ess-dive.lbl.gov/catalog/d1/mn/v2/object/ess-dive-dffdeec81023d23-20240513T173925427")
