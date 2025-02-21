@@ -1,8 +1,13 @@
 ## Resubmission
-This is a resubmission. In this version of the package we have:
+This is a small patch. In this version of the package we have:
 
-* Removed the duplicate R script for estimate_parameters_sc_parallel that was resulting in double documentation with an incorrect \dontrun{} environment.
-* Bumped version number from 1.0.2 to 1.0.3.
+* updated `train_mark_model()` and  `check_model_fit()` and `simulate_mpp()` to include `scaled_rasters` argument to determine if scaling needs to be performed.
+
+* added a new example dataset entitled `medium_example_data` and corresponding raster files.
+
+* updated the `plot_mpp()` function to use the operator `%>%` instead of the `|>` operator to ensure compatibility with older versions of R.
+
+* Bumped version number from 1.0.3 to 1.0.4.
 
 We have not included a reference describing the methods in this package as the reference is not yet published. We will include this reference in the next version of the package.
 
@@ -10,8 +15,6 @@ We have not included a reference describing the methods in this package as the r
 ## R CMD check results
 
 0 errors | 0 warnings | 1 note
-
-* This is a new release.
 
 
 ## Downstream dependencies
