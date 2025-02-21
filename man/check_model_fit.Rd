@@ -87,6 +87,7 @@ mark_model <- bundle::unbundle(readRDS(file_path))
 # Load the raster files
 raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
                            pattern = "\\\\.tif$", full.names = TRUE)
+raster_paths <- raster_paths[!grepl("_med\\\\.tif$", raster_paths)]
 rasters <- lapply(raster_paths, terra::rast)
 
 # Scale the rasters

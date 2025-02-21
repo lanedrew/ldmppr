@@ -1,4 +1,6 @@
 ## Resubmission
+Addressed issue with examples that were flagged by the system.
+
 This is a small patch. In this version of the package we have:
 
 * updated `train_mark_model()` and  `check_model_fit()` and `simulate_mpp()` to include `scaled_rasters` argument to determine if scaling needs to be performed.
@@ -11,11 +13,9 @@ This is a small patch. In this version of the package we have:
 
 We have not included a reference describing the methods in this package as the reference is not yet published. We will include this reference in the next version of the package.
 
-
 ## R CMD check results
 
 0 errors | 0 warnings | 1 note
-
 
 ## Downstream dependencies
 This package has no downstream dependencies.

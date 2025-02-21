@@ -61,6 +61,7 @@ M_n <- matrix(c(10, 14), ncol = 1)
 raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
   pattern = "\\\\.tif$", full.names = TRUE
 )
+raster_paths <- raster_paths[!grepl("_med\\\\.tif$", raster_paths)]
 rasters <- lapply(raster_paths, terra::rast)
 
 # Scale the rasters
