@@ -4,7 +4,7 @@
 \alias{plot_mpp}
 \title{Plot a marked point process}
 \usage{
-plot_mpp(mpp_data, pattern_type)
+plot_mpp(mpp_data, pattern_type = c("reference", "simulated"))
 }
 \arguments{
 \item{mpp_data}{ppp object with marks or data frame with columns (x, y, size).}

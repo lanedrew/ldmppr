@@ -51,7 +51,7 @@
 #'
 #' # Load the example mark model that previously was trained on the small example data
 #' file_path <- system.file("extdata", "example_mark_model.rds", package = "ldmppr")
-#' mark_model <- bundle::unbundle(readRDS(file_path))
+#' mark_model <- load_mark_model(file_path)
 #'
 #' # Load the raster files
 #' raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
@@ -70,15 +70,14 @@
 #' )
 #'
 #' # Define an anchor point
-#' M_n <- as.matrix(small_example_data[1, c("x", "y")])
+#' M_n <- c(small_example_data[1, c("x", "y")])
 #'
 #' # Specify the estimated parameters of the self-correcting process
-#' # Note: These would generally be estimated using estimate_parameters_sc
-#' # or estimate_parameters_sc_parallel. These values are estimates from
-#' # the small_example_data generating script.
+#' # Note: These would generally be estimated using estimate_process_parameters.
+#' # These values are estimates from the small_example_data generating script.
 #' estimated_parameters <- c(
-#'   1.42936311, 8.59251417, 0.02153924, 1.89763856,
-#'   2.33256061, 1.09522235, 2.66250000, 0.16499789
+#'   0.05167978, 8.20702166, 0.02199940, 2.63236890,
+#'   1.82729512, 0.65330061, 0.86666748, 0.04681878
 #' )
 #'
 #' # Check the model fit
@@ -102,7 +101,7 @@
 #'   seed = 90210
 #' )
 #'
-#' plot(example_model_fit$combined_env)
+#' plot(example_model_fit, which = 'combined')
 #'}
 check_model_fit <- function(reference_data,
                             t_min = 0,
@@ -123,11 +122,11 @@ check_model_fit <- function(reference_data,
                             seed = 0) {
   # Check the arguments
   if (!spatstat.geom::is.ppp(reference_data)) stop("Provide a ppp object containing the reference data pattern for the reference_data argument.", .call = FALSE)
-  if (t_min < 0 | t_min >= t_max | is.null(t_min)) stop("Provide a value greater than 0 and less than t_max for the t_min argument.", .call = FALSE)
-  if (t_max > 1 | t_min >= t_max | is.null(t_max)) stop("Provide a value greater than t_min and less than 1 for the t_max argument.", .call = FALSE)
+  if (is.null(t_min) || t_min < 0 || t_min >= t_max) stop("Provide a value greater than 0 and less than t_max for the t_min argument.", .call = FALSE)
+  if (is.null(t_max) || t_min < 0 || t_min >= t_max) stop("Provide a value greater than t_min and less than 1 for the t_max argument.", .call = FALSE)
   if (length(sc_params) != 8 | anyNA(sc_params) | any(sc_params[2:8] < 0)) stop("Provide a valid set of parameter values for the sc_params argument.", .call = FALSE)
-  if (length(anchor_point) != 2) stop("Provide a vector of (x,y) coordinates for the anchor_point argument.", .call = FALSE)
-  if (is.null(mark_model)) stop("Provide an unbundled mark model for the mark_model argument.", .call = FALSE)
+  anchor_point <- as.numeric(anchor_point)
+  if (length(anchor_point) != 2) stop("Provide a vector/matrix of (x,y) coordinates for anchor_point.", call. = FALSE)
   if (is.null(xy_bounds) | !(length(xy_bounds) == 4)) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
   if (xy_bounds[2] < xy_bounds[1] | xy_bounds[4] < xy_bounds[3]) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
   if (!correction %in% c("none", "toroidal")) stop("Provide a valid correction type for the correction argument.", .call = FALSE)
@@ -135,8 +134,15 @@ check_model_fit <- function(reference_data,
   if (n_sim < 1) stop("Provide a positive integer value for the n_sim argument.", .call = FALSE)
   if (!is.logical(save_sims)) stop("Provide a logical value for the save_sims argument.", .call = FALSE)
   if (!is.logical(verbose)) stop("Provide a logical value for the verbose argument.", .call = FALSE)
-  if (!is.numeric(seed) | seed < 0) stop("Provide a positive integer value for the seed argument.", .call = FALSE)
+  if (!is.logical(include_comp_inds)) stop("Provide a logical value for include_comp_inds.", .call = FALSE)
+  if (!is.logical(thinning)) stop("Provide a logical value for thinning.", .call = FALSE)
+  if (is.na(seed) || seed < 0 || seed != as.integer(seed)) stop("Provide a positive integer value for the seed argument.", .call = FALSE)
   if (!is.logical(scaled_rasters)) stop("Provide a logical value for the scaled_rasters argument.", .call = FALSE)
+  if (is.null(raster_list) || !is.list(raster_list)) stop("Provide a list of rasters for the raster_list argument.", .call = FALSE)
+
+
+  # Convert the mark model to the appropriate format if necessary
+  mark_model <- as_mark_model(mark_model)
 
   # Set the seed
   set.seed(seed)
@@ -169,7 +175,6 @@ check_model_fit <- function(reference_data,
 
     base::message("Beginning Data Simulations...")
     pb$tick(0)
-    base::Sys.sleep(3)
 
     for (j in 1:n_sim) {
       # Simulate a dataset and predict the marks
@@ -190,6 +195,9 @@ check_model_fit <- function(reference_data,
           xy_bounds = xy_bounds
         )$unthinned
       }
+      n_real[j] <- nrow(sim_j)
+
+      # Predict the marks using the provided mark model
       pred_marks_j <- predict_marks(
         sim_realization = sim_j,
         raster_list = raster_list,
@@ -213,7 +221,6 @@ check_model_fit <- function(reference_data,
       V_PP[, j] <- spatstat.explore::Vmark(PP_xy, correction = "isotropic", r = d)$iso
 
       pb$tick()
-      base::Sys.sleep(1 / 100)
     }
     base::message("Data Simulations Complete...")
   } else {
@@ -372,46 +379,28 @@ check_model_fit <- function(reference_data,
     type = "rank"
   )
 
-  if (save_sims) {
-    results_list <- base::list(
-      global_envelope_tests = list(
-        combined_env = r_envComb,
-        curve_sets = list(
-          L = C_ref_L,
-          F = C_ref_F,
-          G = C_ref_G,
-          J = C_ref_J,
-          E = C_ref_E,
-          V = C_ref_V
-        ),
-        L_env = r_envL,
-        F_env = r_envF,
-        G_env = r_envG,
-        J_env = r_envJ,
-        E_env = r_envE,
-        V_env = r_envV
-      ),
-      sim_metric_values = sim_list
-    )
-  } else {
-    results_list <- base::list(
-      combined_env = r_envComb,
-      curve_sets = list(
-        L = C_ref_L,
-        F = C_ref_F,
-        G = C_ref_G,
-        J = C_ref_J,
-        E = C_ref_E,
-        V = C_ref_V
-      ),
-      L_env = r_envL,
-      F_env = r_envF,
-      G_env = r_envG,
-      J_env = r_envJ,
-      E_env = r_envE,
-      V_env = r_envV
-    )
-  }
+  envs <- list(L = r_envL, F = r_envF, G = r_envG, J = r_envJ, E = r_envE, V = r_envV)
+  curve_sets <- list(L = C_ref_L, F = C_ref_F, G = C_ref_G, J = C_ref_J, E = C_ref_E, V = C_ref_V)
 
-  return(results_list)
+  settings <- list(
+    t_min = t_min,
+    t_max = t_max,
+    thinning = thinning,
+    correction = correction,
+    include_comp_inds = include_comp_inds,
+    competition_radius = competition_radius,
+    n_sim = n_sim,
+    seed = seed
+  )
+
+  sim_metrics <- if (isTRUE(save_sims)) sim_list else NULL
+
+  return(new_ldmppr_model_check(
+    combined_env = r_envComb,
+    envs = envs,
+    curve_sets = curve_sets,
+    sim_metrics = sim_metrics,
+    settings = settings,
+    call = match.call()
+  ))
 }

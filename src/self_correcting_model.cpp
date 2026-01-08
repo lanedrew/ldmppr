@@ -1,4 +1,7 @@
 #include <RcppArmadillo.h>
+#include <vector>
+#include <limits>
+#include <cmath>
 using namespace Rcpp;
 
 //' calculates euclidean distance
@@ -81,6 +84,7 @@ double C_theta2_i(const NumericVector& xgrid,
   return((i_result * bounds[1] * bounds[2])/(double(K) * double(L)));
 }
 
+
 //' calculates sum of values < t
 //'
 //' @param obs_t a vector of observed t values.
@@ -129,7 +133,6 @@ double conditional_sum_logical(const NumericVector& obs_t,
 }
 
 
-
 //' calculates euclidean distance between a vector and a matrix
 //'
 //' @param eval_u a vector of x and y coordinates.
@@ -152,6 +155,7 @@ NumericVector vec_to_mat_dist(const NumericVector& eval_u,
   return(out);
 }
 
+
 //' calculates distance in one dim
 //'
 //' @param eval_t a t value.
@@ -171,6 +175,7 @@ NumericVector dist_one_dim(const double eval_t, const NumericVector& obs_t)
   return(out);
 }
 
+
 //' calculates part 1-1 full
 //'
 //' @param data a matrix of locations and times.
@@ -180,18 +185,27 @@ NumericVector dist_one_dim(const double eval_t, const NumericVector& obs_t)
 //' @keywords internal
 // [[Rcpp::export]]
 double part_1_1_full(const NumericMatrix& data,
-                     const NumericVector& params)
+                    const NumericVector& params)
 {
-  double alpha1 = params[0];
-  double beta1  = params[1];
-  double gamma1 = params[2];
-  int n = data.nrow();
-  double temporal_result = 0;
-  for (int i = 1; i < n; ++i)
-  {
-    temporal_result += alpha1 + beta1 * data(i, 0) - gamma1 * conditional_sum(data(_, 0), data(i, 0), rep(1.0, n)) ;
+  const double alpha1 = params[0];
+  const double beta1  = params[1];
+  const double gamma1 = params[2];
+
+  const int n = data.nrow();
+  for (int i = 1; i < n; ++i) {
+    if (data(i, 0) < data(i - 1, 0)) stop("data must be sorted by time (nondecreasing).");
   }
-  return(temporal_result);
+
+  double temporal_result = 0.0;
+
+  // first_idx tracks the first index of the current time value
+  int first_idx = 0;
+  for (int i = 1; i < n; ++i) {
+    if (data(i, 0) > data(i - 1, 0)) first_idx = i; // new (strictly larger) time value
+    temporal_result += alpha1 + beta1 * data(i, 0) - gamma1 * static_cast<double>(first_idx);
+  }
+
+  return temporal_result;
 }
 
 
@@ -339,39 +353,154 @@ double part_2_full(const NumericVector& xgrid,
                    const NumericVector& params,
                    const NumericVector& bounds)
 {
-  double alpha1 = params[0];
-  double beta1  = params[1];
-  double gamma1 = params[2];
-  double alpha2 = params[3];
-  double beta2  = params[4];
-  double alpha3 = params[5];
-  double beta3  = params[6];
-  double gamma3 = params[7];
+  // unpack params
+  const double alpha1 = params[0];
+  const double beta1  = params[1];
+  const double gamma1 = params[2];
+  const double alpha2 = params[3];
+  const double beta2  = params[4];
+  const double alpha3 = params[5];
+  const double beta3  = params[6];
+  const double gamma3 = params[7];
 
-  int n = data.nrow();
-  int K = xgrid.size();
-  int L = ygrid.size();
-  int M = tgrid.size();
-  double i_result = 0;
-  for(int m = 0; m < M; ++m)
+  // basic guards (avoid NaNs from log(alpha2) etc.)
+  if (alpha2 <= 0.0) return std::numeric_limits<double>::infinity();
+  if (beta3  <  0.0) return std::numeric_limits<double>::infinity();
+  if (gamma3 <  0.0) return std::numeric_limits<double>::infinity();
+
+  const int n = data.nrow();
+  const int K = xgrid.size();
+  const int L = ygrid.size();
+  const int M = tgrid.size();
+  const int G = K * L;
+
+  // assume data and tgrid are sorted (your current code implicitly assumes this via "break" logic)
+  for (int i = 1; i < n; ++i) {
+    if (data(i, 0) < data(i - 1, 0)) stop("data must be sorted by time (nondecreasing).");
+  }
+  for (int m = 1; m < M; ++m) {
+    if (tgrid[m] < tgrid[m - 1]) stop("tgrid must be sorted (nondecreasing).");
+  }
+
+  // flatten (x,y) grid to g = 0..G-1
+  std::vector<double> gx(G), gy(G);
   {
-    for(int k = 0; k < K; ++k)
-    {
-      for(int l = 0; l < L; ++l)
-      {
-        // NumericVector twoDist = vec_to_mat_dist(NumericVector::create(xgrid[k], ygrid[l]), data(_, Range(1, 2)));
-        NumericVector twoDist = vec_to_mat_dist(NumericVector::create(xgrid[k], ygrid[l]), data(_, 1), data(_, 2));
-        NumericVector oneDist = dist_one_dim(tgrid[m], data(_, 0));
-        i_result += (exp(alpha1 + beta1 * tgrid[m] - gamma1 * conditional_sum(data(_, 0), tgrid[m], rep(1.0, n)))
-                      * ( full_product(xgrid[k], ygrid[l], tgrid[m], data, NumericVector::create(alpha2, beta2))
-                        /C_theta2_i(xgrid,  ygrid,  tgrid[m], data, NumericVector::create(alpha2, beta2), bounds)
-                        )
-                      * exp(-alpha3 * conditional_sum_logical(data(_, 0), tgrid[m],( (twoDist <= beta3) * (oneDist >= gamma3) ))));
+    int g = 0;
+    for (int k = 0; k < K; ++k) {
+      for (int l = 0; l < L; ++l) {
+        gx[g] = xgrid[k];
+        gy[g] = ygrid[l];
+        ++g;
       }
-     }
-   }
-  return(i_result * (bounds[0] * bounds[1] * bounds[2])/(double(M) * double(K) * double(L)));
+    }
+  }
+
+  // pull data columns into std::vectors (faster than repeated data(i, j) inside tight loops)
+  std::vector<double> tobs(n), xobs(n), yobs(n);
+  for (int i = 0; i < n; ++i) {
+    tobs[i] = data(i, 0);
+    xobs[i] = data(i, 1);
+    yobs[i] = data(i, 2);
+  }
+
+  // precompute distances from each event j to each grid point g:
+  // store by event (contiguous in memory for the incremental event updates)
+  const size_t GN = static_cast<size_t>(G) * static_cast<size_t>(n);
+  std::vector<double> d2(GN);
+  std::vector<double> log_r(GN); // log(sqrt(d2)) = 0.5*log(d2); -Inf if d2==0
+
+  for (int j = 0; j < n; ++j) {
+    const double xj = xobs[j];
+    const double yj = yobs[j];
+    const size_t base = static_cast<size_t>(j) * static_cast<size_t>(G);
+    for (int g = 0; g < G; ++g) {
+      const double dx = gx[g] - xj;
+      const double dy = gy[g] - yj;
+      const double r2 = dx*dx + dy*dy;
+      d2[base + g] = r2;
+      if (r2 > 0.0) {
+        log_r[base + g] = 0.5 * std::log(r2);
+      } else {
+        log_r[base + g] = -std::numeric_limits<double>::infinity();
+      }
+    }
+  }
+
+  // constants for comparisons / log-phi updates
+  const double a2_2   = alpha2 * alpha2;
+  const double log_a2 = std::log(alpha2);
+  const double b3_2   = beta3 * beta3;
+
+  // state over grid points, updated incrementally as t increases
+  std::vector<double> log_prod(G, 0.0); // log(prod phi)
+  std::vector<int>    count(G, 0);      // theta3 neighborhood counts
+
+  int hist_idx = 0; // number of events with t_j < t
+  int lag_idx  = 0; // number of events with t_j <= t - gamma3
+
+  double sum_over_t = 0.0;
+
+  for (int m = 0; m < M; ++m) {
+    const double t = tgrid[m];
+
+    // bring history up to t: add events with tobs < t into log_prod
+    while (hist_idx < n && tobs[hist_idx] < t) {
+      const size_t base = static_cast<size_t>(hist_idx) * static_cast<size_t>(G);
+      for (int g = 0; g < G; ++g) {
+        const double r2 = d2[base + g];
+        if (r2 <= a2_2) {
+          // log(phi) = beta2 * (log(r) - log(alpha2)), with log(r)=0.5*log(r2)
+          log_prod[g] += beta2 * (log_r[base + g] - log_a2);
+        }
+        // else phi=1 => log(phi)=0
+      }
+      ++hist_idx;
+    }
+
+    // update lagged-event set for theta3 counts: add events with tobs <= t - gamma3
+    const double cutoff = t - gamma3;
+    while (lag_idx < n && tobs[lag_idx] <= cutoff) {
+      const size_t base = static_cast<size_t>(lag_idx) * static_cast<size_t>(G);
+      for (int g = 0; g < G; ++g) {
+        if (d2[base + g] <= b3_2) count[g] += 1;
+      }
+      ++lag_idx;
+    }
+
+    // ratio = (Σ_g exp(log_prod[g]) * exp(-alpha3*count[g])) / (Σ_g exp(log_prod[g]))
+    double max_den = -std::numeric_limits<double>::infinity();
+    double max_num = -std::numeric_limits<double>::infinity();
+
+    for (int g = 0; g < G; ++g) {
+      const double lp = log_prod[g];
+      if (lp > max_den) max_den = lp;
+      const double ln = lp - alpha3 * static_cast<double>(count[g]);
+      if (ln > max_num) max_num = ln;
+    }
+
+    double den = 0.0;
+    double num = 0.0;
+    for (int g = 0; g < G; ++g) {
+      den += std::exp(log_prod[g] - max_den);
+      num += std::exp((log_prod[g] - alpha3 * static_cast<double>(count[g])) - max_num);
+    }
+
+    double ratio = 0.0;
+    if (den > 0.0 && num > 0.0) {
+      ratio = std::exp(max_num - max_den) * (num / den);
+    }
+
+    // temporal part uses N(t) = #{t_i < t} which is hist_idx by construction
+    const double temporal = std::exp(alpha1 + beta1 * t - gamma1 * static_cast<double>(hist_idx));
+
+    sum_over_t += temporal * ratio;
+  }
+
+  // IMPORTANT: this matches your *existing* estimator under the assumption of a uniform grid.
+  // (bounds[1]*bounds[2]) cancels analytically, leaving only bounds[0]/M scaling.
+  return (bounds[0] / static_cast<double>(M)) * sum_over_t;
 }
+
 
 //' calculates full self-correcting log-likelihood
 //'
@@ -402,6 +531,285 @@ double full_sc_lhood(const NumericVector& xgrid,
   return(full_likeli);
 }
 
+
+//' calculates fast full self-correcting log-likelihood
+//'
+//' @param xgrid a vector of grid values for x.
+//' @param ygrid a vector of grid values for y.
+//' @param tgrid a vector of grid values for t.
+//' @param tobs a vector of observed values for t.
+//' @param data a matrix of times and locations.
+//' @param params a vector of parameters.
+//' @param bounds a vector of bounds for time, x, and y.
+//'
+//' @returns evaluation of full log-likelihood.
+//' @keywords internal
+// [[Rcpp::export]]
+double full_sc_lhood_fast(const NumericVector& xgrid,
+                          const NumericVector& ygrid,
+                          const NumericVector& tgrid,   // integration grid (M)
+                          const NumericVector& tobs,    // observed times (n)
+                          const NumericMatrix& data,    // (t,x,y), sorted by t
+                          const NumericVector& params,  // (a1,b1,g1,a2,b2,a3,b3,g3)
+                          const NumericVector& bounds)  // (bt,bx,by)
+{
+  // unpack params
+  const double alpha1 = params[0];
+  const double beta1  = params[1];
+  const double gamma1 = params[2];
+  const double alpha2 = params[3];
+  const double beta2  = params[4];
+  const double alpha3 = params[5];
+  const double beta3  = params[6];
+  const double gamma3 = params[7];
+
+  const int n = data.nrow();
+  const int K = xgrid.size();
+  const int L = ygrid.size();
+  const int M = tgrid.size();
+  const int nObs = tobs.size();
+  const int G = K * L;
+
+  if (n < 2) return 0.0;
+  if (G <= 0 || M <= 0 || nObs <= 0) stop("Empty grid or tobs/tgrid.");
+
+  // require sorted by time (your current code assumes this via break-on-time logic)
+  for (int i = 1; i < n; ++i) {
+    if (data(i, 0) < data(i - 1, 0)) stop("data must be sorted by time (nondecreasing).");
+  }
+  for (int i = 1; i < M; ++i) {
+    if (tgrid[i] < tgrid[i - 1]) stop("tgrid must be sorted (nondecreasing).");
+  }
+  for (int i = 1; i < nObs; ++i) {
+    if (tobs[i] < tobs[i - 1]) stop("tobs must be sorted (nondecreasing).");
+  }
+
+  const double bt = bounds[0];
+  const double bx = bounds[1];
+  const double by = bounds[2];
+  const double area = bx * by;
+
+  // ------------------------------------------------------------
+  // Fast part 1-1 (temporal log term): handle ties like strict "< t"
+  // ------------------------------------------------------------
+  double part_1_1 = 0.0;
+  int first_idx = 0;
+  for (int i = 1; i < n; ++i) {
+    if (data(i, 0) > data(i - 1, 0)) first_idx = i; // new time block
+    part_1_1 += alpha1 + beta1 * data(i, 0) - gamma1 * static_cast<double>(first_idx);
+  }
+
+  // ------------------------------------------------------------
+  // Fast part 1-2: sum log(phi(||x_i-x_j||)) for j<i
+  // Uses log form to avoid sqrt/pow/log in most cases.
+  // ------------------------------------------------------------
+  double part_1_2 = 0.0;
+  if (alpha2 > 0.0 && beta2 != 0.0) {
+    const double a2_2 = alpha2 * alpha2;
+    const double log_a2 = std::log(alpha2);
+
+    for (int i = 1; i < n; ++i) {
+      const double xi = data(i, 1), yi = data(i, 2);
+      for (int j = 0; j < i; ++j) {
+        const double dx = xi - data(j, 1);
+        const double dy = yi - data(j, 2);
+        const double r2 = dx*dx + dy*dy;
+        if (r2 <= a2_2) {
+          if (r2 == 0.0) {
+            // log(0^beta2) => -Inf for beta2>0 (rare unless duplicate points)
+            return -std::numeric_limits<double>::infinity();
+          }
+          part_1_2 += beta2 * (0.5 * std::log(r2) - log_a2);
+        }
+      }
+    }
+  }
+  // else alpha2<=0 or beta2==0 => phi ≡ 1 so part_1_2 = 0
+
+  // ------------------------------------------------------------
+  // Fast part 1-4: -alpha3 * sum_{i>j} 1[dist<=beta3 & lag>=gamma3]
+  // ------------------------------------------------------------
+  double part_1_4 = 0.0;
+  if (alpha3 != 0.0 && beta3 >= 0.0 && gamma3 >= 0.0) {
+    const double b3_2 = beta3 * beta3;
+    double g_sum = 0.0;
+
+    for (int i = 1; i < n; ++i) {
+      const double ti = data(i, 0), xi = data(i, 1), yi = data(i, 2);
+      for (int j = 0; j < i; ++j) {
+        const double lag = ti - data(j, 0);
+        if (lag >= gamma3) {
+          const double dx = xi - data(j, 1);
+          const double dy = yi - data(j, 2);
+          const double r2 = dx*dx + dy*dy;
+          if (r2 <= b3_2) g_sum += 1.0;
+        }
+      }
+    }
+    part_1_4 = -alpha3 * g_sum;
+  }
+
+  // ------------------------------------------------------------
+  // Precompute grid flattening and event arrays
+  // ------------------------------------------------------------
+  std::vector<double> gx(G), gy(G);
+  {
+    int g = 0;
+    for (int k = 0; k < K; ++k) {
+      for (int l = 0; l < L; ++l) {
+        gx[g] = xgrid[k];
+        gy[g] = ygrid[l];
+        ++g;
+      }
+    }
+  }
+
+  std::vector<double> te(n), xe(n), ye(n);
+  for (int i = 0; i < n; ++i) {
+    te[i] = data(i, 0);
+    xe[i] = data(i, 1);
+    ye[i] = data(i, 2);
+  }
+
+  // event-major storage for incremental updates
+  const size_t GN = static_cast<size_t>(G) * static_cast<size_t>(n);
+  std::vector<double> d2(GN);
+  std::vector<double> log_r(GN);
+
+  for (int j = 0; j < n; ++j) {
+    const double xj = xe[j], yj = ye[j];
+    const size_t base = static_cast<size_t>(j) * static_cast<size_t>(G);
+    for (int g = 0; g < G; ++g) {
+      const double dx = gx[g] - xj;
+      const double dy = gy[g] - yj;
+      const double r2 = dx*dx + dy*dy;
+      d2[base + g] = r2;
+      log_r[base + g] = (r2 > 0.0) ? (0.5 * std::log(r2))
+        : (-std::numeric_limits<double>::infinity());
+    }
+  }
+
+  // ------------------------------------------------------------
+  // Unified sweep to compute:
+  //   part_1_3 = sum_{i=2..n} log C_theta2(t_i)
+  //   part_2   = (bt/M) * sum_{m=1..M} lambda(t_m) * E_h[ g(t_m, X) ]
+  //
+  // Original part_2 integrates:
+  //   sum_{k,l} (prod/C) * g * (area/G) = (sum prod*g) / (sum prod)
+  // so we never need C inside part_2. (This is the ratio-of-sums.)
+  // Your current slow form does (prod/C) explicitly :contentReference[oaicite:4]{index=4}.
+  // ------------------------------------------------------------
+
+  struct Eval {
+    double t;
+    int type;   // 0 = tobs logC (part_1_3), 1 = tgrid integral (part_2)
+    int idx;
+  };
+
+  std::vector<Eval> evals;
+  evals.reserve((nObs > 1 ? (nObs - 1) : 0) + M);
+
+  // tobs: skip the first like your existing part_1_3_full :contentReference[oaicite:5]{index=5}
+  for (int i = 1; i < nObs; ++i) evals.push_back({tobs[i], 0, i});
+
+  // tgrid: include all integration points
+  for (int m = 0; m < M; ++m) evals.push_back({tgrid[m], 1, m});
+
+  std::sort(evals.begin(), evals.end(),
+            [](const Eval& a, const Eval& b) {
+              if (a.t < b.t) return true;
+              if (a.t > b.t) return false;
+              return a.type < b.type;
+            });
+
+  std::vector<double> log_prod(G, 0.0);
+  std::vector<int>    count(G, 0);
+
+  int hist_idx = 0; // events with te < t
+  int lag_idx  = 0; // events with te <= t - gamma3
+
+  const double b3_2 = beta3 * beta3;
+
+  // phi constants
+  const bool use_phi = (alpha2 > 0.0 && beta2 != 0.0);
+  const double a2_2 = use_phi ? (alpha2 * alpha2) : 0.0;
+  const double log_a2 = use_phi ? std::log(alpha2) : 0.0;
+
+  double part_1_3 = 0.0;
+  double integral_sum = 0.0;
+
+  size_t p = 0;
+  while (p < evals.size()) {
+    const double t = evals[p].t;
+
+    // update history for prod: include events with te < t
+    while (hist_idx < n && te[hist_idx] < t) {
+      if (use_phi) {
+        const size_t base = static_cast<size_t>(hist_idx) * static_cast<size_t>(G);
+        for (int g = 0; g < G; ++g) {
+          const double r2 = d2[base + g];
+          if (r2 <= a2_2) {
+            log_prod[g] += beta2 * (log_r[base + g] - log_a2);
+          }
+        }
+      }
+      ++hist_idx;
+    }
+
+    // update lagged set for theta3 counts: include events with te <= t - gamma3
+    const double cutoff = t - gamma3;
+    while (lag_idx < n && te[lag_idx] <= cutoff) {
+      const size_t base = static_cast<size_t>(lag_idx) * static_cast<size_t>(G);
+      for (int g = 0; g < G; ++g) {
+        if (d2[base + g] <= b3_2) count[g] += 1;
+      }
+      ++lag_idx;
+    }
+
+    // Compute logC(t) and ratio(t) once for this time t
+    double max_den = -std::numeric_limits<double>::infinity();
+    double max_num = -std::numeric_limits<double>::infinity();
+
+    for (int g = 0; g < G; ++g) {
+      const double lp = log_prod[g];
+      if (lp > max_den) max_den = lp;
+      const double ln = lp - alpha3 * static_cast<double>(count[g]);
+      if (ln > max_num) max_num = ln;
+    }
+
+    double den = 0.0;
+    double num = 0.0;
+    for (int g = 0; g < G; ++g) {
+      den += std::exp(log_prod[g] - max_den);
+      num += std::exp((log_prod[g] - alpha3 * static_cast<double>(count[g])) - max_num);
+    }
+
+    const double log_sum_prod = max_den + std::log(den);
+    const double logC = log_sum_prod + std::log(area) - std::log(static_cast<double>(G));
+
+    double ratio = 0.0;
+    if (den > 0.0 && num > 0.0) {
+      ratio = std::exp(max_num - max_den) * (num / den);
+    }
+
+    // apply all evals at this same t
+    while (p < evals.size() && evals[p].t == t) {
+      if (evals[p].type == 0) {
+        part_1_3 += logC;
+      } else {
+        // N(t) = #{te < t} = hist_idx
+        const double temporal = std::exp(alpha1 + beta1 * t - gamma1 * static_cast<double>(hist_idx));
+        integral_sum += temporal * ratio;
+      }
+      ++p;
+    }
+  }
+
+  const double part_1 = part_1_1 + part_1_2 - part_1_3 + part_1_4;
+  const double part_2 = (bt / static_cast<double>(M)) * integral_sum;
+
+  return part_1 - part_2;
+}
 
 
 //' calculates spatial interaction

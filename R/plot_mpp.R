@@ -4,7 +4,6 @@
 #' @param pattern_type type of pattern to plot ("reference" or "simulated").
 #'
 #' @return a ggplot object of the marked point process.
-#' @export
 #'
 #' @examples
 #' # Load example data
@@ -18,18 +17,20 @@
 #' # Plot the marked point process
 #' plot_mpp(mpp_data, pattern_type = "reference")
 #'
-plot_mpp <- function(mpp_data, pattern_type) {
-  if (pattern_type == "simulated") {
-    plot_title <- "Simulated Data"
-  } else if (pattern_type == "reference") {
-    plot_title <- "Reference Data"
-  } else {
-    stop("Provide a valid pattern type ('reference' or 'simulated').", .call = FALSE)
+plot_mpp <- function(mpp_data, pattern_type = c("reference", "simulated")) {
+  pattern_type <- match.arg(pattern_type)
+  plot_title <- if (pattern_type == "simulated") "Simulated Data" else "Reference Data"
+
+  df <- base::as.data.frame(mpp_data)
+
+  # Handle the common "size" naming too
+  if (!("marks" %in% names(df)) && ("size" %in% names(df))) df$marks <- df$size
+
+  if (!all(c("x", "y", "marks") %in% names(df))) {
+    stop("`mpp_data` must contain columns x, y, and marks (or size).", call. = FALSE)
   }
 
-  mpp_plot <- base::as.data.frame(mpp_data) %>%
-    ggplot2::ggplot(ggplot2::aes(x = mpp_data$x, y = mpp_data$y, size = mpp_data$marks)) +
-    ggplot2::geom_point(alpha = .5) +
+  ggplot2::ggplot(df, ggplot2::aes(x = x, y = y, size = marks)) +
+    ggplot2::geom_point(alpha = 0.5) +
     ggplot2::labs(x = "", y = "", title = plot_title, size = "Mark")
-  return(mpp_plot)
 }

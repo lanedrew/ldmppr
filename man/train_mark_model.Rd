@@ -13,6 +13,7 @@ train_mark_model(
   save_model = FALSE,
   save_path = NULL,
   parallel = TRUE,
+  n_cores = NULL,
   include_comp_inds = FALSE,
   competition_radius = 15,
   correction = "none",
@@ -39,6 +40,8 @@ train_mark_model(
 
 \item{parallel}{`TRUE` or `FALSE` indicating whether to use parallelization in model training.}
 
+\item{n_cores}{number of cores to use in parallel model training (if `parallel` is `TRUE`).}
+
 \item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates.}
 
 \item{competition_radius}{distance for competition radius if \code{include_comp_inds} is `TRUE`.}
@@ -54,7 +57,7 @@ train_mark_model(
 \item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of model training.}
 }
 \value{
-a list containing the raw trained model and a bundled model object.
+an ldmppr_mark_model object.
 }
 \description{
 Trains a predictive model for the mark distribution of a spatio-temporal process.
@@ -77,7 +80,7 @@ locations <- small_example_data \%>\%
   dplyr::mutate(time = power_law_mapping(size, .5))
 
 # Train the model
-train_mark_model(
+mark_model <- train_mark_model(
   data = locations,
   raster_list = scaled_raster_list,
   scaled_rasters = TRUE,
@@ -92,5 +95,7 @@ train_mark_model(
   tuning_grid_size = 2,
   verbose = TRUE
 )
+
+print(mark_model)
 
 }

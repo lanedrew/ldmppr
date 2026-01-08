@@ -14,12 +14,22 @@
 #' power_law_mapping(sizes, .5)
 #'
 power_law_mapping <- function(sizes, delta) {
-  # Check if delta value is within the appropriate support
-  if (delta < 0) {
-    stop("Please input a value for delta greater than 0.")
+  if (length(delta) != 1 || is.na(delta) || delta < 0) {
+    stop("Please input a value for delta >= 0.")
+  }
+  if (!is.numeric(sizes) || anyNA(sizes)) {
+    stop("`sizes` must be a numeric vector with no missing values.")
   }
 
-  # Calculate the arrival times given sizes and delta
-  t_scaled <- 1 - ((sizes - base::min(sizes)) / (base::max(sizes) - base::min(sizes)))^delta
+  smin <- base::min(sizes)
+  smax <- base::max(sizes)
+
+  if (smax == smin) {
+    # All sizes equal: map everything to the middle (or 0.5) to avoid division by zero.
+    return(rep(0.5, length(sizes)))
+  }
+
+  t_scaled <- 1 - ((sizes - smin) / (smax - smin))^delta
   return(t_scaled)
 }
+

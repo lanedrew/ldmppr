@@ -27,6 +27,7 @@
 #' scale_rasters(rast_list)
 #'
 scale_rasters <- function(raster_list, reference_resolution = NULL) {
+
   # Rescale each raster
   scaled_rasters <- lapply(raster_list, terra::scale)
 

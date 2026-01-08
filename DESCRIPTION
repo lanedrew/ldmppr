@@ -15,14 +15,15 @@ License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Imports: 
+    stats,
+    bundle,
     Rcpp (>= 1.0.12),
     terra,
     doParallel,
     xgboost,
     ranger,
-    parsnip,
+    parsnip (>= 1.4.0),
     dials,
-    bundle,
     recipes,
     rsample,
     tune,
@@ -35,19 +36,22 @@ Imports:
     nloptr, 
     GET,
     progress,
-    dplyr,
     future,
     furrr,
+    foreach,
     yardstick
 LinkingTo: 
     Rcpp,
     RcppArmadillo
 URL: https://github.com/lanedrew/ldmppr
 BugReports: https://github.com/lanedrew/ldmppr/issues
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat (>= 3.0.0),
+    dplyr
 VignetteBuilder: knitr
 Depends: 
     R (>= 3.5.0)
+Config/testthat/edition: 3

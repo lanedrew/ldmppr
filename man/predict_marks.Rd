@@ -41,7 +41,7 @@ Predict values from the mark distribution
 \examples{
 # Simulate a realization
 generating_parameters <- c(2, 8, .02, 2.5, 3, 1, 2.5, .2)
-M_n <- matrix(c(10, 14), ncol = 1)
+M_n <- c(10, 14)
 generated_locs <- simulate_sc(
   t_min = 0,
   t_max = 1,
@@ -54,6 +54,7 @@ generated_locs <- simulate_sc(
 raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
   pattern = "\\\\.tif$", full.names = TRUE
 )
+raster_paths <- raster_paths[!grepl("_med\\\\.tif$", raster_paths)]
 rasters <- lapply(raster_paths, terra::rast)
 
 # Scale the rasters
@@ -61,10 +62,7 @@ scaled_raster_list <- scale_rasters(rasters)
 
 # Load the example mark model
 file_path <- system.file("extdata", "example_mark_model.rds", package = "ldmppr")
-example_mark_model <- readRDS(file_path)
-
-# Unbundle the model
-mark_model <- bundle::unbundle(example_mark_model)
+mark_model <- load_mark_model(file_path)
 
 # Predict the mark values
 predict_marks(

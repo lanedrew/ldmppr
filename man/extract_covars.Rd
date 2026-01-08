@@ -7,12 +7,12 @@
 extract_covars(locations, raster_list)
 }
 \arguments{
-\item{locations}{a data frame of (x,y) locations with names "x" and "y".}
+\item{locations}{a matrix/data.frame of (x,y) locations.}
 
-\item{raster_list}{a list of raster objects.}
+\item{raster_list}{a list of SpatRaster objects.}
 }
 \value{
-a matrix of covariates drawn from the provided rasters.
+a data.frame of covariates (no ID column; unique names).
 }
 \description{
 Extract covariate values from a set of rasters
@@ -22,6 +22,7 @@ Extract covariate values from a set of rasters
 raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
   pattern = "\\\\.tif$", full.names = TRUE
 )
+raster_paths <- raster_paths[!grepl("_med\\\\.tif$", raster_paths)]
 rasters <- lapply(raster_paths, terra::rast)
 
 # Scale the rasters

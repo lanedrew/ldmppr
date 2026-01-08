@@ -82,7 +82,7 @@ data(small_example_data)
 
 # Load the example mark model that previously was trained on the small example data
 file_path <- system.file("extdata", "example_mark_model.rds", package = "ldmppr")
-mark_model <- bundle::unbundle(readRDS(file_path))
+mark_model <- load_mark_model(file_path)
 
 # Load the raster files
 raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
@@ -101,15 +101,14 @@ reference_data <- generate_mpp(
 )
 
 # Define an anchor point
-M_n <- as.matrix(small_example_data[1, c("x", "y")])
+M_n <- c(small_example_data[1, c("x", "y")])
 
 # Specify the estimated parameters of the self-correcting process
-# Note: These would generally be estimated using estimate_parameters_sc
-# or estimate_parameters_sc_parallel. These values are estimates from
-# the small_example_data generating script.
+# Note: These would generally be estimated using estimate_process_parameters.
+# These values are estimates from the small_example_data generating script.
 estimated_parameters <- c(
-  1.42936311, 8.59251417, 0.02153924, 1.89763856,
-  2.33256061, 1.09522235, 2.66250000, 0.16499789
+  0.05167978, 8.20702166, 0.02199940, 2.63236890,
+  1.82729512, 0.65330061, 0.86666748, 0.04681878
 )
 
 # Check the model fit
@@ -133,7 +132,7 @@ example_model_fit <- check_model_fit(
   seed = 90210
 )
 
-plot(example_model_fit$combined_env)
+plot(example_model_fit, which = 'combined')
 }
 }
 \references{

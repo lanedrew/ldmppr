@@ -182,6 +182,22 @@ full_sc_lhood <- function(xgrid, ygrid, tgrid, tobs, data, params, bounds) {
     .Call('_ldmppr_full_sc_lhood', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, tobs, data, params, bounds)
 }
 
+#' calculates fast full self-correcting log-likelihood
+#'
+#' @param xgrid a vector of grid values for x.
+#' @param ygrid a vector of grid values for y.
+#' @param tgrid a vector of grid values for t.
+#' @param tobs a vector of observed values for t.
+#' @param data a matrix of times and locations.
+#' @param params a vector of parameters.
+#' @param bounds a vector of bounds for time, x, and y.
+#'
+#' @returns evaluation of full log-likelihood.
+#' @keywords internal
+full_sc_lhood_fast <- function(xgrid, ygrid, tgrid, tobs, data, params, bounds) {
+    .Call('_ldmppr_full_sc_lhood_fast', PACKAGE = 'ldmppr', xgrid, ygrid, tgrid, tobs, data, params, bounds)
+}
+
 #' calculates spatial interaction
 #'
 #' @param Hist a matrix of points.

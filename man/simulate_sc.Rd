@@ -17,7 +17,9 @@ simulate_sc(
 
 \item{t_max}{maximum value for time.}
 
-\item{sc_params}{vector of parameter values corresponding to (alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).}
+\item{sc_params}{Vector of parameter values corresponding to
+\eqn{(\alpha_1,\beta_1,\gamma_1,\alpha_2,\beta_2,\alpha_3,\beta_3,\gamma_3)}
+(i.e., alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).}
 
 \item{anchor_point}{vector of (x,y) coordinates of point to condition on.}
 
@@ -35,7 +37,7 @@ given a set of parameters and a point to condition on.
 generating_parameters <- c(2, 8, .02, 2.5, 3, 1, 2.5, .2)
 
 # Specify an anchor point
-M_n <- matrix(c(10, 14), ncol = 1)
+M_n <- c(10, 14)
 
 # Simulate the self-correcting process
 generated_locs <- simulate_sc(

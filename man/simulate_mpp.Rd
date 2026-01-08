@@ -20,23 +20,24 @@ simulate_mpp(
 )
 }
 \arguments{
-\item{sc_params}{vector of parameter values corresponding to (alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).}
+\item{sc_params}{vector of parameter values corresponding to
+(alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).}
 
 \item{t_min}{minimum value for time.}
 
 \item{t_max}{maximum value for time.}
 
-\item{anchor_point}{vector of (x,y) coordinates of point to condition on.}
+\item{anchor_point}{vector (or 1x2 matrix) of (x,y) coordinates to condition on.}
 
 \item{raster_list}{list of raster objects.}
 
 \item{scaled_rasters}{`TRUE` or `FALSE` indicating whether the rasters have been scaled.}
 
-\item{mark_model}{a model object (typically from \code{train_mark_model}).}
+\item{mark_model}{a mark model (e.g., from \code{train_mark_model()}), or a path to a saved mark model.}
 
-\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y).}
+\item{xy_bounds}{a vector of domain bounds (a_x, b_x, a_y, b_y).}
 
-\item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates.}
+\item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate competition indices as covariates.}
 
 \item{competition_radius}{distance for competition radius if \code{include_comp_inds} is `TRUE`.}
 
@@ -45,7 +46,7 @@ simulate_mpp(
 \item{thinning}{`TRUE` or `FALSE` indicating whether to thin the realization.}
 }
 \value{
-a list containing the marked point process realization and the data frame of the realization.
+An object of class \code{"ldmppr_sim"}.
 }
 \description{
 Simulate a realization of a location dependent marked point process
@@ -69,7 +70,7 @@ scaled_raster_list <- scale_rasters(rasters)
 
 # Load the example mark model
 file_path <- system.file("extdata", "example_mark_model.rds", package = "ldmppr")
-mark_model <- bundle::unbundle(readRDS(file_path))
+mark_model <- load_mark_model(file_path)
 
 # Simulate a realization
 example_mpp <- simulate_mpp(
@@ -87,7 +88,7 @@ example_mpp <- simulate_mpp(
   thinning = TRUE
 )
 
-# Plot the realization
-plot_mpp(example_mpp$mpp, pattern_type = "simulated")
-
+# Plot the realization and provide a summary
+plot(example_mpp, pattern_type = "simulated")
+summary(example_mpp)
 }
