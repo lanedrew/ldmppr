@@ -1,5 +1,3 @@
-# ldmppr (development version)
-
 # ldmppr 1.1.0
 
 * Introduced S3 classes and associated methods for the 4 main workflow steps (fit process model/train mark model/check model fit/simulate realizations).
