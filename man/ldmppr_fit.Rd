@@ -30,31 +30,33 @@ as_nloptr(x, ...)
 \method{as_nloptr}{ldmppr_fit}(x, ...)
 }
 \arguments{
-\item{x}{an object of class `ldmppr_fit`.}
+\item{x}{an object of class \code{ldmppr_fit}.}
 
 \item{...}{additional arguments (not used).}
 
-\item{object}{an object of class `ldmppr_fit`.}
+\item{object}{an object of class \code{ldmppr_fit}.}
 }
 \value{
-* `print()` prints a brief summary of the fit.
-* `coef()` returns the estimated parameter vector.
-* `logLik()` returns the log-likelihood at the optimum.
-* `summary()` returns a `summary.ldmppr_fit`.
-* `plot()` plots diagnostics for multi-fit runs (e.g. objective vs delta), if available.
+\describe{
+  \item{\code{print()}}{prints a brief summary of the fit.}
+  \item{\code{coef()}}{returns the estimated parameter vector.}
+  \item{\code{logLik()}}{returns the log-likelihood at the optimum.}
+  \item{\code{summary()}}{returns a \code{summary.ldmppr_fit}.}
+  \item{\code{plot()}}{plots diagnostics for multi-fit runs, if available.}
+}
 }
 \description{
-Objects of class `ldmppr_fit` are returned by [estimate_process_parameters()].
+Objects of class \code{ldmppr_fit} are returned by \code{\link{estimate_process_parameters}}.
 They contain the best-fitting optimization result (and optionally multiple fits,
 e.g. from a delta search) along with metadata used to reproduce the fit.
 }
 \details{
-A `ldmppr_fit` is a list with (at minimum):
+A \code{ldmppr_fit} is a list with (at minimum):
 \itemize{
-  \item `process`: process name (e.g. `"self_correcting"`)
-  \item `fit`: best optimization result (currently an `nloptr` object)
-  \item `mapping`: mapping information (e.g. chosen `delta`, objectives)
-  \item `grid`: grid definitions used by likelihood approximation
+  \item \code{process}: process name (e.g. \code{"self_correcting"})
+  \item \code{fit}: best optimization result (currently an \code{nloptr} object)
+  \item \code{mapping}: mapping information (e.g. chosen \code{delta}, objectives)
+  \item \code{grid}: grid definitions used by likelihood approximation
 }
 }
 \section{Methods (by generic)}{
@@ -69,13 +71,13 @@ A `ldmppr_fit` is a list with (at minimum):
 
 \item \code{plot(ldmppr_fit)}: Plot diagnostics for a fitted model.
 
-\item \code{as_nloptr(ldmppr_fit)}: Extract the underlying `nloptr` result.
+\item \code{as_nloptr(ldmppr_fit)}: Extract the underlying \code{nloptr} result.
 
 }}
 \section{Functions}{
 \itemize{
-\item \code{print(summary.ldmppr_fit)}: Print a summary produced by [summary.ldmppr_fit()].
+\item \code{print(summary.ldmppr_fit)}: Print a summary produced by \code{\link{summary.ldmppr_fit}}.
 
-\item \code{as_nloptr()}: Extract the underlying `nloptr` result.
+\item \code{as_nloptr()}: Extract the underlying \code{nloptr} result.
 
 }}

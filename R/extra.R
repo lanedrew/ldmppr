@@ -10,3 +10,4 @@ utils::globalVariables(c("x", "y", "marks"))
 # Various imports
 #' @importFrom stats predict
 #' @importFrom dplyr select
+#' @importFrom stats coef

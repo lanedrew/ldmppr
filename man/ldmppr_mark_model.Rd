@@ -22,7 +22,7 @@ ldmppr_mark_model(
 
 \method{print}{ldmppr_mark_model}(x, ...)
 
-\method{predict}{ldmppr_mark_model}(object, new_data, ...)
+predict.ldmppr_mark_model(object, new_data, ...)
 
 save_mark_model(object, path, ...)
 
@@ -31,61 +31,61 @@ save_mark_model(object, path, ...)
 load_mark_model(path)
 }
 \arguments{
-\item{engine}{Character scalar. One of `"xgboost"` or `"ranger"`.}
+\item{engine}{character string (currently \code{"xgboost"} and \code{"ranger"}).}
 
-\item{fit_engine}{Fitted engine object (e.g. `xgb.Booster` or a ranger fit).}
+\item{fit_engine}{fitted engine object (e.g. \code{xgb.Booster} or a ranger fit).}
 
-\item{xgb_raw}{Raw xgboost payload (e.g. UBJ) used for rehydration.}
+\item{xgb_raw}{raw xgboost payload (e.g. UBJ) used for rehydration.}
 
-\item{recipe}{A prepped recipes object used for preprocessing new data.}
+\item{recipe}{a prepped recipes object used for preprocessing new data.}
 
-\item{outcome}{Outcome column name (default `"size"`).}
+\item{outcome}{outcome column name (default \code{"size"}).}
 
-\item{feature_names}{Optional vector of predictor names required at prediction time.}
+\item{feature_names}{(optional) vector of predictor names required at prediction time.}
 
-\item{info}{Optional list of metadata.}
+\item{info}{(optional) list of metadata.}
 
-\item{x}{a `ldmppr_mark_model` object.}
+\item{x}{a \code{ldmppr_mark_model} object.}
 
 \item{...}{passed to methods.}
 
-\item{object}{a `ldmppr_mark_model` object.}
+\item{object}{a \code{ldmppr_mark_model} object.}
 
 \item{new_data}{a data frame of predictors (and possibly outcome columns).}
 
-\item{path}{path to an `.rds` created by [save_mark_model()] (or legacy objects).}
+\item{path}{path to an \code{.rds} created by \code{\link{save_mark_model}} (or legacy objects).}
 }
 \value{
-* `print()` prints a brief summary.
-* `predict()` returns numeric predictions for new data.
+\describe{
+   \item{\code{print()}}{prints a brief summary.}
+   \item{\code{predict()}}{returns numeric predictions for new data.}
+}
 
-an object of class `"ldmppr_mark_model"`.
+an object of class \code{"ldmppr_mark_model"}.
 }
 \description{
-`ldmppr_mark_model` objects store a fitted mark model and preprocessing
+\code{ldmppr_mark_model} objects store a fitted mark model and preprocessing
 information used to predict marks at new locations and times.
+These objects are typically returned by \code{\link{train_mark_model}} and can be
+saved/loaded with \code{\link{save_mark_model}} and \code{\link{load_mark_model}}.
 }
 \details{
-These objects are typically returned by [train_mark_model()] and can be
-saved/loaded with [save_mark_model()] and [load_mark_model()].
-
-
-The model may be backed by different engines (currently `"xgboost"` and
-`"ranger"`). For xgboost, the object can store a serialized booster payload
+The model may be backed by different engines (currently \code{"xgboost"} and
+\code{"ranger"}). For \code{"xgboost"}, the object can store a serialized booster payload
 to make saving/loading robust across R sessions.
 }
 \section{Methods (by generic)}{
 \itemize{
 \item \code{print(ldmppr_mark_model)}: Print a brief summary of the mark model.
 
-\item \code{predict(ldmppr_mark_model)}: Predict marks for new data.
-
-\item \code{save_mark_model(ldmppr_mark_model)}: Save method for `ldmppr_mark_model`.
+\item \code{save_mark_model(ldmppr_mark_model)}: Save method for \code{ldmppr_mark_model}.
 
 }}
 \section{Functions}{
 \itemize{
 \item \code{ldmppr_mark_model()}: Create a mark model container.
+
+\item \code{predict.ldmppr_mark_model()}: Predict marks for new data.
 
 \item \code{save_mark_model()}: Save a mark model to disk.
 

@@ -18,31 +18,34 @@
 \method{plot}{ldmppr_model_check}(x, which = c("combined", "L", "F", "G", "J", "E", "V"), ...)
 }
 \arguments{
-\item{x}{an object of class `ldmppr_model_check`.}
+\item{x}{an object of class \code{ldmppr_model_check}.}
 
-\item{...}{additional arguments passed to the underlying `plot()` method (e.g., from **GET**).}
+\item{...}{additional arguments passed to the underlying \code{plot()} method (e.g., from **GET**).}
 
-\item{object}{an object of class `ldmppr_model_check`.}
+\item{object}{an object of class \code{ldmppr_model_check}.}
 
-\item{which}{which envelope to plot. `"combined"` plots the global envelope; otherwise one of `"L"`, `"F"`, `"G"`, `"J"`, `"E"`, `"V"`.}
+\item{which}{which envelope to plot. \code{"combined"} plots the global envelope;
+otherwise one of \code{"L"}, \code{"F"}, \code{"G"}, \code{"J"}, \code{"E"}, \code{"V"}.}
 }
 \value{
-* `print()` prints a brief summary of the diagnostic object.
-* `summary()` returns a `summary.ldmppr_model_check` object.
-* `plot()` plots the combined envelope or a selected statistic envelope.
+\describe{
+   \item{\code{print()}}{prints a brief summary of the diagnostic object.}
+   \item{\code{summary()}}{returns a \code{summary.ldmppr_model_check} object.}
+   \item{\code{plot()}}{plots the combined envelope or a selected statistic envelope.}
+}
 }
 \description{
-Objects of class `ldmppr_model_check` are returned by [check_model_fit()].
+Objects of class \code{ldmppr_model_check} are returned by \code{\link{check_model_fit}}.
 They contain global envelope test results and curve sets for multiple summary
 functions/statistics.
 }
 \details{
-An `ldmppr_model_check` is a list with components such as:
+An \code{ldmppr_model_check} is a list with components such as:
 \itemize{
-  \item `combined_env`: a global envelope test object (typically from **GET**)
-  \item `envs`: named list of envelope test objects (e.g., `L`, `F`, `G`, `J`, `E`, `V`)
-  \item `curve_sets`: named list of curve set objects
-  \item `settings`: list of settings used when generating envelopes (e.g., `n_sim`, `thinning`)
+  \item \code{combined_env}: a global envelope test object (typically from **GET**)
+  \item \code{envs}: named list of envelope test objects (e.g., \code{L}, \code{F}, \code{G}, \code{J}, \code{E}, \code{V})
+  \item \code{curve_sets}: named list of curve set objects
+  \item \code{settings}: list of settings used when generating envelopes (e.g., \code{n_sim}, \code{thinning})
 }
 }
 \section{Methods (by generic)}{
@@ -56,6 +59,6 @@ An `ldmppr_model_check` is a list with components such as:
 }}
 \section{Functions}{
 \itemize{
-\item \code{print(summary.ldmppr_model_check)}: Print a summary produced by [summary.ldmppr_model_check()].
+\item \code{print(summary.ldmppr_model_check)}: Print a summary produced by \code{\link{summary.ldmppr_model_check}}.
 
 }}

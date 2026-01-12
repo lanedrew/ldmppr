@@ -7,7 +7,7 @@
 generate_mpp(locations, marks = NULL, xy_bounds = NULL)
 }
 \arguments{
-\item{locations}{a data frame of (x,y) locations with names "x" and "y".}
+\item{locations}{a data.frame of (x,y) locations with names "x" and "y".}
 
 \item{marks}{a vector of marks.}
 

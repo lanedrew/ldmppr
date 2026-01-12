@@ -22,7 +22,7 @@ test_that("save_mark_model/load_mark_model roundtrip preserves predictions (xgbo
     xy_bounds = c(0, 25, 0, 25),
     parallel = FALSE,
     include_comp_inds = FALSE,
-    correction = "none",
+    edge_correction = "none",
     selection_metric = "rmse",
     cv_folds = 2,
     tuning_grid_size = 1,
@@ -39,7 +39,7 @@ test_that("save_mark_model/load_mark_model roundtrip preserves predictions (xgbo
     mark_model = mm,
     xy_bounds = c(0, 25, 0, 25),
     include_comp_inds = FALSE,
-    correction = "none"
+    edge_correction = "none"
   )
 
   tmp <- tempfile(fileext = ".rds")
@@ -53,7 +53,7 @@ test_that("save_mark_model/load_mark_model roundtrip preserves predictions (xgbo
     mark_model = mm2,
     xy_bounds = c(0, 25, 0, 25),
     include_comp_inds = FALSE,
-    correction = "none"
+    edge_correction = "none"
   )
 
   expect_type(p1, "double")
@@ -82,7 +82,7 @@ test_that("save_mark_model/load_mark_model roundtrip preserves predictions (rang
     xy_bounds = c(0, 25, 0, 25),
     parallel = FALSE,
     include_comp_inds = FALSE,
-    correction = "none",
+    edge_correction = "none",
     selection_metric = "rmse",
     cv_folds = 2,
     tuning_grid_size = 1,
@@ -98,7 +98,7 @@ test_that("save_mark_model/load_mark_model roundtrip preserves predictions (rang
     mark_model = mm,
     xy_bounds = c(0, 25, 0, 25),
     include_comp_inds = FALSE,
-    correction = "none"
+    edge_correction = "none"
   )
 
   tmp <- tempfile(fileext = ".rds")
@@ -112,7 +112,7 @@ test_that("save_mark_model/load_mark_model roundtrip preserves predictions (rang
     mark_model = mm2,
     xy_bounds = c(0, 25, 0, 25),
     include_comp_inds = FALSE,
-    correction = "none"
+    edge_correction = "none"
   )
 
   expect_type(p1, "double")

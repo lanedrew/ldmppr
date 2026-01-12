@@ -10,13 +10,14 @@ train_mark_model(
   scaled_rasters = FALSE,
   model_type = "xgboost",
   xy_bounds = NULL,
+  delta = NULL,
   save_model = FALSE,
   save_path = NULL,
   parallel = TRUE,
   n_cores = NULL,
   include_comp_inds = FALSE,
   competition_radius = 15,
-  correction = "none",
+  edge_correction = "none",
   selection_metric = "rmse",
   cv_folds = 5,
   tuning_grid_size = 200,
@@ -24,47 +25,57 @@ train_mark_model(
 )
 }
 \arguments{
-\item{data}{a data frame containing named vectors x, y, size, and time.}
+\item{data}{a data.frame or a \code{ldmppr_fit} object. See Description.}
 
 \item{raster_list}{a list of raster objects.}
 
-\item{scaled_rasters}{`TRUE` or `FALSE` indicating whether the rasters have been scaled.}
+\item{scaled_rasters}{\code{TRUE} or \code{FALSE} indicating whether the rasters have been scaled.}
 
-\item{model_type}{the machine learning model type ("xgboost" or "random_forest").}
+\item{model_type}{the machine learning model type (\code{"xgboost"} or \code{"random_forest"}).}
 
-\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y).}
+\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y). If \code{data} is an \code{ldmppr_fit}
+and \code{xy_bounds} is \code{NULL}, defaults to \code{c(0, b_x, 0, b_y)} derived from fit.}
 
-\item{save_model}{`TRUE` or `FALSE` indicating whether to save the generated model.}
+\item{delta}{(optional) numeric scalar used only when \code{data} contains \code{(x,y,size)} but not \code{time}.
+If \code{data} is an \code{ldmppr_fit} and time is missing, the function will infer the \code{delta} value from the fit.}
+
+\item{save_model}{\code{TRUE} or \code{FALSE} indicating whether to save the generated model.}
 
 \item{save_path}{path for saving the generated model.}
 
-\item{parallel}{`TRUE` or `FALSE` indicating whether to use parallelization in model training.}
+\item{parallel}{\code{TRUE} or \code{FALSE} indicating whether to use parallelization in model training.}
 
-\item{n_cores}{number of cores to use in parallel model training (if `parallel` is `TRUE`).}
+\item{n_cores}{number of cores to use in parallel model training (if \code{parallel} is \code{TRUE}).}
 
-\item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates.}
+\item{include_comp_inds}{\code{TRUE} or \code{FALSE} indicating whether to generate and use competition indices as covariates.}
 
-\item{competition_radius}{distance for competition radius if \code{include_comp_inds} is `TRUE`.}
+\item{competition_radius}{distance for competition radius if \code{include_comp_inds} is \code{TRUE}.}
 
-\item{correction}{type of correction to apply ("none", "toroidal", or "truncation").}
+\item{edge_correction}{type of edge correction to apply (\code{"none"}, \code{"toroidal"}, or \code{"truncation"}).}
 
-\item{selection_metric}{metric to use for identifying the optimal model ("rmse" or "mae").}
+\item{selection_metric}{metric to use for identifying the optimal model (\code{"rmse"}, \code{"mae"}, or \code{"rsq"}).}
 
-\item{cv_folds}{number of cross-validation folds to use in model training.}
+\item{cv_folds}{number of cross-validation folds to use in model training.
+If \code{cv_folds <= 1}, tuning is skipped and the model is fit once with default hyperparameters.}
 
 \item{tuning_grid_size}{size of the tuning grid for hyperparameter tuning.}
 
-\item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of model training.}
+\item{verbose}{\code{TRUE} or \code{FALSE} indicating whether to show progress of model training.}
 }
 \value{
-an ldmppr_mark_model object.
+an object of class \code{"ldmppr_mark_model"} containing the trained mark model.
 }
 \description{
 Trains a predictive model for the mark distribution of a spatio-temporal process.
-Allows the user to incorporate location specific information and competition indices as
-covariates in the mark model.
+\code{data} may be either (1) a data.frame containing columns \code{x}, \code{y}, \code{size} and \code{time},
+(2) a data.frame containing \code{x}, \code{y}, \code{size} (time will be derived via \code{delta}),
+or (3) a \code{ldmppr_fit} object returned by \code{\link{estimate_process_parameters}}.
+Allows the user to incorporate location specific information and competition indices as covariates in the mark model.
 }
 \examples{
+# Load the small example data
+data(small_example_data)
+
 # Load example raster data
 raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
   pattern = "\\\\.tif$", full.names = TRUE
@@ -75,21 +86,19 @@ rasters <- lapply(raster_paths, terra::rast)
 # Scale the rasters
 scaled_raster_list <- scale_rasters(rasters)
 
-# Load example locations
-locations <- small_example_data \%>\%
-  dplyr::mutate(time = power_law_mapping(size, .5))
 
 # Train the model
 mark_model <- train_mark_model(
-  data = locations,
+  data = small_example_data,
   raster_list = scaled_raster_list,
   scaled_rasters = TRUE,
   model_type = "xgboost",
   xy_bounds = c(0, 25, 0, 25),
+  delta = 1,
   parallel = FALSE,
   include_comp_inds = FALSE,
   competition_radius = 10,
-  correction = "none",
+  edge_correction = "none",
   selection_metric = "rmse",
   cv_folds = 3,
   tuning_grid_size = 2,

@@ -1,28 +1,35 @@
 #' Simulate a realization of a location dependent marked point process
 #'
-#' @param sc_params vector of parameter values corresponding to
-#'   (alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).
+#' @param process type of process used (currently supports \code{"self_correcting"}).
+#' @param process_fit either (1) a \code{ldmppr_fit} object returned by
+#'   \code{\link{estimate_process_parameters}}, or (2) a numeric vector of
+#'   length 8 giving self-correcting parameters:
+#'   \eqn{(\alpha_1,\beta_1,\gamma_1,\alpha_2,\beta_2,\alpha_3,\beta_3,\gamma_3)} (alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).
 #' @param t_min minimum value for time.
 #' @param t_max maximum value for time.
-#' @param anchor_point vector (or 1x2 matrix) of (x,y) coordinates to condition on.
-#' @param raster_list list of raster objects.
-#' @param scaled_rasters `TRUE` or `FALSE` indicating whether the rasters have been scaled.
-#' @param mark_model a mark model (e.g., from \code{train_mark_model()}), or a path to a saved mark model.
-#' @param xy_bounds a vector of domain bounds (a_x, b_x, a_y, b_y).
-#' @param include_comp_inds `TRUE` or `FALSE` indicating whether to generate competition indices as covariates.
-#' @param competition_radius distance for competition radius if \code{include_comp_inds} is `TRUE`.
-#' @param correction type of correction to apply ("none" or "toroidal").
-#' @param thinning `TRUE` or `FALSE` indicating whether to thin the realization.
+#' @param anchor_point (optional) vector of (x,y) coordinates of the point to condition on.
+#'   If \code{NULL}, inferred from the reference data (largest mark if available) or from
+#'   \code{process_fit$data_original} (largest size).
+#' @param raster_list a list of raster objects used for predicting marks.
+#' @param scaled_rasters \code{TRUE} or \code{FALSE} indicating whether the rasters have already been scaled.
+#' @param mark_model a mark model object. May be a \code{ldmppr_mark_model} or a legacy model.
+#' @param xy_bounds (optional) vector of bounds as \code{c(a_x, b_x, a_y, b_y)}. If \code{NULL}, will be
+#'   inferred from \code{reference_data}'s window when \code{reference_data} is provided,
+#'   otherwise from \code{ldmppr_fit} with lower bounds assumed to be 0.
+#' @param include_comp_inds \code{TRUE} or \code{FALSE} indicating whether to compute competition indices.
+#' @param competition_radius distance for competition radius if \code{include_comp_inds = TRUE}.
+#' @param thinning \code{TRUE} or \code{FALSE} indicating whether to use the thinned simulated values.
+#' @param edge_correction type of edge correction to apply (\code{"none"} or \code{"toroidal"}).
+#' @param seed integer seed for reproducibility.
 #'
-#' @return An object of class \code{"ldmppr_sim"}.
-#' @export
+#' @return an object of class \code{"ldmppr_sim"}.
 #'
 #' @examples
 #' # Specify the generating parameters of the self-correcting process
 #' generating_parameters <- c(2, 8, .02, 2.5, 3, 1, 2.5, .2)
 #'
 #' # Specify an anchor point
-#' M_n <- matrix(c(10, 14), ncol = 1)
+#' M_n <- c(10, 14)
 #'
 #' # Load the raster files
 #' raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
@@ -40,7 +47,8 @@
 #'
 #' # Simulate a realization
 #' example_mpp <- simulate_mpp(
-#'   sc_params = generating_parameters,
+#'   process = "self_correcting",
+#'   process_fit = generating_parameters,
 #'   t_min = 0,
 #'   t_max = 1,
 #'   anchor_point = M_n,
@@ -50,14 +58,16 @@
 #'   xy_bounds = c(0, 25, 0, 25),
 #'   include_comp_inds = TRUE,
 #'   competition_radius = 10,
-#'   correction = "none",
+#'   edge_correction = "none",
 #'   thinning = TRUE
 #' )
 #'
 #' # Plot the realization and provide a summary
 #' plot(example_mpp, pattern_type = "simulated")
 #' summary(example_mpp)
-simulate_mpp <- function(sc_params = NULL,
+#' @export
+simulate_mpp <- function(process = c("self_correcting"),
+                         process_fit = NULL,
                          t_min = 0,
                          t_max = 1,
                          anchor_point = NULL,
@@ -67,26 +77,50 @@ simulate_mpp <- function(sc_params = NULL,
                          xy_bounds = NULL,
                          include_comp_inds = FALSE,
                          competition_radius = 15,
-                         correction = "none",
-                         thinning = TRUE) {
-  # ---- Checks ----
-  if (is.null(sc_params) || length(sc_params) != 8 || anyNA(sc_params) || any(sc_params[2:8] < 0)) {
-    stop("Provide a valid set of parameter values for the sc_params argument.", call. = FALSE)
+                         edge_correction = "none",
+                         thinning = TRUE,
+                         seed = NULL) {
+
+  process <- match.arg(process)
+
+  # ---- checks ----
+  if (is.null(process_fit)) {
+    stop("Provide `process_fit` as an ldmppr_fit object or a numeric parameter vector.", call. = FALSE)
+  }
+
+  sc_params <- .as_sc_params(process_fit)
+  if (length(sc_params) != 8 || anyNA(sc_params) || any(sc_params[2:8] < 0)) {
+    stop("Provide a valid set of self-correcting parameters (length 8; entries 2:8 >= 0), or an ldmppr_fit object.", call. = FALSE)
   }
 
   if (is.null(t_min) || t_min < 0 || t_min >= t_max) stop("Provide t_min >= 0 and < t_max.", call. = FALSE)
   if (is.null(t_max) || t_max > 1 || t_min >= t_max) stop("Provide t_max > t_min and <= 1.", call. = FALSE)
 
+  if (!is.null(seed)) {
+    if (is.na(seed) || seed < 0 || seed != as.integer(seed)) stop("Provide a nonnegative integer `seed`.", call. = FALSE)
+    set.seed(as.integer(seed))
+  }
+
+  if (is.null(xy_bounds)) {
+    xy_bounds <- .infer_xy_bounds(process_fit)
+  }
+  if (is.null(xy_bounds) || length(xy_bounds) != 4) {
+    stop("Provide xy_bounds = c(a_x, b_x, a_y, b_y), or pass an ldmppr_fit with grid$upper_bounds.", call. = FALSE)
+  }
+  if (xy_bounds[2] < xy_bounds[1] || xy_bounds[4] < xy_bounds[3]) stop("Invalid xy_bounds ordering.", call. = FALSE)
+
+  if (is.null(anchor_point)) {
+    anchor_point <- .infer_anchor_point(process_fit)
+  }
   anchor_point <- as.numeric(anchor_point)
-  if (length(anchor_point) != 2) stop("Provide a vector/matrix of (x,y) coordinates for anchor_point.", call. = FALSE)
+  if (length(anchor_point) != 2) {
+    stop("Provide anchor_point = c(x,y), or pass an ldmppr_fit that contains data_original/data to infer it.", call. = FALSE)
+  }
 
   if (is.null(raster_list) || !is.list(raster_list)) stop("Provide a list of rasters for raster_list.", call. = FALSE)
   if (!is.logical(scaled_rasters)) stop("Provide a logical value for scaled_rasters.", call. = FALSE)
 
-  if (is.null(xy_bounds) || length(xy_bounds) != 4) stop("Provide xy_bounds = c(a_x, b_x, a_y, b_y).", call. = FALSE)
-  if (xy_bounds[2] < xy_bounds[1] || xy_bounds[4] < xy_bounds[3]) stop("Invalid xy_bounds ordering.", call. = FALSE)
-
-  if (!correction %in% c("none", "toroidal")) stop("Provide correction = 'none' or 'toroidal'.", call. = FALSE)
+  if (!edge_correction %in% c("none", "toroidal")) stop("Provide correction = 'none' or 'toroidal'.", call. = FALSE)
   if (!is.logical(thinning)) stop("Provide a logical value for thinning.", call. = FALSE)
   if (!is.logical(include_comp_inds)) stop("Provide a logical value for include_comp_inds.", call. = FALSE)
   if (isTRUE(include_comp_inds) && (is.null(competition_radius) || competition_radius < 0)) {
@@ -96,13 +130,18 @@ simulate_mpp <- function(sc_params = NULL,
   # Accept new or legacy mark model formats
   mark_model <- as_mark_model(mark_model)
 
+  # Scale the rasters if necessary
+  if (!isTRUE(scaled_rasters)) {
+    raster_list <- scale_rasters(raster_list)
+    scaled_rasters <- TRUE
+  }
+
   # ---- Simulate times and locations ----
+  # NOTE: these are your existing internal helpers
   sim_times <- stats::na.omit(sim_temporal_sc(t_min, t_max, sc_params[1:3]))
-  sim_locs <- sim_spatial_sc(anchor_point, sc_params[4:5], length(sim_times), xy_bounds)
+  sim_locs  <- sim_spatial_sc(anchor_point, sc_params[4:5], length(sim_times), xy_bounds)
 
-  # Ensure first time is exactly 0 (as in your current implementation)
   if (length(sim_times) >= 1) sim_times[1] <- 0
-
   txy_sim <- cbind(sim_times, sim_locs)
 
   # ---- Thinning ----
@@ -114,10 +153,12 @@ simulate_mpp <- function(sc_params = NULL,
 
   used_df <- if (isTRUE(thinning)) sim_thin_df else sim_df
 
+  bounds <- list(t_min = t_min, t_max = t_max, xy_bounds = xy_bounds)
+
   if (nrow(used_df) == 0) {
     realization <- data.frame(time = numeric(0), x = numeric(0), y = numeric(0), marks = numeric(0))
     sim_mpp <- generate_mpp(locations = matrix(numeric(0), ncol = 2), marks = numeric(0), xy_bounds = xy_bounds)
-    bounds <- list(t_min = t_min, t_max = t_max, xy_bounds = xy_bounds)
+
     return(new_ldmppr_sim(
       process = "self_correcting",
       mpp = sim_mpp,
@@ -126,7 +167,7 @@ simulate_mpp <- function(sc_params = NULL,
       bounds = bounds,
       anchor_point = anchor_point,
       thinning = thinning,
-      correction = correction,
+      edge_correction = edge_correction,
       include_comp_inds = include_comp_inds,
       competition_radius = competition_radius,
       call = match.call(),
@@ -134,20 +175,18 @@ simulate_mpp <- function(sc_params = NULL,
     ))
   }
 
-
   # ---- Predict marks ----
   marks <- predict_marks(
     sim_realization = used_df,
     raster_list = raster_list,
-    scaled_rasters = scaled_rasters,
+    scaled_rasters = TRUE,
     mark_model = mark_model,
     xy_bounds = xy_bounds,
     include_comp_inds = include_comp_inds,
     competition_radius = competition_radius,
-    correction = correction
+    edge_correction = edge_correction
   )
 
-  # Accept either a tibble/data.frame with `.pred` OR a numeric vector
   marks_vec <- if (is.data.frame(marks)) {
     if (!(".pred" %in% names(marks))) stop("predict_marks() returned a data.frame without a `.pred` column.", call. = FALSE)
     marks[[".pred"]]
@@ -162,8 +201,6 @@ simulate_mpp <- function(sc_params = NULL,
     xy_bounds = xy_bounds
   )
 
-  bounds <- list(t_min = t_min, t_max = t_max, xy_bounds = xy_bounds)
-
   new_ldmppr_sim(
     process = "self_correcting",
     mpp = sim_mpp,
@@ -172,7 +209,7 @@ simulate_mpp <- function(sc_params = NULL,
     bounds = bounds,
     anchor_point = anchor_point,
     thinning = thinning,
-    correction = correction,
+    edge_correction = edge_correction,
     include_comp_inds = include_comp_inds,
     competition_radius = competition_radius,
     call = match.call(),

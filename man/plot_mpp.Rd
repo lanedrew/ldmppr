@@ -7,12 +7,12 @@
 plot_mpp(mpp_data, pattern_type = c("reference", "simulated"))
 }
 \arguments{
-\item{mpp_data}{ppp object with marks or data frame with columns (x, y, size).}
+\item{mpp_data}{\code{ppp} object with marks or data frame with columns (x, y, size).}
 
 \item{pattern_type}{type of pattern to plot ("reference" or "simulated").}
 }
 \value{
-a ggplot object of the marked point process.
+a \code{ggplot} object of the marked point process.
 }
 \description{
 Plot a marked point process

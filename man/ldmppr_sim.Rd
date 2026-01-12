@@ -21,36 +21,36 @@
 mpp.ldmppr_sim(x, ...)
 }
 \arguments{
-\item{x}{a `ldmppr_sim` object.}
+\item{x}{a \code{ldmppr_sim} object.}
 
 \item{...}{additional arguments (not used).}
 
-\item{object}{a `ldmppr_sim` object.}
+\item{object}{a \code{ldmppr_sim} object.}
 
-\item{pattern_type}{type of pattern to plot `"simulated"` (default).}
+\item{pattern_type}{type of pattern to plot \code{"simulated"} (default).}
 }
 \value{
 For methods:
 \describe{
-  \item{`print()`}{prints a summary of the simulation.}
-  \item{`plot()`}{returns a ggplot visualization of the marked point pattern.}
-  \item{`as.data.frame()`}{returns the simulated realization as a data.frame.}
-  \item{`nobs()`}{returns the number of points in the realization.}
-  \item{`mpp()`}{returns the marked point pattern object.}
+  \item{\code{print()}}{prints a summary of the simulation.}
+  \item{\code{plot()}}{returns a ggplot visualization of the marked point pattern.}
+  \item{\code{as.data.frame()}}{returns the simulated realization as a data.frame.}
+  \item{\code{nobs()}}{returns the number of points in the realization.}
+  \item{\code{mpp()}}{returns the marked point pattern object.}
 }
 }
 \description{
-`ldmppr_sim` objects are returned by [simulate_mpp()]. They contain the simulated
+\code{ldmppr_sim} objects are returned by \code{\link{simulate_mpp}}. They contain the simulated
 realization, an associated marked point pattern object, and metadata used to
 reproduce or inspect the simulation.
 }
 \details{
-An `ldmppr_sim` is a list with at least:
+An \code{ldmppr_sim} is a list with at least:
 \itemize{
-  \item `process`: process name (e.g. `"self_correcting"`)
-  \item `mpp`: a marked point pattern object
-  \item `realization`: data.frame with columns `time`, `x`, `y`, `marks`
-  \item `params`, `bounds`, and other metadata
+  \item \code{process}: process name (e.g. \code{"self_correcting"})
+  \item \code{mpp}: a marked point pattern object
+  \item \code{realization}: data.frame with columns \code{time}, \code{x}, \code{y}, \code{marks}
+  \item \code{params}, \code{bounds}, and other metadata
 }
 }
 \section{Methods (by generic)}{

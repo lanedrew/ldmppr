@@ -1,16 +1,13 @@
 ## Resubmission
 This is a minor update. In this version of the package we have:
 
-* Introduced S3 classes and associated methods for the 4 main workflow steps (fit process model/train mark model/check model fit/simulate realizations).
+* Reworked the documentation to improve clarity and fix minor issues.
 
-* Replaced the `estimate_parameters_sc()` and `estimate_parameters_sc_parallel()` functions with the unified `estimate_process_parameters()` function. We redesigned this function to provide
-multiple strategies for the optimization procedure and refactored the underlying C++ code to improve efficiency.
+* Updated the workflow pipeline to allow passage of S3 class objects between functions to simplify the user experience.
+The four main steps of the workflow (fit process model, train mark model, check model fit, simulate realizations) now each have their own S3 class and associated methods and you can pass the
+objects forward between functions. See the updated documentation for details.
 
-* Removed explicit dependence on the Bundle package and introduced the `save_mark_model()` and `load_mark_model()` functions to handle saving and loading trained mark models.
-
-* Updated the small example dataset and example trained mark model to reflect changes in the package functions.
-
-* Bumped version number from 1.0.4 to 1.1.0.
+* Bumped version number from 1.1.0 to 1.1.1.
 
 We have not included a reference describing the methods in this package as the reference is not yet published. The reference is under revision currently and will be included
 in the next version of the package.

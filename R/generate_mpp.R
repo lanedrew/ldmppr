@@ -3,7 +3,7 @@
 #' @description
 #' Creates an object of class "ppp" that represents a marked point pattern in the two-dimensional plane.
 #'
-#' @param locations a data frame of (x,y) locations with names "x" and "y".
+#' @param locations a data.frame of (x,y) locations with names "x" and "y".
 #' @param marks a vector of marks.
 #' @param xy_bounds a vector of domain bounds (2 for x, 2 for y).
 #'

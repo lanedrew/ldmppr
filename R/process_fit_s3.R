@@ -1,33 +1,35 @@
 #' Fitted point-process model object
 #'
-#' Objects of class `ldmppr_fit` are returned by [estimate_process_parameters()].
+#' Objects of class \code{ldmppr_fit} are returned by \code{\link{estimate_process_parameters}}.
 #' They contain the best-fitting optimization result (and optionally multiple fits,
 #' e.g. from a delta search) along with metadata used to reproduce the fit.
 #'
 #' @details
-#' A `ldmppr_fit` is a list with (at minimum):
+#' A \code{ldmppr_fit} is a list with (at minimum):
 #' \itemize{
-#'   \item `process`: process name (e.g. `"self_correcting"`)
-#'   \item `fit`: best optimization result (currently an `nloptr` object)
-#'   \item `mapping`: mapping information (e.g. chosen `delta`, objectives)
-#'   \item `grid`: grid definitions used by likelihood approximation
+#'   \item \code{process}: process name (e.g. \code{"self_correcting"})
+#'   \item \code{fit}: best optimization result (currently an \code{nloptr} object)
+#'   \item \code{mapping}: mapping information (e.g. chosen \code{delta}, objectives)
+#'   \item \code{grid}: grid definitions used by likelihood approximation
 #' }
 #'
 #' @return
-#' * `print()` prints a brief summary of the fit.
-#' * `coef()` returns the estimated parameter vector.
-#' * `logLik()` returns the log-likelihood at the optimum.
-#' * `summary()` returns a `summary.ldmppr_fit`.
-#' * `plot()` plots diagnostics for multi-fit runs (e.g. objective vs delta), if available.
+#' \describe{
+#'   \item{\code{print()}}{prints a brief summary of the fit.}
+#'   \item{\code{coef()}}{returns the estimated parameter vector.}
+#'   \item{\code{logLik()}}{returns the log-likelihood at the optimum.}
+#'   \item{\code{summary()}}{returns a \code{summary.ldmppr_fit}.}
+#'   \item{\code{plot()}}{plots diagnostics for multi-fit runs, if available.}
+#' }
 #'
 #' @name ldmppr_fit
-#' @rdname ldmppr_fit
 #' @docType class
 NULL
 
 
+
 #' @describeIn ldmppr_fit Print a brief summary of a fitted model.
-#' @param x an object of class `ldmppr_fit`.
+#' @param x an object of class \code{ldmppr_fit}.
 #' @param ... additional arguments (not used).
 #'
 #' @export
@@ -39,12 +41,13 @@ print.ldmppr_fit <- function(x, ...) {
   if (!is.null(x$mapping$delta_values)) cat("  n_deltas:", length(x$mapping$delta_values), "\n", sep = "")
   if (!is.null(x$mapping$delta) && !is.na(x$mapping$delta)) cat("  delta*:  ", x$mapping$delta, "\n", sep = "")
   if (!is.null(x$fit$objective)) cat("  objective(best): ", signif(x$fit$objective, 8), "\n", sep = "")
+  if (!is.null(x$fit$solution)) cat(" optimal parameters: ", signif(x$fit$solution, 8), "\n", sep = "")
   invisible(x)
 }
 
-
+#' @importFrom stats coef
 #' @describeIn ldmppr_fit Extract the estimated parameter vector.
-#' @param object an object of class `ldmppr_fit`.
+#' @param object an object of class \code{ldmppr_fit}.
 #' @param ... additional arguments (not used).
 #'
 #' @export
@@ -54,7 +57,7 @@ coef.ldmppr_fit <- function(object, ...) {
 
 
 #' @describeIn ldmppr_fit Log-likelihood at the optimum.
-#' @param object an object of class `ldmppr_fit`.
+#' @param object an object of class \code{ldmppr_fit}.
 #' @param ... additional arguments (not used).
 #'
 #' @export
@@ -69,7 +72,7 @@ logLik.ldmppr_fit <- function(object, ...) {
 
 
 #' @describeIn ldmppr_fit Summarize a fitted model.
-#' @param object an object of class `ldmppr_fit`.
+#' @param object an object of class \code{ldmppr_fit}.
 #' @param ... additional arguments (not used).
 #'
 #' @export
@@ -77,6 +80,7 @@ summary.ldmppr_fit <- function(object, ...) {
   out <- list(
     process = object$process,
     engine = object$engine,
+    delta = object$mapping$delta,
     solution = object$fit$solution,
     objective = object$fit$objective,
     status = object$fit$status,
@@ -89,8 +93,8 @@ summary.ldmppr_fit <- function(object, ...) {
 }
 
 
-#' @describeIn ldmppr_fit Print a summary produced by [summary.ldmppr_fit()].
-#' @param x an object of class `summary.ldmppr_fit`.
+#' @describeIn ldmppr_fit Print a summary produced by \code{\link{summary.ldmppr_fit}}.
+#' @param x an object of class \code{summary.ldmppr_fit}.
 #' @param ... additional arguments (not used).
 #' @export
 print.summary.ldmppr_fit <- function(x, ...) {
@@ -108,8 +112,8 @@ print.summary.ldmppr_fit <- function(x, ...) {
 
 
 #' @describeIn ldmppr_fit Plot diagnostics for a fitted model.
-#' @param x an object of class `ldmppr_fit`.
-#' @param ... additional arguments passed to `plot()`.
+#' @param x an object of class \code{ldmppr_fit}.
+#' @param ... additional arguments passed to \code{plot()}.
 #'
 #' @export
 plot.ldmppr_fit <- function(x, ...) {
@@ -130,15 +134,15 @@ plot.ldmppr_fit <- function(x, ...) {
 
 #' Convert an ldmppr_fit to the underlying nloptr result
 #'
-#' @param x an object of class `ldmppr_fit`.
+#' @param x an object of class \code{ldmppr_fit}.
 #' @param ... unused.
 #'
-#' @describeIn ldmppr_fit Extract the underlying `nloptr` result.
+#' @describeIn ldmppr_fit Extract the underlying \code{nloptr} result.
 #' @export
 as_nloptr <- function(x, ...) UseMethod("as_nloptr")
 
-#' @describeIn ldmppr_fit Extract the underlying `nloptr` result.
-#' @param x an object of class `ldmppr_fit`.
+#' @describeIn ldmppr_fit Extract the underlying \code{nloptr} result.
+#' @param x an object of class \code{ldmppr_fit}.
 #' @param ... additional arguments (not used).
 #'
 #' @export

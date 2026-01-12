@@ -10,7 +10,8 @@ test_that("simulate_mpp returns ldmppr_sim", {
   mm <- load_mark_model(system.file("extdata", "example_mark_model.rds", package = "ldmppr"))
 
   sim <- simulate_mpp(
-    sc_params = c(2, 8, .02, 2.5, 3, 1, 2.5, .2),
+    process = "self_correcting",
+    process_fit = c(2, 8, .02, 2.5, 3, 1, 2.5, .2),
     t_min = 0, t_max = 1,
     anchor_point = c(10, 14),
     raster_list = scaled_raster_list,
@@ -18,6 +19,7 @@ test_that("simulate_mpp returns ldmppr_sim", {
     mark_model = mm,
     xy_bounds = c(0, 25, 0, 25),
     include_comp_inds = TRUE,
+    edge_correction = "none",
     competition_radius = 10,
     thinning = TRUE
   )

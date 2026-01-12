@@ -29,7 +29,8 @@ test_that("check_model_fit returns ldmppr_model_check", {
   res <- check_model_fit(
     reference_data = reference_data,
     t_min = 0, t_max = 1,
-    sc_params = est,
+    process = "self_correcting",
+    process_fit = est,
     anchor_point = M_n,
     raster_list = scaled_raster_list,
     scaled_rasters = TRUE,
@@ -37,7 +38,7 @@ test_that("check_model_fit returns ldmppr_model_check", {
     xy_bounds = c(0, 25, 0, 25),
     include_comp_inds = TRUE,
     thinning = TRUE,
-    correction = "none",
+    edge_correction = "none",
     competition_radius = 10,
     n_sim = 100,
     save_sims = FALSE,

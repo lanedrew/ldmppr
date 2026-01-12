@@ -32,29 +32,29 @@ estimate_process_parameters(
 )
 }
 \arguments{
-\item{data}{A data.frame or matrix. Must contain either columns \code{(time, x, y)} or \code{(x, y, size)}.
+\item{data}{a data.frame or matrix. Must contain either columns \code{(time, x, y)} or \code{(x, y, size)}.
 If a matrix is provided for delta search, it must have column names \code{c("x","y","size")}.}
 
-\item{process}{Character string specifying the process model. Currently supports \code{"self_correcting"}.}
+\item{process}{character string specifying the process model. Currently supports \code{"self_correcting"}.}
 
-\item{x_grid, y_grid, t_grid}{Numeric vectors defining the integration grid for \eqn{(x,y,t)}.}
+\item{x_grid, y_grid, t_grid}{numeric vectors defining the integration grid for \eqn{(x,y,t)}.}
 
-\item{upper_bounds}{Numeric vector of length 3 giving \code{c(b_t, b_x, b_y)}.}
+\item{upper_bounds}{numeric vector of length 3 giving \code{c(b_t, b_x, b_y)}.}
 
-\item{parameter_inits}{Numeric vector of length 8 giving initialization values for the model parameters.}
+\item{parameter_inits}{numeric vector of length 8 giving initialization values for the model parameters.}
 
-\item{delta}{Optional numeric scalar used only when \code{data} contains \code{(x,y,size)} but not \code{time}.}
+\item{delta}{(optional) numeric scalar used only when \code{data} contains \code{(x,y,size)} but not \code{time}.}
 
-\item{delta_values}{Optional numeric vector. If supplied, the function fits the model for each value of \code{delta_values}
+\item{delta_values}{(optional) numeric vector. If supplied, the function fits the model for each value of \code{delta_values}
 (mapping \code{size -> time} via \code{\link{power_law_mapping}}) and returns the best fit (lowest objective).}
 
-\item{parallel}{logical. If TRUE, uses furrr/future to parallelize either
-(a) over `delta_values` (when provided) or (b) over multi-start initializations
-(when `delta_values` is NULL and `n_starts > 1`).}
+\item{parallel}{logical. If \code{TRUE}, uses furrr/future to parallelize either
+(a) over \code{delta_values} (when provided) or (b) over multi-start initializations
+(when \code{delta_values} is \code{NULL} and \code{n_starts > 1}).}
 
 \item{num_cores}{Integer number of workers to use when \code{set_future_plan = TRUE}.}
 
-\item{set_future_plan}{Logical. If \code{TRUE}, temporarily sets \code{future::plan(multisession, workers = num_cores)}
+\item{set_future_plan}{\code{TRUE} or \code{FALSE}, if \code{TRUE}, temporarily sets \code{future::plan(multisession, workers = num_cores)}
 and restores the original plan on exit.}
 
 \item{strategy}{Character string specifying the estimation strategy:
@@ -62,32 +62,32 @@ and restores the original plan on exit.}
 - \code{"global_local"}: single-level global optimization (from \code{parameter_inits}) followed by local polish.
 - \code{"multires_global_local"}: multi-resolution fitting over \code{grid_levels} (coarsest level uses global + local; finer levels use local polish only).}
 
-\item{grid_levels}{Optional list defining the multi-resolution grid schedule when \code{strategy = "multires_global_local"}.
+\item{grid_levels}{(optional) list defining the multi-resolution grid schedule when \code{strategy = "multires_global_local"}.
 Each entry can be a numeric vector \code{c(nx, ny, nt)} or a list with named entries \code{list(nx=..., ny=..., nt=...)}.
 If \code{NULL}, uses the supplied \code{(x_grid, y_grid, t_grid)} as a single level.}
 
-\item{refine_best_delta}{Logical. If \code{TRUE} and \code{delta_values} is supplied, performs a final refinement
+\item{refine_best_delta}{\code{TRUE} or \code{FALSE}, if \code{TRUE} and \code{delta_values} is supplied, performs a final refinement
 fit at the best delta found using the full multi-resolution strategy.}
 
-\item{global_algorithm, local_algorithm}{Character strings specifying the NLopt algorithms to use for
+\item{global_algorithm, local_algorithm}{character strings specifying the NLopt algorithms to use for
 the global and local optimization stages, respectively.}
 
-\item{global_options, local_options}{Named lists of options to pass to \code{nloptr::nloptr()} for
+\item{global_options, local_options}{named lists of options to pass to \code{nloptr::nloptr()} for
 the global and local optimization stages, respectively.}
 
-\item{n_starts}{Integer number of multi-start initializations to use for the local optimization stage.}
+\item{n_starts}{integer number of multi-start initializations to use for the local optimization stage.}
 
-\item{jitter_sd}{Numeric standard deviation used to jitter the multi-start initializations.}
+\item{jitter_sd}{numeric standard deviation used to jitter the multi-start initializations.}
 
-\item{seed}{Integer random seed used for multi-start initialization jittering.}
+\item{seed}{integer random seed used for multi-start initialization jittering.}
 
-\item{finite_bounds}{Optional list with components \code{lb} and \code{ub} giving finite lower and upper bounds
+\item{finite_bounds}{(optional) list with components \code{lb} and \code{ub} giving finite lower and upper bounds
 for all 8 parameters. Used only when the selected optimization algorithms require finite bounds.}
 
-\item{verbose}{Logical. If \code{TRUE}, prints progress messages during fitting.}
+\item{verbose}{\code{TRUE} or \code{FALSE}, if \code{TRUE}, prints progress messages during fitting.}
 }
 \value{
-An object of class \code{"ldmppr_fit"} containing the best \code{nloptr} fit and (optionally) all fits from a delta search.
+an object of class \code{"ldmppr_fit"} containing the best \code{nloptr} fit and (optionally) all fits from a delta search.
 }
 \description{
 Estimate spatio-temporal point process parameters by maximizing the (approximate) full log-likelihood
@@ -105,11 +105,6 @@ separately for each mapped dataset and selecting the best objective value.
 \examples{
 data(small_example_data)
 
-# Build time using a single delta (so data has time,x,y)
-small_txy <- small_example_data \%>\%
-  dplyr::mutate(time = power_law_mapping(size, 0.5)) \%>\%
-  dplyr::select(time, x, y)
-
 x_grid <- seq(0, 25, length.out = 5)
 y_grid <- seq(0, 25, length.out = 5)
 t_grid <- seq(0, 1,  length.out = 5)
@@ -118,13 +113,14 @@ parameter_inits <- c(1.5, 8.5, .015, 1.5, 3.2, .75, 3, .08)
 upper_bounds <- c(1, 25, 25)
 
 fit <- estimate_process_parameters(
-  data = small_txy,
+  data = small_example_data,
   process = "self_correcting",
   x_grid = x_grid,
   y_grid = y_grid,
   t_grid = t_grid,
   upper_bounds = upper_bounds,
   parameter_inits = parameter_inits,
+  delta = 1,
   strategy = "global_local",
   global_algorithm = "NLOPT_GN_CRS2_LM",
   local_algorithm = "NLOPT_LN_BOBYQA",
@@ -151,6 +147,11 @@ fit_delta <- estimate_process_parameters(
   set_future_plan = TRUE,
   num_cores = 2,
   strategy = "multires_global_local",
+  grid_levels = list(
+  list(nx = 5, ny = 5, nt = 5),
+  list(nx = 8, ny = 8, nt = 8),
+  list(nx = 10, ny = 10, nt = 10)
+  ),
   global_options = list(maxeval = 100),
   local_options  = list(maxeval = 100, xtol_rel = 1e-3),
   n_starts = 3,

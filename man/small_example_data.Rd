@@ -5,7 +5,7 @@
 \alias{small_example_data}
 \title{Small Example Data}
 \format{
-## `small_example_data`
+## \code{small_example_data}
 A data frame with 121 rows and 3 columns:
 \describe{
   \item{x}{x coordinate}
@@ -15,7 +15,7 @@ A data frame with 121 rows and 3 columns:
 }
 }
 \source{
-Simulated dataset. Code to generate it can be found in `data_raw/small_example_data.R`.
+Simulated dataset. Code to generate it can be found in \code{data_raw/small_example_data.R}.
 }
 \usage{
 data("small_example_data")
@@ -26,6 +26,6 @@ A small example dataset for testing and examples consisting of 121 observations 
 \details{
 The dataset was generated using the example raster data and an exponential decay size function.
 
-The full code to generate this dataset is available in the package's `data_raw` directory.
+The full code to generate this dataset is available in the package's \code{data_raw} directory.
 }
 \keyword{datasets}

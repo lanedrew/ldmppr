@@ -2,13 +2,14 @@
 % Please edit documentation in R/check_model_fit.R
 \name{check_model_fit}
 \alias{check_model_fit}
-\title{Check the fit of estimated self-correcting model on the reference point pattern dataset}
+\title{Check the fit of an estimated model using global envelope tests}
 \usage{
 check_model_fit(
-  reference_data,
+  reference_data = NULL,
   t_min = 0,
   t_max = 1,
-  sc_params = NULL,
+  process = c("self_correcting"),
+  process_fit = NULL,
   anchor_point = NULL,
   raster_list = NULL,
   scaled_rasters = FALSE,
@@ -16,7 +17,7 @@ check_model_fit(
   xy_bounds = NULL,
   include_comp_inds = FALSE,
   thinning = TRUE,
-  correction = "none",
+  edge_correction = "none",
   competition_radius = 15,
   n_sim = 2500,
   save_sims = TRUE,
@@ -25,54 +26,67 @@ check_model_fit(
 )
 }
 \arguments{
-\item{reference_data}{a ppp object for the reference dataset.}
+\item{reference_data}{(optional) a marked \code{ppp} object for the reference dataset.
+If \code{NULL}, the reference pattern is derived from \code{process_fit} when
+\code{process_fit} is an \code{ldmppr_fit} and contains \code{data_original}
+(preferred) or \code{data} with columns \code{(x,y,size)}.}
 
 \item{t_min}{minimum value for time.}
 
 \item{t_max}{maximum value for time.}
 
-\item{sc_params}{vector of parameter values corresponding to (alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).}
+\item{process}{type of process used (currently supports \code{"self_correcting"}).}
 
-\item{anchor_point}{vector of (x,y) coordinates of point to condition on.}
+\item{process_fit}{either an \code{ldmppr_fit} object (from \code{estimate_process_parameters})
+or a numeric vector of length 8 giving the process parameters.}
 
-\item{raster_list}{a list of raster objects.}
+\item{anchor_point}{(optional) vector of (x,y) coordinates of the point to condition on.
+If \code{NULL}, inferred from the reference data (largest mark if available) or from
+\code{ldmppr_fit}.}
 
-\item{scaled_rasters}{`TRUE` or `FALSE` indicating whether the rasters have been scaled.}
+\item{raster_list}{a list of raster objects used for predicting marks.}
 
-\item{mark_model}{a model object (typically from \code{train_mark_model}).}
+\item{scaled_rasters}{\code{TRUE} or \code{FALSE} indicating whether the rasters have already been scaled.}
 
-\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y).}
+\item{mark_model}{a mark model object. May be a \code{ldmppr_mark_model} or a legacy model.}
 
-\item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates.}
+\item{xy_bounds}{(optional) vector of bounds as \code{c(a_x, b_x, a_y, b_y)}. If \code{NULL}, will be
+inferred from \code{reference_data}'s window when \code{reference_data} is provided,
+otherwise from \code{ldmppr_fit} with lower bounds assumed to be 0.}
 
-\item{thinning}{`TRUE` or `FALSE` indicating whether to use the thinned or unthinned simulated values.}
+\item{include_comp_inds}{\code{TRUE} or \code{FALSE} indicating whether to compute competition indices.}
 
-\item{correction}{type of correction to apply ("none" or "toroidal").}
+\item{thinning}{\code{TRUE} or \code{FALSE} indicating whether to use the thinned simulated values.}
 
-\item{competition_radius}{distance for competition radius if \code{include_comp_inds} is `TRUE`.}
+\item{edge_correction}{type of edge correction to apply (\code{"none"} or \code{"toroidal"}).}
+
+\item{competition_radius}{distance for competition radius if \code{include_comp_inds = TRUE}.}
 
 \item{n_sim}{number of simulated datasets to generate.}
 
-\item{save_sims}{`TRUE` or `FALSE` indicating whether to save and return the simulated datasets.}
+\item{save_sims}{\code{TRUE} or \code{FALSE} indicating whether to save and return the simulated metrics.}
 
-\item{verbose}{`TRUE` or `FALSE` indicating whether to show progress of model checking.}
+\item{verbose}{\code{TRUE} or \code{FALSE} indicating whether to show progress of model checking.}
 
-\item{seed}{an integer value to set the seed for reproducibility.}
+\item{seed}{integer seed for reproducibility.}
 }
 \value{
-a list containing a combined global envelope test, individual global envelope tests for the L, F, G, J, E, and V functions, and simulated metric values (if specified).
+an object of class \code{"ldmppr_model_check"}.
 }
 \description{
-Allows the user to perform global envelope tests for the nonparametric L, F, G, J, E, and V summary functions from the \code{spatstat} package.
-These tests serve as a goodness of fit measure for the estimated model relative to the reference dataset of interest.
+Performs global envelope tests for nonparametric L, F, G, J, E, and V summary
+functions (\code{\link[spatstat:spatstat]{spatstat}}/\code{\link[GET:GET]{GET}}).
+These tests assess goodness-of-fit of the estimated model relative to a reference marked point pattern.
+The reference marked point pattern can be supplied directly via \code{reference_data} (a marked \code{ppp} object),
+or derived internally from a \code{ldmppr_fit} object.
 }
 \details{
-This function relies on the \code{spatstat} package for the calculation of the point pattern metrics
-and the \code{GET} package for the global envelope tests. The L, F, G, J, E, and V functions are a collection of
+This function relies on the \code{\link[spatstat:spatstat]{spatstat}} package for the calculation of the point pattern metrics
+and the \code{\link[GET:GET]{GET}} package for the global envelope tests. The L, F, G, J, E, and V functions are a collection of
 non-parametric summary statistics that describe the spatial distribution of points and marks in a point pattern.
-See the documentation for [spatstat.explore::Lest()], [spatstat.explore::Fest()], [spatstat.explore::Gest()],
-[spatstat.explore::Jest()], [spatstat.explore::Emark()], and [spatstat.explore::Vmark()] for more information.
-Also, see the [GET::global_envelope_test()] function for more information on the global envelope tests.
+See the documentation for \code{\link[spatstat.explore:Lest]{Lest()}}, \code{\link[spatstat.explore:Fest]{Fest()}}, \code{\link[spatstat.explore:Gest]{Gest()}},
+\code{\link[spatstat.explore:Jest]{Jest()}}, \code{\link[spatstat.explore:Emark]{Emark()}}, and \code{\link[spatstat.explore:Vmark]{Vmark()}} for more information.
+Also, see the \code{\link[GET:global_envelope_test]{global_envelope_test()}} function for more information on the global envelope tests.
 }
 \examples{
 # Note: The example below is provided for illustrative purposes and may take some time to run.
@@ -100,8 +114,6 @@ reference_data <- generate_mpp(
   xy_bounds = c(0, 25, 0, 25)
 )
 
-# Define an anchor point
-M_n <- c(small_example_data[1, c("x", "y")])
 
 # Specify the estimated parameters of the self-correcting process
 # Note: These would generally be estimated using estimate_process_parameters.
@@ -116,15 +128,15 @@ example_model_fit <- check_model_fit(
   reference_data = reference_data,
   t_min = 0,
   t_max = 1,
-  sc_params = estimated_parameters,
-  anchor_point = M_n,
+  process = "self_correcting",
+  process_fit = estimated_parameters,
   raster_list = scaled_raster_list,
   scaled_rasters = TRUE,
   mark_model = mark_model,
   xy_bounds = c(0, 25, 0, 25),
   include_comp_inds = TRUE,
   thinning = TRUE,
-  correction = "none",
+  edge_correction = "none",
   competition_radius = 10,
   n_sim = 100,
   save_sims = FALSE,

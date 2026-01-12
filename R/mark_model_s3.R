@@ -1,19 +1,20 @@
 #' Mark model object
 #'
-#' `ldmppr_mark_model` objects store a fitted mark model and preprocessing
+#' \code{ldmppr_mark_model} objects store a fitted mark model and preprocessing
 #' information used to predict marks at new locations and times.
-#'
-#' These objects are typically returned by [train_mark_model()] and can be
-#' saved/loaded with [save_mark_model()] and [load_mark_model()].
+#' These objects are typically returned by \code{\link{train_mark_model}} and can be
+#' saved/loaded with \code{\link{save_mark_model}} and \code{\link{load_mark_model}}.
 #'
 #' @details
-#' The model may be backed by different engines (currently `"xgboost"` and
-#' `"ranger"`). For xgboost, the object can store a serialized booster payload
+#' The model may be backed by different engines (currently \code{"xgboost"} and
+#' \code{"ranger"}). For \code{"xgboost"}, the object can store a serialized booster payload
 #' to make saving/loading robust across R sessions.
 #'
 #' @return
-#' * `print()` prints a brief summary.
-#' * `predict()` returns numeric predictions for new data.
+#' \describe{
+#'    \item{\code{print()}}{prints a brief summary.}
+#'    \item{\code{predict()}}{returns numeric predictions for new data.}
+#' }
 #'
 #' @name ldmppr_mark_model
 #' @rdname ldmppr_mark_model
@@ -23,13 +24,13 @@ NULL
 
 #' Create a mark model object
 #'
-#' @param engine Character scalar. One of `"xgboost"` or `"ranger"`.
-#' @param fit_engine Fitted engine object (e.g. `xgb.Booster` or a ranger fit).
-#' @param xgb_raw Raw xgboost payload (e.g. UBJ) used for rehydration.
-#' @param recipe A prepped recipes object used for preprocessing new data.
-#' @param outcome Outcome column name (default `"size"`).
-#' @param feature_names Optional vector of predictor names required at prediction time.
-#' @param info Optional list of metadata.
+#' @param engine character string (currently \code{"xgboost"} and \code{"ranger"}).
+#' @param fit_engine fitted engine object (e.g. \code{xgb.Booster} or a ranger fit).
+#' @param xgb_raw raw xgboost payload (e.g. UBJ) used for rehydration.
+#' @param recipe a prepped recipes object used for preprocessing new data.
+#' @param outcome outcome column name (default \code{"size"}).
+#' @param feature_names (optional) vector of predictor names required at prediction time.
+#' @param info (optional) list of metadata.
 #'
 #' @describeIn ldmppr_mark_model Create a mark model container.
 #' @export
@@ -58,7 +59,7 @@ ldmppr_mark_model <- function(engine,
 
 
 #' @describeIn ldmppr_mark_model Print a brief summary of the mark model.
-#' @param x a `ldmppr_mark_model` object.
+#' @param x a \code{ldmppr_mark_model} object.
 #' @param ... additional arguments (not used).
 #'
 #' @export
@@ -73,7 +74,7 @@ print.ldmppr_mark_model <- function(x, ...) {
 
 
 #' @describeIn ldmppr_mark_model Predict marks for new data.
-#' @param object a `ldmppr_mark_model` object.
+#' @param object a \code{ldmppr_mark_model} object.
 #' @param new_data a data frame of predictors (and possibly outcome columns).
 #' @param ... additional arguments.
 #'
@@ -97,8 +98,8 @@ predict.ldmppr_mark_model <- function(object, new_data, ...) {
 
 #' Save a mark model to disk
 #'
-#' @param object a `ldmppr_mark_model` object.
-#' @param path file path to write an `.rds`.
+#' @param object a \code{ldmppr_mark_model} object.
+#' @param path file path to write an \code{.rds}.
 #' @param ... passed to methods.
 #'
 #' @describeIn ldmppr_mark_model Save a mark model to disk.
@@ -106,7 +107,7 @@ predict.ldmppr_mark_model <- function(object, new_data, ...) {
 save_mark_model <- function(object, path, ...) UseMethod("save_mark_model")
 
 
-#' @describeIn ldmppr_mark_model Save method for `ldmppr_mark_model`.
+#' @describeIn ldmppr_mark_model Save method for \code{ldmppr_mark_model}.
 #' @export
 save_mark_model.ldmppr_mark_model <- function(object, path, ...) {
   dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
@@ -128,8 +129,8 @@ save_mark_model.ldmppr_mark_model <- function(object, path, ...) {
 
 #' Load a saved mark model
 #'
-#' @param path path to an `.rds` created by [save_mark_model()] (or legacy objects).
-#' @return an object of class `"ldmppr_mark_model"`.
+#' @param path path to an \code{.rds} created by \code{\link{save_mark_model}} (or legacy objects).
+#' @return an object of class \code{"ldmppr_mark_model"}.
 #'
 #' @describeIn ldmppr_mark_model Load a saved mark model from disk.
 #' @export

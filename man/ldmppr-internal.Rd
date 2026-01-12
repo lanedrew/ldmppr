@@ -12,6 +12,16 @@
 \alias{.build_sc_matrix}
 \alias{.default_sc_param_bounds}
 \alias{\%||\%}
+\alias{.require_pkgs}
+\alias{.coerce_training_df}
+\alias{infer_xy_bounds_from_ppp}
+\alias{infer_anchor_from_ppp}
+\alias{infer_anchor_from_df}
+\alias{resolve_sc_params}
+\alias{resolve_reference_ppp}
+\alias{.as_sc_params}
+\alias{.infer_xy_bounds}
+\alias{.infer_anchor_point}
 \title{Internal helpers (not part of the public API)}
 \usage{
 new_ldmppr_model_check(
@@ -31,7 +41,7 @@ new_ldmppr_sim(
   bounds,
   anchor_point,
   thinning,
-  correction,
+  edge_correction,
   include_comp_inds,
   competition_radius,
   call = NULL,
@@ -55,6 +65,8 @@ new_ldmppr_fit(
   mapping = NULL,
   grid = NULL,
   data_summary = NULL,
+  data = NULL,
+  data_original = NULL,
   engine = "nloptr",
   call = NULL,
   timing = NULL
@@ -71,6 +83,26 @@ as_mark_model(mark_model)
 .default_sc_param_bounds(txy, upper_bounds)
 
 a \%||\% b
+
+.require_pkgs(pkgs)
+
+.coerce_training_df(x, delta = NULL, xy_bounds = NULL)
+
+infer_xy_bounds_from_ppp(ppp)
+
+infer_anchor_from_ppp(ppp)
+
+infer_anchor_from_df(df)
+
+resolve_sc_params(process_fit)
+
+resolve_reference_ppp(reference_data, process_fit, xy_bounds)
+
+.as_sc_params(process_fit)
+
+.infer_xy_bounds(process_fit)
+
+.infer_anchor_point(process_fit)
 }
 \description{
 These functions are used internally by ldmppr and are not intended to be

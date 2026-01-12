@@ -1,13 +1,13 @@
 #' Predict values from the mark distribution
 #'
-#' @param sim_realization a data frame containing a thinned or unthinned realization from \code{simulate_sc}.
+#' @param sim_realization a data.frame containing a thinned or unthinned realization from \code{simulate_mpp} (or \code{simulate_sc}).
 #' @param raster_list a list of raster objects.
-#' @param scaled_rasters `TRUE` or `FALSE` indicating whether the rasters have been scaled.
-#' @param mark_model a model object (typically from \code{train_mark_model}).
+#' @param scaled_rasters \code{TRUE} or \code{FALSE} indicating whether the rasters have been scaled.
+#' @param mark_model a mark model object. May be a \code{ldmppr_mark_model} or a legacy model.
 #' @param xy_bounds  a vector of domain bounds (2 for x, 2 for y).
-#' @param include_comp_inds `TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates.
-#' @param competition_radius distance for competition radius if \code{include_comp_inds} is `TRUE`.
-#' @param correction type of correction to apply ("none" or "toroidal").
+#' @param include_comp_inds \code{TRUE} or \code{FALSE} indicating whether to generate and use competition indices as covariates.
+#' @param competition_radius distance for competition radius if \code{include_comp_inds} is \code{TRUE}.
+#' @param edge_correction type of edge correction to apply (\code{"none"} or \code{"toroidal"}).
 #'
 #' @return a vector of predicted mark values.
 #' @export
@@ -47,7 +47,7 @@
 #'   xy_bounds = c(0, 25, 0, 25),
 #'   include_comp_inds = TRUE,
 #'   competition_radius = 10,
-#'   correction = "none"
+#'   edge_correction = "none"
 #' )
 #'
 predict_marks <- function(sim_realization,
@@ -57,13 +57,13 @@ predict_marks <- function(sim_realization,
                           xy_bounds = NULL,
                           include_comp_inds = FALSE,
                           competition_radius = 15,
-                          correction = "none") {
+                          edge_correction = "none") {
   if (!is.data.frame(sim_realization)) stop("Provide a data.frame for sim_realization.", call. = FALSE)
   if (is.null(raster_list) || !is.list(raster_list)) stop("Provide a list of rasters for raster_list.", call. = FALSE)
   if (is.null(mark_model)) stop("Provide a mark model for mark_model.", call. = FALSE)
   if (is.null(xy_bounds) || length(xy_bounds) != 4) stop("Provide xy_bounds = c(a_x, b_x, a_y, b_y).", call. = FALSE)
   if (xy_bounds[2] < xy_bounds[1] || xy_bounds[4] < xy_bounds[3]) stop("Invalid xy_bounds ordering.", call. = FALSE)
-  if (!correction %in% c("none", "toroidal")) stop("Provide correction = 'none' or 'toroidal'.", call. = FALSE)
+  if (!edge_correction %in% c("none", "toroidal")) stop("Provide correction = 'none' or 'toroidal'.", call. = FALSE)
   if (!is.logical(include_comp_inds)) stop("Provide a logical value for include_comp_inds.", call. = FALSE)
   if (!is.logical(scaled_rasters)) stop("Provide a logical value for scaled_rasters.", call. = FALSE)
   if (isTRUE(include_comp_inds) && (is.null(competition_radius) || competition_radius < 0)) {
@@ -121,7 +121,7 @@ predict_marks <- function(sim_realization,
       s_mat <- as.matrix(s)
       colnames(s_mat) <- c("x", "y")
 
-      distance_matrix <- if (correction == "none") {
+      distance_matrix <- if (edge_correction == "none") {
         as.matrix(stats::dist(s_mat))
       } else {
         toroidal_dist_matrix_optimized(

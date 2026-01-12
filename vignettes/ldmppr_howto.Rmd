@@ -41,7 +41,7 @@ The `ldmppr` package provides tools for:
 3. checking model fit using non-parametric summaries and global envelope tests, and
 4. simulating from the fitted model.
 
-As of version `1.0.4.9000`, the main workflow functions return **S3 objects** with standard methods (`print()`, `plot()`, `coef()`, `as.data.frame()`, etc.). In most cases you should no longer need helper plotting functions like `plot_mpp()`.
+As of version `1.1.0`, the main workflow functions return **S3 objects** with standard methods (`print()`, `plot()`, `coef()`, `as.data.frame()`, etc.). In most cases you should no longer need helper plotting functions like `plot_mpp()`.
 
 ---
 
@@ -60,13 +60,12 @@ Below we show the common case where you start from `(x, y, size)` with `delta = 
 
 ```{r estimate_process_parameters}
 # Use the (x, y, size) form and let estimate_process_parameters() construct time via delta
-parameter_estimation_data <- small_example_data %>%
-  dplyr::select(x, y, size)
+parameter_estimation_data <- small_example_data
 
 # Define the integration / grid values used by the likelihood approximation
-x_grid <- seq(0, 25, length.out = 5)
-y_grid <- seq(0, 25, length.out = 5)
-t_grid <- seq(0, 1,  length.out = 5)
+x_grid <- seq(0, 25, length.out = 20)
+y_grid <- seq(0, 25, length.out = 20)
+t_grid <- seq(0, 1,  length.out = 20)
 
 # Parameter initialization values: (alpha1, beta1, gamma1, alpha2, beta2, alpha3, beta3, gamma3)
 parameter_inits <- c(1.5, 8.5, 0.015, 1.5, 3.2, 0.75, 3, 0.08)
@@ -127,28 +126,27 @@ rasters <- lapply(raster_paths, terra::rast)
 # Scale rasters once up front
 scaled_rasters <- scale_rasters(rasters)
 
-# Create training data with a time column (consistent with the delta used above)
-model_training_data <- small_example_data %>%
-  mutate(time = power_law_mapping(size, delta = 1))
-
+# Train the mark model, passing the estimated self-correcting model fit from Step 1
 mark_model <- train_mark_model(
-  data = model_training_data,
+  data = fit_sc,
   raster_list = scaled_rasters,
   scaled_rasters = TRUE,
   model_type = "xgboost",
-  xy_bounds = c(0, 25, 0, 25),
   parallel = FALSE,
-  include_comp_inds = TRUE,
+  include_comp_inds = FALSE,
   competition_radius = 10,
-  correction = "none",
+  edge_correction = "none",
   selection_metric = "rmse",
   cv_folds = 5,
   tuning_grid_size = 20,
   verbose = TRUE
 )
 
-# S3 print method
-mark_model
+# Print method for ldmppr_mark_model objects
+print(mark_model)
+
+# Summary method for ldmppr_mark_model objects
+summary(mark_model)
 ```
 
 If the user wants to save the trained mark model (and reload it at a later time), the package provides the `save_mark_model` and `load_mark_model` functions (which handle model-engine specifics appropriately):
@@ -168,30 +166,19 @@ Now that we have (i) an estimated process model and (ii) a trained mark model, w
 
 `check_model_fit()` returns an S3 object with a `plot()` method (by default it plots the combined global envelope test).
 
-```{r check_model_fit, fig.width=9, fig.height=9}
-# Create a marked point pattern from the observed data
-reference_mpp <- generate_mpp(
-  locations = small_example_data[, c("x", "y")],
-  marks = small_example_data$size,
-  xy_bounds = c(0, 25, 0, 25)
-)
-
-# Anchor point (condition on an observed location)
-M_n <- as.matrix(small_example_data[1, c("x", "y")])
-
+```{r check_model_fit, fig.width=9, fig.height=9, warning=FALSE}
+# Check the model fit by passing the estimated process and trained mark models from Steps 1 and 2
 model_check <- check_model_fit(
-  reference_data = reference_mpp,
   t_min = 0,
   t_max = 1,
-  sc_params = estimated_parameters,
-  anchor_point = M_n,
+  process = "self_correcting",
+  process_fit = fit_sc,
   raster_list = scaled_rasters,
   scaled_rasters = TRUE,
   mark_model = mark_model,
-  xy_bounds = c(0, 25, 0, 25),
-  include_comp_inds = TRUE,
+  include_comp_inds = FALSE,
   thinning = TRUE,
-  correction = "none",
+  edge_correction = "none",
   competition_radius = 10,
   n_sim = 100,
   save_sims = FALSE,
@@ -199,7 +186,7 @@ model_check <- check_model_fit(
   seed = 90210
 )
 
-# S3 plot method (combined global envelope test)
+# Plot method for ldmppr_model_check objects (defaults to combined global envelope test)
 plot(model_check)
 ```
 
@@ -212,19 +199,20 @@ Finally, we can simulate a new marked point process realization from the fitted 
 `simulate_mpp()` returns an object of class `ldmppr_sim` with `plot()` and `as.data.frame()` methods.
 
 ```{r simulate_mpp, fig.width=6.5, fig.height=6}
+# Simulate a new marked point pattern by passing the estimated process and trained mark models from Steps 1 and 2
 simulated <- simulate_mpp(
-  sc_params = estimated_parameters,
+  process = "self_correcting",
+  process_fit = fit_sc,
   t_min = 0,
   t_max = 1,
-  anchor_point = M_n,
   raster_list = scaled_rasters,
   scaled_rasters = TRUE,
   mark_model = mark_model,
-  xy_bounds = c(0, 25, 0, 25),
   include_comp_inds = TRUE,
   competition_radius = 10,
-  correction = "none",
-  thinning = TRUE
+  edge_correction = "none",
+  thinning = TRUE,
+  seed = 90210
 )
 
 # Plot method for ldmppr_sim

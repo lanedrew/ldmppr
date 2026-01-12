@@ -12,25 +12,25 @@ predict_marks(
   xy_bounds = NULL,
   include_comp_inds = FALSE,
   competition_radius = 15,
-  correction = "none"
+  edge_correction = "none"
 )
 }
 \arguments{
-\item{sim_realization}{a data frame containing a thinned or unthinned realization from \code{simulate_sc}.}
+\item{sim_realization}{a data.frame containing a thinned or unthinned realization from \code{simulate_mpp} (or \code{simulate_sc}).}
 
 \item{raster_list}{a list of raster objects.}
 
-\item{scaled_rasters}{`TRUE` or `FALSE` indicating whether the rasters have been scaled.}
+\item{scaled_rasters}{\code{TRUE} or \code{FALSE} indicating whether the rasters have been scaled.}
 
-\item{mark_model}{a model object (typically from \code{train_mark_model}).}
+\item{mark_model}{a mark model object. May be a \code{ldmppr_mark_model} or a legacy model.}
 
 \item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y).}
 
-\item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates.}
+\item{include_comp_inds}{\code{TRUE} or \code{FALSE} indicating whether to generate and use competition indices as covariates.}
 
-\item{competition_radius}{distance for competition radius if \code{include_comp_inds} is `TRUE`.}
+\item{competition_radius}{distance for competition radius if \code{include_comp_inds} is \code{TRUE}.}
 
-\item{correction}{type of correction to apply ("none" or "toroidal").}
+\item{edge_correction}{type of edge correction to apply (\code{"none"} or \code{"toroidal"}).}
 }
 \value{
 a vector of predicted mark values.
@@ -73,7 +73,7 @@ predict_marks(
   xy_bounds = c(0, 25, 0, 25),
   include_comp_inds = TRUE,
   competition_radius = 10,
-  correction = "none"
+  edge_correction = "none"
 )
 
 }

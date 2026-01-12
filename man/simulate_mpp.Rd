@@ -5,7 +5,8 @@
 \title{Simulate a realization of a location dependent marked point process}
 \usage{
 simulate_mpp(
-  sc_params = NULL,
+  process = c("self_correcting"),
+  process_fit = NULL,
   t_min = 0,
   t_max = 1,
   anchor_point = NULL,
@@ -15,38 +16,49 @@ simulate_mpp(
   xy_bounds = NULL,
   include_comp_inds = FALSE,
   competition_radius = 15,
-  correction = "none",
-  thinning = TRUE
+  edge_correction = "none",
+  thinning = TRUE,
+  seed = NULL
 )
 }
 \arguments{
-\item{sc_params}{vector of parameter values corresponding to
-(alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).}
+\item{process}{type of process used (currently supports \code{"self_correcting"}).}
+
+\item{process_fit}{either (1) a \code{ldmppr_fit} object returned by
+\code{\link{estimate_process_parameters}}, or (2) a numeric vector of
+length 8 giving self-correcting parameters:
+\eqn{(\alpha_1,\beta_1,\gamma_1,\alpha_2,\beta_2,\alpha_3,\beta_3,\gamma_3)} (alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).}
 
 \item{t_min}{minimum value for time.}
 
 \item{t_max}{maximum value for time.}
 
-\item{anchor_point}{vector (or 1x2 matrix) of (x,y) coordinates to condition on.}
+\item{anchor_point}{(optional) vector of (x,y) coordinates of the point to condition on.
+If \code{NULL}, inferred from the reference data (largest mark if available) or from
+\code{process_fit$data_original} (largest size).}
 
-\item{raster_list}{list of raster objects.}
+\item{raster_list}{a list of raster objects used for predicting marks.}
 
-\item{scaled_rasters}{`TRUE` or `FALSE` indicating whether the rasters have been scaled.}
+\item{scaled_rasters}{\code{TRUE} or \code{FALSE} indicating whether the rasters have already been scaled.}
 
-\item{mark_model}{a mark model (e.g., from \code{train_mark_model()}), or a path to a saved mark model.}
+\item{mark_model}{a mark model object. May be a \code{ldmppr_mark_model} or a legacy model.}
 
-\item{xy_bounds}{a vector of domain bounds (a_x, b_x, a_y, b_y).}
+\item{xy_bounds}{(optional) vector of bounds as \code{c(a_x, b_x, a_y, b_y)}. If \code{NULL}, will be
+inferred from \code{reference_data}'s window when \code{reference_data} is provided,
+otherwise from \code{ldmppr_fit} with lower bounds assumed to be 0.}
 
-\item{include_comp_inds}{`TRUE` or `FALSE` indicating whether to generate competition indices as covariates.}
+\item{include_comp_inds}{\code{TRUE} or \code{FALSE} indicating whether to compute competition indices.}
 
-\item{competition_radius}{distance for competition radius if \code{include_comp_inds} is `TRUE`.}
+\item{competition_radius}{distance for competition radius if \code{include_comp_inds = TRUE}.}
 
-\item{correction}{type of correction to apply ("none" or "toroidal").}
+\item{edge_correction}{type of edge correction to apply (\code{"none"} or \code{"toroidal"}).}
 
-\item{thinning}{`TRUE` or `FALSE` indicating whether to thin the realization.}
+\item{thinning}{\code{TRUE} or \code{FALSE} indicating whether to use the thinned simulated values.}
+
+\item{seed}{integer seed for reproducibility.}
 }
 \value{
-An object of class \code{"ldmppr_sim"}.
+an object of class \code{"ldmppr_sim"}.
 }
 \description{
 Simulate a realization of a location dependent marked point process
@@ -56,7 +68,7 @@ Simulate a realization of a location dependent marked point process
 generating_parameters <- c(2, 8, .02, 2.5, 3, 1, 2.5, .2)
 
 # Specify an anchor point
-M_n <- matrix(c(10, 14), ncol = 1)
+M_n <- c(10, 14)
 
 # Load the raster files
 raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
@@ -74,7 +86,8 @@ mark_model <- load_mark_model(file_path)
 
 # Simulate a realization
 example_mpp <- simulate_mpp(
-  sc_params = generating_parameters,
+  process = "self_correcting",
+  process_fit = generating_parameters,
   t_min = 0,
   t_max = 1,
   anchor_point = M_n,
@@ -84,7 +97,7 @@ example_mpp <- simulate_mpp(
   xy_bounds = c(0, 25, 0, 25),
   include_comp_inds = TRUE,
   competition_radius = 10,
-  correction = "none",
+  edge_correction = "none",
   thinning = TRUE
 )
 

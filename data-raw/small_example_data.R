@@ -82,17 +82,16 @@ usethis::use_data(small_example_data, overwrite = TRUE)
 # 3) Estimate process parameters (optional, but useful for examples)
 # ------------------------------------------------------------
 # Grid for likelihood approximation (keep modest for data-generation script)
-Xgrid <- seq(0, 25, length.out = 10)
-Ygrid <- seq(0, 25, length.out = 10)
-Tgrid <- seq(0, 1,  length.out = 10)
+Xgrid <- seq(0, 25, length.out = 30)
+Ygrid <- seq(0, 25, length.out = 30)
+Tgrid <- seq(0, 1,  length.out = 30)
 
 parameter_inits <- c(1.5, 8.5, 0.015, 1.5, 3.2, 0.75, 3, 0.08)
 upper_bounds <- c(1, 25, 25)
 
 # Use the new unified estimator. Supply delta_values to perform a delta search.
 fit_sc <- estimate_process_parameters(
-  data = small_example_data %>%
-    select(x, y, size),
+  data = small_example_data,
   process = "self_correcting",
   x_grid = Xgrid,
   y_grid = Ygrid,
@@ -129,10 +128,10 @@ mark_model <- train_mark_model(
   parallel = TRUE,
   include_comp_inds = TRUE,
   competition_radius = 10,
-  correction = "none",
+  edge_correction = "none",
   selection_metric = "rmse",
-  cv_folds = 3,
-  tuning_grid_size = 10,
+  cv_folds = 5,
+  tuning_grid_size = 20,
   verbose = TRUE
 )
 

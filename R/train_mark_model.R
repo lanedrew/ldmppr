@@ -2,31 +2,39 @@
 #'
 #' @description
 #' Trains a predictive model for the mark distribution of a spatio-temporal process.
-#' Allows the user to incorporate location specific information and competition indices as
-#' covariates in the mark model.
+#' \code{data} may be either (1) a data.frame containing columns \code{x}, \code{y}, \code{size} and \code{time},
+#' (2) a data.frame containing \code{x}, \code{y}, \code{size} (time will be derived via \code{delta}),
+#' or (3) a \code{ldmppr_fit} object returned by \code{\link{estimate_process_parameters}}.
+#' Allows the user to incorporate location specific information and competition indices as covariates in the mark model.
 #'
-#'
-#' @param data a data frame containing named vectors x, y, size, and time.
+#' @param data a data.frame or a \code{ldmppr_fit} object. See Description.
 #' @param raster_list a list of raster objects.
-#' @param scaled_rasters `TRUE` or `FALSE` indicating whether the rasters have been scaled.
-#' @param model_type the machine learning model type ("xgboost" or "random_forest").
-#' @param xy_bounds a vector of domain bounds (2 for x, 2 for y).
-#' @param save_model `TRUE` or `FALSE` indicating whether to save the generated model.
+#' @param scaled_rasters \code{TRUE} or \code{FALSE} indicating whether the rasters have been scaled.
+#' @param model_type the machine learning model type (\code{"xgboost"} or \code{"random_forest"}).
+#' @param xy_bounds a vector of domain bounds (2 for x, 2 for y). If \code{data} is an \code{ldmppr_fit}
+#'   and \code{xy_bounds} is \code{NULL}, defaults to \code{c(0, b_x, 0, b_y)} derived from fit.
+#' @param delta (optional) numeric scalar used only when \code{data} contains \code{(x,y,size)} but not \code{time}.
+#'   If \code{data} is an \code{ldmppr_fit} and time is missing, the function will infer the \code{delta} value from the fit.
+#' @param save_model \code{TRUE} or \code{FALSE} indicating whether to save the generated model.
 #' @param save_path path for saving the generated model.
-#' @param parallel `TRUE` or `FALSE` indicating whether to use parallelization in model training.
-#' @param n_cores number of cores to use in parallel model training (if `parallel` is `TRUE`).
-#' @param include_comp_inds `TRUE` or `FALSE` indicating whether to generate and use competition indices as covariates.
-#' @param competition_radius distance for competition radius if \code{include_comp_inds} is `TRUE`.
-#' @param correction type of correction to apply ("none", "toroidal", or "truncation").
-#' @param selection_metric metric to use for identifying the optimal model ("rmse" or "mae").
+#' @param parallel \code{TRUE} or \code{FALSE} indicating whether to use parallelization in model training.
+#' @param n_cores number of cores to use in parallel model training (if \code{parallel} is \code{TRUE}).
+#' @param include_comp_inds \code{TRUE} or \code{FALSE} indicating whether to generate and use competition indices as covariates.
+#' @param competition_radius distance for competition radius if \code{include_comp_inds} is \code{TRUE}.
+#' @param edge_correction type of edge correction to apply (\code{"none"}, \code{"toroidal"}, or \code{"truncation"}).
+#' @param selection_metric metric to use for identifying the optimal model (\code{"rmse"}, \code{"mae"}, or \code{"rsq"}).
 #' @param cv_folds number of cross-validation folds to use in model training.
+#'   If \code{cv_folds <= 1}, tuning is skipped and the model is fit once with default hyperparameters.
 #' @param tuning_grid_size size of the tuning grid for hyperparameter tuning.
-#' @param verbose `TRUE` or `FALSE` indicating whether to show progress of model training.
+#' @param verbose \code{TRUE} or \code{FALSE} indicating whether to show progress of model training.
 #'
-#' @return an ldmppr_mark_model object.
+#' @return an object of class \code{"ldmppr_mark_model"} containing the trained mark model.
 #' @export
 #'
 #' @examples
+#' # Load the small example data
+#' data(small_example_data)
+#'
 #' # Load example raster data
 #' raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
 #'   pattern = "\\.tif$", full.names = TRUE
@@ -37,21 +45,19 @@
 #' # Scale the rasters
 #' scaled_raster_list <- scale_rasters(rasters)
 #'
-#' # Load example locations
-#' locations <- small_example_data %>%
-#'   dplyr::mutate(time = power_law_mapping(size, .5))
 #'
 #' # Train the model
 #' mark_model <- train_mark_model(
-#'   data = locations,
+#'   data = small_example_data,
 #'   raster_list = scaled_raster_list,
 #'   scaled_rasters = TRUE,
 #'   model_type = "xgboost",
 #'   xy_bounds = c(0, 25, 0, 25),
+#'   delta = 1,
 #'   parallel = FALSE,
 #'   include_comp_inds = FALSE,
 #'   competition_radius = 10,
-#'   correction = "none",
+#'   edge_correction = "none",
 #'   selection_metric = "rmse",
 #'   cv_folds = 3,
 #'   tuning_grid_size = 2,
@@ -65,45 +71,69 @@ train_mark_model <- function(data,
                              scaled_rasters = FALSE,
                              model_type = "xgboost",
                              xy_bounds = NULL,
+                             delta = NULL,
                              save_model = FALSE,
                              save_path = NULL,
                              parallel = TRUE,
                              n_cores = NULL,
                              include_comp_inds = FALSE,
                              competition_radius = 15,
-                             correction = "none",
+                             edge_correction = "none",
                              selection_metric = "rmse",
                              cv_folds = 5,
                              tuning_grid_size = 200,
                              verbose = TRUE) {
-  if (!is.data.frame(data)) stop("Provide a data frame of the form (x, y, size, time) for the data argument.", .call = FALSE)
-  if (is.null(raster_list) | !is.list(raster_list)) stop("Provide a list of rasters for the raster_list argument.", .call = FALSE)
-  if (is.null(xy_bounds) | !(length(xy_bounds) == 4)) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
-  if (xy_bounds[2] < xy_bounds[1] | xy_bounds[4] < xy_bounds[3]) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
-  if (isTRUE(save_model) && is.null(save_path)) stop("Provide a path for saving the mark model object.", .call = FALSE)
-  if (!correction %in% c("none", "toroidal", "truncation")) stop("Provide a valid correction type for the correction argument.", .call = FALSE)
-  if (include_comp_inds == TRUE & (is.null(competition_radius) | competition_radius < 0)) stop("Provide the desired radius for competition_indices argument.", .call = FALSE)
-  if (!selection_metric %in% c("rmse", "mae", "rsq")) stop("Provide a valid metric for selection_metric ('rmse', 'mae', or 'rsq').", .call = FALSE)
-  if (!model_type %in% c("xgboost", "random_forest")) stop("Provide a valid model type for the model_type argument.", .call = FALSE)
-  if (!is.logical(parallel)) stop("Provide a logical value for the parallel argument.", .call = FALSE)
-  if (parallel == TRUE & !is.null(n_cores)) {
-    if (!is.numeric(n_cores) | n_cores < 1) stop("Provide a numeric value greater than 0 for the n_cores argument.", .call = FALSE)
-  }
-  if (!is.logical(include_comp_inds)) stop("Provide a logical value for the include_comp_inds argument.", .call = FALSE)
-  if (!is.logical(save_model)) stop("Provide a logical value for the save_model argument.", .call = FALSE)
-  if (!is.logical(verbose)) stop("Provide a logical value for the verbose argument.", .call = FALSE)
-  if (!is.numeric(cv_folds) | cv_folds < 2) stop("Provide a numeric value greater than 1 for the cv_folds argument.", .call = FALSE)
-  if (!is.numeric(tuning_grid_size) | tuning_grid_size < 1) stop("Provide a numeric value greater than 0 for the tuning_grid_size argument.", .call = FALSE)
-  if (!is.logical(scaled_rasters)) stop("Provide a logical value for the scaled_rasters argument.", .call = FALSE)
 
-  # Initialize parallelization for model training
+  # -------------------------
+  # argument checks
+  # -------------------------
+  if (is.null(raster_list) || !is.list(raster_list)) {
+    stop("Provide a list of rasters for the raster_list argument.", call. = FALSE)
+  }
+  if (!is.logical(scaled_rasters)) stop("Provide a logical value for scaled_rasters.", call. = FALSE)
+
+  if (!model_type %in% c("xgboost", "random_forest")) {
+    stop("Provide a valid model type for model_type ('xgboost' or 'random_forest').", call. = FALSE)
+  }
+  if (!edge_correction %in% c("none", "toroidal", "truncation")) {
+    stop("Provide a valid correction type for correction ('none', 'toroidal', 'truncation').", call. = FALSE)
+  }
+  if (!selection_metric %in% c("rmse", "mae", "rsq")) {
+    stop("Provide a valid metric for selection_metric ('rmse', 'mae', 'rsq').", call. = FALSE)
+  }
+  if (!is.logical(parallel)) stop("Provide a logical value for parallel.", call. = FALSE)
+  if (isTRUE(parallel) && !is.null(n_cores)) {
+    if (!is.numeric(n_cores) || n_cores < 1) stop("Provide n_cores >= 1.", call. = FALSE)
+  }
+  if (!is.logical(include_comp_inds)) stop("Provide a logical value for include_comp_inds.", call. = FALSE)
+  if (!is.logical(save_model)) stop("Provide a logical value for save_model.", call. = FALSE)
+  if (isTRUE(save_model) && is.null(save_path)) stop("Provide save_path when save_model=TRUE.", call. = FALSE)
+  if (!is.logical(verbose)) stop("Provide a logical value for verbose.", call. = FALSE)
+
+  # Coerce training data (handles ldmppr_fit)
+  coerced <- .coerce_training_df(data, delta = delta, xy_bounds = xy_bounds)
+  df <- coerced$df
+  xy_bounds <- coerced$xy_bounds
+
+  if (is.null(xy_bounds) || length(xy_bounds) != 4) {
+    stop("Provide xy_bounds = c(a_x, b_x, a_y, b_y), or supply an ldmppr_fit with grid$upper_bounds.", call. = FALSE)
+  }
+  if (xy_bounds[2] < xy_bounds[1] || xy_bounds[4] < xy_bounds[3]) {
+    stop("Provide xy_bounds in the form (a_x, b_x, a_y, b_y) with b_x >= a_x and b_y >= a_y.", call. = FALSE)
+  }
+
+  cv_folds <- as.integer(cv_folds)
+  if (is.na(cv_folds) || cv_folds < 1L) stop("cv_folds must be >= 1.", call. = FALSE)
+
+  tuning_grid_size <- as.integer(tuning_grid_size)
+  if (is.na(tuning_grid_size) || tuning_grid_size < 1L) stop("tuning_grid_size must be >= 1.", call. = FALSE)
+
+  # -------------------------
+  # parallel backend (foreach)
+  # -------------------------
   cl <- NULL
   if (isTRUE(parallel)) {
-    if( !is.null(n_cores)) {
-      n_workers <- n_cores
-    } else {
-      n_workers <- max(1L, floor(parallel::detectCores()/2))
-    }
+    n_workers <- if (!is.null(n_cores)) as.integer(n_cores) else max(1L, floor(parallel::detectCores() / 2))
     cl <- parallel::makePSOCKcluster(n_workers)
     doParallel::registerDoParallel(cl)
     on.exit({
@@ -114,22 +144,30 @@ train_mark_model <- function(data,
     foreach::registerDoSEQ()
   }
 
-  # Obtain a matrix of (x, y) locations
-  s <- base::as.matrix(base::cbind(data$x - xy_bounds[1], data$y - xy_bounds[3]))
-
-  # Scale the rasters if not already scaled
-  if (scaled_rasters == FALSE) {
+  # -------------------------
+  # raster covariates
+  # -------------------------
+  if (!isTRUE(scaled_rasters)) {
     raster_list <- scale_rasters(raster_list)
   }
 
-  # Obtain the location specific covariate values from the scaled rasters
-  X <- extract_covars(locations = s, raster_list = raster_list)
-  X$x <- s[, 1]
-  X$y <- s[, 2]
-  X$time <- data$time
+  # IMPORTANT: keep x,y in the SAME coordinate system the user provides;
+  # do NOT shift by lower bounds unless you do it everywhere (training + predict).
+  s <- as.matrix(df[, c("x", "y")])
 
-  if (include_comp_inds == TRUE) {
-    # Calculate competition indices in a given radius
+  X <- extract_covars(locations = s, raster_list = raster_list)
+
+  # terra::extract commonly returns ID; drop and repair names to avoid tibble collisions
+  if ("ID" %in% names(X)) {
+    X <- X[, names(X) != "ID", drop = FALSE]
+  }
+  names(X) <- make.unique(names(X), sep = "__")
+
+  X$x <- df$x
+  X$y <- df$y
+  X$time <- df$time
+
+  if (isTRUE(include_comp_inds)) {
     X$near_nbr_dist <- NA_real_
     X$near_nbr_num <- NA_real_
     X$avg_nbr_dist <- NA_real_
@@ -137,113 +175,104 @@ train_mark_model <- function(data,
     X$near_nbr_time_all <- NA_real_
     X$near_nbr_time_dist_ratio <- NA_real_
 
-    # Calculate distance matrices for selected correction method
-    if ((correction == "none") | (correction == "truncation")) {
-      distance_matrix <- base::as.matrix(stats::dist(s, method = "euclidean"))
-    } else if (correction == "toroidal") {
-      distance_matrix <- toroidal_dist_matrix_optimized(s, xy_bounds[2] - xy_bounds[1], xy_bounds[4] - xy_bounds[3])
+    # distance matrix
+    if (edge_correction %in% c("none", "truncation")) {
+      distance_matrix <- as.matrix(stats::dist(s, method = "euclidean"))
+    } else {
+      distance_matrix <- toroidal_dist_matrix_optimized(
+        s,
+        xy_bounds[2] - xy_bounds[1],
+        xy_bounds[4] - xy_bounds[3]
+      )
     }
 
-    for (i in 1:base::nrow(X)) {
-      close_points <- base::unique(base::which(distance_matrix[i, ] < competition_radius & distance_matrix[i, ] != 0))
+    for (i in seq_len(nrow(X))) {
+      close_points <- unique(which(distance_matrix[i, ] < competition_radius & distance_matrix[i, ] != 0))
       close_times <- X$time[close_points]
 
-      X$near_nbr_dist[i] <- base::min(distance_matrix[i, ][-i])
-      X$near_nbr_num[i] <- base::length(close_points)
-      X$avg_nbr_dist[i] <- base::mean(distance_matrix[i, ][close_points])
+      X$near_nbr_dist[i] <- min(distance_matrix[i, ][-i])
+      X$near_nbr_num[i] <- length(close_points)
+      X$avg_nbr_dist[i] <- if (length(close_points)) mean(distance_matrix[i, close_points]) else min(distance_matrix[i, ][-i])
 
-      if (base::length(close_points) == 0) {
-        X$avg_nbr_dist[i] <- base::min(distance_matrix[i, ][-i])
-      }
-
-      X$near_nbr_time[i] <- X$time[base::unique(base::which(distance_matrix[i, ] == X$near_nbr_dist[i]))]
-      X$near_nbr_time_all[i] <- mean(close_times)
-
-      if (base::length(close_points) == 0) {
-        X$near_nbr_time_all[i] <- X$time[base::unique(base::which(distance_matrix[i, ] == X$near_nbr_dist[i]))]
-      }
-
+      nn_idx <- unique(which(distance_matrix[i, ] == X$near_nbr_dist[i]))
+      X$near_nbr_time[i] <- X$time[nn_idx][1]
+      X$near_nbr_time_all[i] <- if (length(close_points)) mean(close_times) else X$time[nn_idx][1]
       X$near_nbr_time_dist_ratio[i] <- X$near_nbr_time[i] / X$near_nbr_dist[i]
     }
   }
 
-  ## Define the model data for fitting the size model
-  model_data <- data.frame(size = data$size, X)
+  model_data <- data.frame(size = df$size, X)
 
-  if (correction == "truncation") {
-    model_data <- model_data[(model_data$x > 15 &
-                                model_data$x < (xy_bounds[2] - xy_bounds[1]) - 15 &
-                                model_data$y > 15 &
-                                model_data$y < (xy_bounds[4] - xy_bounds[3]) - 15), ]
+  if (edge_correction == "truncation") {
+    # Apply truncation in ORIGINAL coordinate scale
+    ax <- xy_bounds[1]; bx <- xy_bounds[2]
+    ay <- xy_bounds[3]; by <- xy_bounds[4]
+    model_data <- model_data[
+      model_data$x > (ax + 15) &
+        model_data$x < (bx - 15) &
+        model_data$y > (ay + 15) &
+        model_data$y < (by - 15),
+      ,
+      drop = FALSE
+    ]
   }
 
-  if (verbose) {
-    base::message("Processing data...")
-  }
+  if (nrow(model_data) < 2) stop("Not enough observations to train a model after filtering.", call. = FALSE)
 
-  # Create the data split
-  data_split <- rsample::initial_split(
-    data = model_data,
-    prop = 0.8,
-    strata = size
-  )
+  if (isTRUE(verbose)) message("Processing data...")
 
-  # Specify the recipe (retain = TRUE makes the prepped object more robust across sessions)
-  preprocessing_recipe <-
-    recipes::recipe(size ~ ., data = rsample::training(data_split)) %>%
-    recipes::prep(retain = TRUE)
-
-  # Generate the cross validation folds
-  data_cv_folds <-
-    recipes::bake(
-      preprocessing_recipe,
-      new_data = rsample::training(data_split)
-    ) %>%
-    rsample::vfold_cv(v = cv_folds)
-
-  # Define the metric set
+  # -------------------------
+  # tidymodels spec
+  # -------------------------
   metric_set <- if (selection_metric == "rsq") {
     yardstick::metric_set(yardstick::rmse, yardstick::mae, yardstick::rsq)
   } else {
     yardstick::metric_set(yardstick::rmse, yardstick::mae)
   }
 
-  # Define control object for tuning
   ctrl <- tune::control_grid(
     verbose = FALSE,
     parallel_over = if (isTRUE(parallel)) "resamples" else NULL
   )
 
+  # If parallel resampling, force engine threads to 1 to avoid nested parallelism.
+  engine_threads <- if (isTRUE(parallel)) 1L else max(1L, parallel::detectCores() - 1L)
+
+  # Use an unprepped recipe in the workflow; we'll prep once at the end for storage.
+  recipe_spec <- recipes::recipe(size ~ ., data = model_data)
+
+  do_tuning <- (cv_folds >= 2L) && (nrow(model_data) >= cv_folds)
+
+  if (!do_tuning && isTRUE(verbose)) {
+    message("Skipping CV tuning (cv_folds <= 1 or not enough rows). Fitting a single model with default hyperparameters.")
+  }
 
   if (model_type == "xgboost") {
-    if (verbose) base::message("Training XGBoost model...")
+    if (isTRUE(verbose)) message("Training XGBoost model...")
 
-    # Choose threads safely: if we're parallelizing resamples, force xgboost to 1 thread
-    nthread <- if (isTRUE(parallel)) 1L else max(1L, parallel::detectCores() - 1L)
-
-    xgboost_model <-
-      parsnip::boost_tree(
-        mode = "regression",
-        trees = hardhat::tune(),
-        min_n = hardhat::tune(),
-        tree_depth = hardhat::tune(),
-        learn_rate = hardhat::tune(),
-        loss_reduction = hardhat::tune()
+    spec <- parsnip::boost_tree(
+      mode = "regression",
+      trees = if (do_tuning) hardhat::tune() else 500,
+      min_n = if (do_tuning) hardhat::tune() else 5,
+      tree_depth = if (do_tuning) hardhat::tune() else 6,
+      learn_rate = if (do_tuning) hardhat::tune() else 0.05,
+      loss_reduction = if (do_tuning) hardhat::tune() else 0
+    ) %>%
+      parsnip::set_engine(
+        "xgboost",
+        objective = "reg:squarederror",
+        nthread = engine_threads,
+        verbose = 0
       )
 
-    xgboost_engine_args <- list(
-      objective = "reg:squarederror",
-      nthread   = nthread,
-      verbose   = 0
-    )
+    wf <- workflows::workflow() %>%
+      workflows::add_model(spec) %>%
+      workflows::add_recipe(recipe_spec)
 
-    xgboost_model <- do.call(
-      parsnip::set_engine,
-      c(list(object = xgboost_model, engine = "xgboost"), xgboost_engine_args)
-    )
+    if (do_tuning) {
+      folds <- rsample::vfold_cv(model_data, v = cv_folds)
 
-    xgboost_params <-
-      dials::parameters(
+      params <- dials::parameters(
         dials::trees(),
         dials::min_n(),
         dials::tree_depth(),
@@ -251,107 +280,72 @@ train_mark_model <- function(data,
         dials::loss_reduction()
       )
 
-    xgboost_grid <-
-      dials::grid_space_filling(
-        xgboost_params,
-        size = tuning_grid_size
+      grid <- dials::grid_space_filling(params, size = tuning_grid_size)
+
+      tuned <- tune::tune_grid(
+        object = wf,
+        resamples = folds,
+        grid = grid,
+        metrics = metric_set,
+        control = ctrl
       )
 
-    xgboost_wf <-
-      workflows::workflow() %>%
-      workflows::add_model(xgboost_model) %>%
-      workflows::add_formula(size ~ .)
+      best <- tune::select_best(tuned, metric = selection_metric)
+      wf_final <- tune::finalize_workflow(wf, best)
+      wf_fit <- parsnip::fit(wf_final, data = model_data)
+    } else {
+      wf_fit <- parsnip::fit(wf, data = model_data)
+    }
 
-    xgboost_tuned <- tune::tune_grid(
-      object = xgboost_wf,
-      resamples = data_cv_folds,
-      grid = xgboost_grid,
-      metrics = yardstick::metric_set(yardstick::rmse, yardstick::mae, yardstick::rsq),
-      control = tune::control_grid(verbose = FALSE)
-    )
-
-    xgboost_best_params <- xgboost_tuned %>%
-      tune::select_best(metric = selection_metric)
-
-    xgboost_model_final <- xgboost_model %>%
-      tune::finalize_model(xgboost_best_params)
-
-    mark_model <- xgboost_model_final %>%
-      parsnip::fit(
-        formula = size ~ .,
-        data    = model_data
-      )
-
-  } else if (model_type == "random_forest") {
-    if (verbose) base::message("Training Random Forest model...")
-
-    rf_model <-
-      parsnip::rand_forest(
-        mode = "regression",
-        trees = hardhat::tune(),
-        min_n = hardhat::tune()
-      )
-
-    rf_engine_args <- list(
-      num.threads = if (isTRUE(parallel)) 1L else max(1L, parallel::detectCores() - 1L)
-    )
-
-    rf_model <- do.call(
-      parsnip::set_engine,
-      c(list(object = rf_model, engine = "ranger"), rf_engine_args)
-    )
-
-    rf_params <-
-      dials::parameters(
-        dials::trees(),
-        dials::min_n()
-      )
-
-    rf_grid <-
-      dials::grid_space_filling(
-        rf_params,
-        size = tuning_grid_size
-      )
-
-    rf_wf <-
-      workflows::workflow() %>%
-      workflows::add_model(rf_model) %>%
-      workflows::add_formula(size ~ .)
-
-    rf_tuned <- tune::tune_grid(
-      object = rf_wf,
-      resamples = data_cv_folds,
-      grid = rf_grid,
-      metrics = yardstick::metric_set(yardstick::rmse, yardstick::mae, yardstick::rsq),
-      control = tune::control_grid(verbose = FALSE)
-    )
-
-    rf_best_params <- rf_tuned %>%
-      tune::select_best(metric = selection_metric)
-
-    rf_model_final <- rf_model %>%
-      tune::finalize_model(rf_best_params)
-
-    mark_model <- rf_model_final %>%
-      parsnip::fit(
-        formula = size ~ .,
-        data    = model_data
-      )
+    fit_engine <- workflows::extract_fit_engine(wf_fit)
+    engine <- "xgboost"
 
   } else {
-    stop("Please provide xgboost or random_forest argument for model_type.")
+    if (isTRUE(verbose)) message("Training Random Forest model...")
+
+    spec <- parsnip::rand_forest(
+      mode = "regression",
+      trees = if (do_tuning) hardhat::tune() else 500,
+      min_n = if (do_tuning) hardhat::tune() else 5
+    ) %>%
+      parsnip::set_engine("ranger", num.threads = engine_threads)
+
+    wf <- workflows::workflow() %>%
+      workflows::add_model(spec) %>%
+      workflows::add_recipe(recipe_spec)
+
+    if (do_tuning) {
+      folds <- rsample::vfold_cv(model_data, v = cv_folds)
+
+      params <- dials::parameters(dials::trees(), dials::min_n())
+      grid <- dials::grid_space_filling(params, size = tuning_grid_size)
+
+      tuned <- tune::tune_grid(
+        object = wf,
+        resamples = folds,
+        grid = grid,
+        metrics = metric_set,
+        control = ctrl
+      )
+
+      best <- tune::select_best(tuned, metric = selection_metric)
+      wf_final <- tune::finalize_workflow(wf, best)
+      wf_fit <- parsnip::fit(wf_final, data = model_data)
+    } else {
+      wf_fit <- parsnip::fit(wf, data = model_data)
+    }
+
+    fit_engine <- workflows::extract_fit_engine(wf_fit)
+    engine <- "ranger"
   }
 
-  if (verbose) base::message("Training complete!")
+  if (isTRUE(verbose)) message("Training complete!")
 
-  # Identify engine + extract engine fit
-  engine <- if (model_type == "xgboost") "xgboost" else "ranger"
-  fit_engine <- mark_model$fit
-
-  # Derive feature_names in baked order (for stable prediction)
-  baked_train <- recipes::bake(preprocessing_recipe, new_data = rsample::training(data_split))
-  baked_train$size <- NULL
-  feature_names <- names(baked_train)
+  # Prep recipe for storage + stable feature order during predict()
+  preprocessing_recipe <- recipes::prep(recipe_spec, training = model_data, retain = TRUE)
+  baked <- recipes::bake(preprocessing_recipe, new_data = model_data)
+  baked$size <- NULL
+  feature_names <- names(baked)
 
   mm <- ldmppr_mark_model(
     engine = engine,
@@ -361,9 +355,12 @@ train_mark_model <- function(data,
     feature_names = feature_names,
     info = list(
       model_type = model_type,
-      correction = correction,
+      edge_correction = edge_correction,
       include_comp_inds = include_comp_inds,
-      cv_folds = cv_folds
+      competition_radius = competition_radius,
+      selection_metric = selection_metric,
+      cv_folds = cv_folds,
+      tuning_grid_size = tuning_grid_size
     )
   )
 
@@ -371,6 +368,5 @@ train_mark_model <- function(data,
     save_mark_model(mm, save_path)
   }
 
-  return(mm)
+  mm
 }
-

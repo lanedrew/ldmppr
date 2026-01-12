@@ -43,7 +43,7 @@ new_ldmppr_sim <- function(process,
                            bounds,
                            anchor_point,
                            thinning,
-                           correction,
+                           edge_correction,
                            include_comp_inds,
                            competition_radius,
                            call = NULL,
@@ -57,7 +57,7 @@ new_ldmppr_sim <- function(process,
       bounds = bounds,
       anchor_point = anchor_point,
       thinning = thinning,
-      correction = correction,
+      edge_correction = edge_correction,
       include_comp_inds = include_comp_inds,
       competition_radius = competition_radius,
       call = call,
@@ -103,17 +103,26 @@ new_ldmppr_fit <- function(process,
                            mapping = NULL,
                            grid = NULL,
                            data_summary = NULL,
+                           data = NULL,
+                           data_original = NULL,
                            engine = "nloptr",
                            call = NULL,
                            timing = NULL) {
+
+  if (!is.null(data_original) && !is.data.frame(data_original)) {
+    stop("`data_original` must be a data.frame when provided.", call. = FALSE)
+  }
+
   structure(
     list(
       process = process,
       engine = engine,
-      fit = fit,          # best fit (nloptr object)
-      fits = fits,        # list of nloptr fits (e.g. per-delta) or NULL
-      mapping = mapping,  # list(delta, delta_values, chosen_index, objectives)
-      grid = grid,        # list(x_grid, y_grid, t_grid, upper_bounds)
+      fit = fit,
+      fits = fits,
+      mapping = mapping,
+      grid = grid,
+      data = data,
+      data_original = data_original,
       data_summary = data_summary,
       call = call,
       timing = timing
@@ -326,4 +335,210 @@ as_mark_model <- function(mark_model) {
 #' @keywords internal
 `%||%` <- function(a, b) {
   if (!is.null(a)) a else b
+}
+
+
+# ----------------------------
+# helpers for train_mark_model
+# ----------------------------
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+.require_pkgs <- function(pkgs) {
+  for (p in pkgs) {
+    if (!requireNamespace(p, quietly = TRUE)) {
+      stop("Package '", p, "' is required for train_mark_model().", call. = FALSE)
+    }
+  }
+}
+
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+.coerce_training_df <- function(x, delta = NULL, xy_bounds = NULL) {
+  # x can be data.frame or ldmppr_fit
+  fit <- NULL
+  if (inherits(x, "ldmppr_fit")) {
+    fit <- x
+    # prefer data_original; fallback to NULL (we can't invent size)
+    x <- fit$data_original %||% NULL
+    if (is.null(x)) {
+      stop("`data` is an ldmppr_fit but `data_original` is NULL; cannot train mark model without size.", call. = FALSE)
+    }
+
+    # default xy_bounds from fit if not supplied
+    if (is.null(xy_bounds)) {
+      ub <- fit$grid$upper_bounds %||% NULL
+      if (!is.null(ub) && length(ub) == 3) {
+        xy_bounds <- c(0, ub[2], 0, ub[3])
+      }
+    }
+
+    # if time missing, derive from fit mapping delta (preferred) or user delta
+    if (!("time" %in% names(x)) && ("size" %in% names(x))) {
+      d_use <- fit$mapping$delta %||% delta
+      if (is.null(d_use) || is.na(d_use)) {
+        stop("Training data has no `time`. Provide `delta`, or ensure fit$mapping$delta is present.", call. = FALSE)
+      }
+      x$time <- power_law_mapping(x$size, d_use)
+    }
+  }
+
+  if (!is.data.frame(x)) {
+    stop("Provide a data.frame (x,y,size,time) or an ldmppr_fit for `data`.", call. = FALSE)
+  }
+
+  needed1 <- c("x", "y", "size")
+  if (!all(needed1 %in% names(x))) {
+    stop("Training data must contain columns: x, y, size (and optionally time).", call. = FALSE)
+  }
+
+  if (!("time" %in% names(x))) {
+    if (is.null(delta)) stop("Training data has no `time`. Provide `delta`.", call. = FALSE)
+    x$time <- power_law_mapping(x$size, delta)
+  }
+
+  list(df = x, xy_bounds = xy_bounds, fit = fit)
+}
+
+
+# ---------------------------
+# helpers for check_model_fit
+# ---------------------------
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+infer_xy_bounds_from_ppp <- function(ppp) {
+  w <- spatstat.geom::as.owin(ppp)
+  xr <- w$xrange
+  yr <- w$yrange
+  c(xr[1], xr[2], yr[1], yr[2])
+}
+
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+infer_anchor_from_ppp <- function(ppp) {
+  m <- spatstat.geom::marks(ppp)
+  if (is.null(m)) {
+    return(c(ppp$x[1], ppp$y[1]))
+  }
+  if (is.numeric(m)) {
+    i <- which.max(m)
+    return(c(ppp$x[i], ppp$y[i]))
+  }
+  c(ppp$x[1], ppp$y[1])
+}
+
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+infer_anchor_from_df <- function(df) {
+  if (!all(c("x", "y") %in% names(df))) return(NULL)
+  if ("size" %in% names(df) && is.numeric(df$size)) {
+    i <- which.max(df$size)
+    return(c(df$x[i], df$y[i]))
+  }
+  c(df$x[1], df$y[1])
+}
+
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+resolve_sc_params <- function(process_fit) {
+  if (inherits(process_fit, "ldmppr_fit")) {
+    p <- coef(process_fit)
+    return(as.numeric(p))
+  }
+  if (is.numeric(process_fit) && length(process_fit) == 8 && !anyNA(process_fit) && all(process_fit[2:8] >= 0)) {
+    return(as.numeric(process_fit))
+  }
+  stop("`process_fit` must be an ldmppr_fit object or a numeric vector of length 8.", call. = FALSE)
+}
+
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+resolve_reference_ppp <- function(reference_data, process_fit, xy_bounds) {
+  if (!is.null(reference_data)) {
+    if (!spatstat.geom::is.ppp(reference_data)) {
+      stop("If provided, `reference_data` must be a spatstat.geom::ppp object.", call. = FALSE)
+    }
+    return(reference_data)
+  }
+
+  if (!inherits(process_fit, "ldmppr_fit")) {
+    stop("If `reference_data` is NULL, `process_fit` must be an ldmppr_fit containing `data_original` or `data` with (x,y,size).", call. = FALSE)
+  }
+
+  df <- NULL
+  if (!is.null(process_fit$data_original)) df <- process_fit$data_original
+  if (is.null(df) && !is.null(process_fit$data)) df <- process_fit$data
+
+  if (is.null(df) || !is.data.frame(df)) {
+    stop("Could not derive reference data: `process_fit$data_original` (preferred) or `process_fit$data` must be present as a data.frame.", call. = FALSE)
+  }
+  if (!all(c("x", "y") %in% names(df))) {
+    stop("Derived reference data must contain columns `x` and `y`.", call. = FALSE)
+  }
+  if (!("size" %in% names(df))) {
+    stop("Derived reference data must contain a `size` column to construct a marked reference pattern.", call. = FALSE)
+  }
+  if (is.null(xy_bounds) || length(xy_bounds) != 4) {
+    stop("When deriving `reference_data` internally, please supply `xy_bounds = c(a_x,b_x,a_y,b_y)` (or provide a `reference_data` ppp so bounds can be inferred).", call. = FALSE)
+  }
+
+  generate_mpp(
+    locations = df[, c("x", "y")],
+    marks = df$size,
+    xy_bounds = xy_bounds
+  )
+}
+
+
+# ------------------------
+# helpers for simulate_mpp
+# ------------------------
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+.as_sc_params <- function(process_fit) {
+  if (inherits(process_fit, "ldmppr_fit")) {
+    p <- tryCatch(stats::coef(process_fit), error = function(e) NULL)
+    if (is.null(p)) p <- process_fit$fit$solution
+    return(as.numeric(p))
+  }
+  as.numeric(process_fit)
+}
+
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+.infer_xy_bounds <- function(process_fit) {
+  if (!inherits(process_fit, "ldmppr_fit")) return(NULL)
+  ub <- process_fit$grid$upper_bounds %||% NULL
+  if (is.null(ub) || length(ub) != 3) return(NULL)
+  # upper_bounds = c(b_t, b_x, b_y) with implicit 0 lower bounds
+  c(0, ub[2], 0, ub[3])
+}
+
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+.infer_anchor_point <- function(process_fit) {
+  if (!inherits(process_fit, "ldmppr_fit")) return(NULL)
+
+  # Prefer original data if it exists and has x,y
+  d0 <- process_fit$data_original %||% NULL
+  if (is.data.frame(d0) && all(c("x", "y") %in% names(d0)) && nrow(d0) >= 1) {
+    return(c(as.numeric(d0$x[1]), as.numeric(d0$y[1])))
+  }
+
+  # Fallback: transformed data matrix (time,x,y)
+  d <- process_fit$data %||% NULL
+  if (is.matrix(d) && ncol(d) >= 3 && nrow(d) >= 1) {
+    return(c(as.numeric(d[1, 2]), as.numeric(d[1, 3])))
+  }
+
+  NULL
 }

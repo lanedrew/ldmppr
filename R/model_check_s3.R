@@ -1,22 +1,24 @@
 #' Model fit diagnostic object
 #'
-#' Objects of class `ldmppr_model_check` are returned by [check_model_fit()].
+#' Objects of class \code{ldmppr_model_check} are returned by \code{\link{check_model_fit}}.
 #' They contain global envelope test results and curve sets for multiple summary
 #' functions/statistics.
 #'
 #' @details
-#' An `ldmppr_model_check` is a list with components such as:
+#' An \code{ldmppr_model_check} is a list with components such as:
 #' \itemize{
-#'   \item `combined_env`: a global envelope test object (typically from **GET**)
-#'   \item `envs`: named list of envelope test objects (e.g., `L`, `F`, `G`, `J`, `E`, `V`)
-#'   \item `curve_sets`: named list of curve set objects
-#'   \item `settings`: list of settings used when generating envelopes (e.g., `n_sim`, `thinning`)
+#'   \item \code{combined_env}: a global envelope test object (typically from **GET**)
+#'   \item \code{envs}: named list of envelope test objects (e.g., \code{L}, \code{F}, \code{G}, \code{J}, \code{E}, \code{V})
+#'   \item \code{curve_sets}: named list of curve set objects
+#'   \item \code{settings}: list of settings used when generating envelopes (e.g., \code{n_sim}, \code{thinning})
 #' }
 #'
 #' @return
-#' * `print()` prints a brief summary of the diagnostic object.
-#' * `summary()` returns a `summary.ldmppr_model_check` object.
-#' * `plot()` plots the combined envelope or a selected statistic envelope.
+#' \describe{
+#'    \item{\code{print()}}{prints a brief summary of the diagnostic object.}
+#'    \item{\code{summary()}}{returns a \code{summary.ldmppr_model_check} object.}
+#'    \item{\code{plot()}}{plots the combined envelope or a selected statistic envelope.}
+#' }
 #'
 #' @name ldmppr_model_check
 #' @rdname ldmppr_model_check
@@ -25,7 +27,7 @@ NULL
 
 
 #' @describeIn ldmppr_model_check Print a brief summary of the diagnostic results.
-#' @param x an object of class `ldmppr_model_check`.
+#' @param x an object of class \code{ldmppr_model_check}.
 #' @param ... additional arguments (not used).
 #'
 #' @export
@@ -40,7 +42,7 @@ print.ldmppr_model_check <- function(x, ...) {
 
 
 #' @describeIn ldmppr_model_check Summarize p-values from the combined and individual envelopes.
-#' @param object an object of class `ldmppr_model_check`.
+#' @param object an object of class \code{ldmppr_model_check}.
 #' @param ... additional arguments (not used).
 #'
 #' @export
@@ -59,8 +61,8 @@ summary.ldmppr_model_check <- function(object, ...) {
 }
 
 
-#' @describeIn ldmppr_model_check Print a summary produced by [summary.ldmppr_model_check()].
-#' @param x an object of class `summary.ldmppr_model_check`.
+#' @describeIn ldmppr_model_check Print a summary produced by \code{\link{summary.ldmppr_model_check}}.
+#' @param x an object of class \code{summary.ldmppr_model_check}.
 #' @param ... additional arguments (not used).
 #'
 #' @export
@@ -74,9 +76,10 @@ print.summary.ldmppr_model_check <- function(x, ...) {
 
 
 #' @describeIn ldmppr_model_check Plot the combined envelope or a selected statistic.
-#' @param x an object of class `ldmppr_model_check`.
-#' @param which which envelope to plot. `"combined"` plots the global envelope; otherwise one of `"L"`, `"F"`, `"G"`, `"J"`, `"E"`, `"V"`.
-#' @param ... additional arguments passed to the underlying `plot()` method (e.g., from **GET**).
+#' @param x an object of class \code{ldmppr_model_check}.
+#' @param which which envelope to plot. \code{"combined"} plots the global envelope;
+#' otherwise one of \code{"L"}, \code{"F"}, \code{"G"}, \code{"J"}, \code{"E"}, \code{"V"}.
+#' @param ... additional arguments passed to the underlying \code{plot()} method (e.g., from **GET**).
 #'
 #' @export
 plot.ldmppr_model_check <- function(x,
