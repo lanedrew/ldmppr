@@ -1,4 +1,8 @@
-# ldmppr (development version)
+# ldmppr 1.1.1
+
+* Updated the workflow pipeline to allow passage of S3 class objects between functions to simplify the user experience.
+The four main steps of the workflow (fit process model, train mark model, check model fit, simulate realizations) now each have their own S3 class and associated methods and you can pass the
+objects forward between functions. See the updated documentation for details.
 
 # ldmppr 1.1.0
 
