@@ -1,0 +1,88 @@
+# Internal helpers (not part of the public API)
+
+These functions are used internally by ldmppr and are not intended to be
+called directly by users.
+
+## Usage
+
+``` r
+new_ldmppr_model_check(
+  combined_env,
+  envs,
+  curve_sets,
+  sim_metrics = NULL,
+  settings = list(),
+  call = NULL
+)
+
+new_ldmppr_sim(
+  process,
+  mpp,
+  realization,
+  params,
+  bounds,
+  anchor_point,
+  thinning,
+  edge_correction,
+  include_comp_inds,
+  competition_radius,
+  call = NULL,
+  meta = list()
+)
+
+new_ldmppr_mark_model(
+  engine,
+  fit_engine = NULL,
+  xgb_raw = NULL,
+  recipe = NULL,
+  outcome = "size",
+  feature_names = NULL,
+  info = list()
+)
+
+new_ldmppr_fit(
+  process,
+  fit,
+  fits = NULL,
+  mapping = NULL,
+  grid = NULL,
+  data_summary = NULL,
+  data = NULL,
+  data_original = NULL,
+  engine = "nloptr",
+  call = NULL,
+  timing = NULL
+)
+
+preprocess_new_data(object, new_data)
+
+rehydrate_xgb(object)
+
+as_mark_model(mark_model)
+
+.build_sc_matrix(data, delta = NULL)
+
+.default_sc_param_bounds(txy, upper_bounds)
+
+a %||% b
+
+.require_pkgs(pkgs)
+
+.coerce_training_df(x, delta = NULL, xy_bounds = NULL)
+
+infer_xy_bounds_from_ppp(ppp)
+
+infer_anchor_from_ppp(ppp)
+
+infer_anchor_from_df(df)
+
+resolve_sc_params(process_fit)
+
+resolve_reference_ppp(reference_data, process_fit, xy_bounds)
+
+.as_sc_params(process_fit)
+
+.infer_xy_bounds(process_fit)
+
+.infer_anchor_point(process_fit)
+```
