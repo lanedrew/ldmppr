@@ -7,3 +7,7 @@
 ^data-raw$
 ^CRAN-SUBMISSION$
 ^revdep$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$

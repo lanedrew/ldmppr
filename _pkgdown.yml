@@ -1,0 +1,5 @@
+url: https://lanedrew.github.io/ldmppr/
+template:
+  bootstrap: 5
+  bootswatch: cyborg
+  theme: arrow-dark
