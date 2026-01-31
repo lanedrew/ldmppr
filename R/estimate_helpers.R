@@ -150,6 +150,48 @@
   invisible(TRUE)
 }
 
+
+#' @noRd
+.clamp_to_bounds <- function(x, lb, ub, eps = 1e-8) {
+  stopifnot(length(x) == length(lb), length(x) == length(ub))
+
+  # compute a per-parameter epsilon that won't invert bounds on tiny spans
+  span <- ub - lb
+  eps_i <- rep(eps, length(x))
+  ok_span <- is.finite(span) & span > 0
+  eps_i[ok_span] <- pmin(eps, span[ok_span] * 1e-10)
+
+  x2 <- x
+
+  # clamp only where bounds are finite
+  fin_lb <- is.finite(lb)
+  fin_ub <- is.finite(ub)
+
+  x2[fin_lb] <- pmax(x2[fin_lb], lb[fin_lb] + eps_i[fin_lb])
+  x2[fin_ub] <- pmin(x2[fin_ub], ub[fin_ub] - eps_i[fin_ub])
+
+  x2
+}
+
+#' @noRd
+.ensure_x0_in_bounds <- function(x0, lb, ub, verbose = FALSE, context = NULL) {
+  bad <- (is.finite(lb) & (x0 < lb)) | (is.finite(ub) & (x0 > ub))
+  if (!any(bad)) return(x0)
+
+  x_new <- .clamp_to_bounds(x0, lb, ub)
+
+  if (isTRUE(verbose)) {
+    msg <- "Clamped starting parameters to satisfy bounds"
+    if (!is.null(context) && nzchar(context)) msg <- paste0(msg, " (", context, ")")
+    msg <- paste0(msg, ". Indices: ", paste(which(bad), collapse = ", "))
+    message(msg)
+  }
+
+  attr(x_new, "ldmppr_was_clamped") <- TRUE
+  x_new
+}
+
+
 # ---------------------------------------------------------------------
 # Data construction for SC likelihood
 # ---------------------------------------------------------------------
@@ -243,6 +285,90 @@
 }
 
 # ---------------------------------------------------------------------
+# Default initialization (SC)
+# ---------------------------------------------------------------------
+
+#' @noRd
+.default_parameter_inits_sc <- function(data,
+                                        upper_bounds,
+                                        delta = NULL,
+                                        min_gamma1 = 0.01,
+                                        min_beta1  = 1e-3,
+                                        min_alpha2 = 1e-3,
+                                        min_beta2  = 1e-3,
+                                        min_alpha3 = 0,
+                                        min_beta3  = 0,
+                                        min_gamma3 = 0) {
+  if (is.null(upper_bounds) || length(upper_bounds) != 3L ||
+      anyNA(upper_bounds) || any(!is.finite(upper_bounds))) {
+    stop("default_parameter_inits_sc(): `upper_bounds` must be finite numeric length 3: c(b_t, b_x, b_y).",
+         call. = FALSE)
+  }
+
+  # Use the same construction logic as the likelihood pipeline
+  mat <- .build_sc_matrix(data, delta = delta)
+  t <- as.numeric(mat[, 1])
+  x <- as.numeric(mat[, 2])
+  y <- as.numeric(mat[, 3])
+  n <- length(t)
+
+  # --- temporal component: exp(alpha1 + beta1 t - gamma1 N(t)) ---
+  t_span <- max(t, na.rm = TRUE) - min(t, na.rm = TRUE)
+  if (!is.finite(t_span) || t_span <= 0) t_span <- 1
+
+  alpha1 <- log((n + 1) / t_span)
+
+  # beta1 has support [0, Inf) in our optimization bounds, so avoid boundary at 0
+  beta1  <- max(min_beta1, 1e-2)
+
+  gamma1 <- max(min_gamma1, 0.05)
+
+  # --- spatial inhibition scale: alpha2 ---
+  w <- upper_bounds[2]
+  h <- upper_bounds[3]
+  diag_len <- sqrt(w^2 + h^2)
+
+  alpha2 <- 0.05 * min(w, h)  # fallback
+
+  if (n >= 2L) {
+    coords <- cbind(x, y)
+
+    nn <- NULL
+    if (requireNamespace("spatstat.geom", quietly = TRUE)) {
+      nn <- spatstat.geom::nndist(coords)
+      nn <- nn[is.finite(nn)]
+    }
+
+    # Fallback only if nndist isn't available for some reason
+    if (is.null(nn) || !length(nn)) {
+      dmat <- as.matrix(stats::dist(coords))
+      diag(dmat) <- Inf
+      nn <- apply(dmat, 1L, min, na.rm = TRUE)
+      nn <- nn[is.finite(nn)]
+    }
+
+    if (length(nn)) {
+      nn_med <- stats::median(nn)
+      alpha2 <- max(1.5 * nn_med, 0.02 * diag_len)
+    }
+  }
+
+  alpha2 <- max(min_alpha2, min(alpha2, 0.5 * diag_len))
+
+  # --- spatial interaction shape: beta2 ---
+  beta2 <- max(min_beta2, 2)
+
+  # --- spatio-temporal thinning interaction: (alpha3, beta3, gamma3) ---
+  # Conservative defaults so thinning doesn't annihilate the process
+  alpha3 <- max(min_alpha3, 0.5)
+  beta3  <- max(min_beta3, alpha2)
+  gamma3 <- max(min_gamma3, 0.05)
+
+  c(alpha1, beta1, gamma1, alpha2, beta2, alpha3, beta3, gamma3)
+}
+
+
+# ---------------------------------------------------------------------
 # Likelihood objective + optimizer wrappers
 # ---------------------------------------------------------------------
 
@@ -273,6 +399,13 @@
   if (is.null(lb)) lb <- c(-Inf, rep(0, 7))
   if (is.null(ub)) ub <- rep(Inf, 8)
 
+  # Clamp x0 if needed (prevents nloptr from erroring on out-of-bounds starts)
+  x0 <- .ensure_x0_in_bounds(
+    x0 = x0, lb = lb, ub = ub,
+    verbose = (as.integer(print_level) > 0L),
+    context = paste0("algorithm=", algorithm)
+  )
+
   opts_full <- utils::modifyList(
     list(algorithm = algorithm, print_level = as.integer(print_level)),
     opts %||% list()
@@ -287,15 +420,13 @@
   )
 }
 
+
 # ---------------------------------------------------------------------
 # Multi-start jitter helper
 # ---------------------------------------------------------------------
 
 #' @noRd
-.jitter_inits <- function(base_init, n, sd, seed = NULL) {
-  # NOTE:
-  # - If seed is non-NULL, jittering is deterministic across calls.
-  # - If seed is NULL, jittering uses the current RNG state and will vary across calls.
+.jitter_inits <- function(base_init, n, sd, seed = NULL, lb = NULL, ub = NULL, clamp = FALSE) {
   n <- as.integer(n)
   if (n <= 1L) return(list(base_init))
 
@@ -315,11 +446,16 @@
     posj <- pos0 * exp(stats::rnorm(length(pos0), sd = sd))
     p[-1] <- pmax(0, posj)
 
+    if (isTRUE(clamp) && !is.null(lb) && !is.null(ub)) {
+      p <- .ensure_x0_in_bounds(p, lb = lb, ub = ub, verbose = FALSE)
+    }
+
     out[[k]] <- p
   }
 
   out
 }
+
 
 # ---------------------------------------------------------------------
 # One-level fitting routine (global -> local; optional multistart; optional parallel)
@@ -340,31 +476,20 @@
                               n_starts = 1L,
                               jitter_sd = 0.35,
                               seed = 1L,
+                              global_n_starts = 1L,
                               worker_parallel = FALSE,
                               worker_verbose = FALSE) {
+
   obj <- .make_objective_sc(level_grids$x, level_grids$y, level_grids$t, data_mat, upper_bounds)
   print_level <- if (isTRUE(worker_verbose)) 2L else 0L
 
-  p0 <- start_params
-  global_fit <- NULL
-
-  if (isTRUE(do_global)) {
-    global_fit <- .run_nloptr(
-      x0 = start_params,
-      obj_fun = obj,
-      algorithm = global_algorithm,
-      opts = global_options,
-      print_level = print_level,
-      lb = finite_bounds$lb,
-      ub = finite_bounds$ub
-    )
-    p0 <- global_fit$solution
-  }
-
-  inits <- if (isTRUE(do_multistart) && as.integer(n_starts) > 1L) {
-    .jitter_inits(p0, n = n_starts, sd = jitter_sd, seed = seed)
+  # ---- bounds for global/local ----
+  if (.needs_finite_bounds(global_algorithm)) {
+    lb_glob <- finite_bounds$lb
+    ub_glob <- finite_bounds$ub
   } else {
-    list(p0)
+    lb_glob <- c(-Inf, rep(0, 7))
+    ub_glob <- rep(Inf, 8)
   }
 
   if (.needs_finite_bounds(local_algorithm)) {
@@ -374,6 +499,71 @@
     lb_loc <- c(-Inf, rep(0, 7))
     ub_loc <- rep(Inf, 8)
   }
+
+  # ---- ensure x0 is valid for global/local stages ----
+  p0 <- .ensure_x0_in_bounds(
+    x0 = start_params,
+    lb = lb_glob,
+    ub = ub_glob,
+    verbose = worker_verbose,
+    context = "global start"
+  )
+
+  global_fit <- NULL
+  global_fits <- NULL
+
+  # ---- GLOBAL stage (optional) ----
+  if (isTRUE(do_global)) {
+
+    global_n_starts <- max(1L, as.integer(global_n_starts))
+
+    # Multiple *seeded* global restarts are usually more meaningful than different x0 for CRS2
+    run_one_global <- function(k) {
+      gseed <- as.integer(seed) + as.integer(k) - 1L
+      gopts <- utils::modifyList(global_options %||% list(), list(seed = gseed))
+
+      # make sure the x0 is inside bounds (and stable)
+      x0g <- .ensure_x0_in_bounds(p0, lb_glob, ub_glob, verbose = FALSE)
+
+      .run_nloptr(
+        x0 = x0g,
+        obj_fun = obj,
+        algorithm = global_algorithm,
+        opts = gopts,
+        print_level = print_level,
+        lb = lb_glob,
+        ub = ub_glob
+      )
+    }
+
+    if (isTRUE(worker_parallel) && global_n_starts > 1L) {
+      if (!requireNamespace("furrr", quietly = TRUE) || !requireNamespace("future", quietly = TRUE)) {
+        stop("Parallel global restarts require packages 'future' and 'furrr'.", call. = FALSE)
+      }
+      global_fits <- furrr::future_map(
+        seq_len(global_n_starts),
+        run_one_global,
+        .options = furrr::furrr_options(seed = TRUE)
+      )
+    } else {
+      global_fits <- lapply(seq_len(global_n_starts), run_one_global)
+    }
+
+    gobj <- vapply(global_fits, function(f) f$objective, numeric(1))
+    best_g <- which.min(gobj)
+    global_fit <- global_fits[[best_g]]
+    p0 <- global_fit$solution
+  }
+
+  # ---- LOCAL multistart stage ----
+  inits <- if (isTRUE(do_multistart) && as.integer(n_starts) > 1L) {
+    .jitter_inits(p0, n = n_starts, sd = jitter_sd, seed = seed)
+  } else {
+    list(p0)
+  }
+
+  # clamp all local inits to local bounds (this fixes “start outside bounds” errors)
+  inits <- lapply(inits, .ensure_x0_in_bounds, lb = lb_loc, ub = ub_loc, verbose = FALSE)
 
   run_local_from_init <- function(init) {
     .run_nloptr(
@@ -391,7 +581,6 @@
     if (!requireNamespace("furrr", quietly = TRUE) || !requireNamespace("future", quietly = TRUE)) {
       stop("Parallel multi-start requires packages 'future' and 'furrr'.", call. = FALSE)
     }
-
     local_fits <- furrr::future_map(
       inits,
       run_local_from_init,
@@ -405,8 +594,14 @@
   best_idx <- which.min(objectives)
   best_local <- local_fits[[best_idx]]
 
-  list(best = best_local, local_fits = local_fits, global_fit = global_fit)
+  list(
+    best = best_local,
+    local_fits = local_fits,
+    global_fit = global_fit,
+    global_fits = global_fits
+  )
 }
+
 
 # ---------------------------------------------------------------------
 # Delta search coarse fit helper
@@ -423,12 +618,18 @@
                                  global_options,
                                  local_options,
                                  finite_bounds,
-                                 do_global_coarse = TRUE) {
-  mat <- .build_sc_matrix(data, delta = delta)
+                                 do_global_coarse = TRUE,
+                                 global_n_starts = 1L,
+                                 n_starts = 1L,
+                                 jitter_sd = 0.35,
+                                 seed = 1L) {
 
-  res <- .fit_one_level_sc(
+  data_mat <- .build_sc_matrix(data, delta = delta)
+
+  # IMPORTANT: forward global_n_starts (and seed/jitter) down to the level fitter
+  lvl_fit <- .fit_one_level_sc(
     level_grids = coarse_grids,
-    data_mat = mat,
+    data_mat = data_mat,
     start_params = parameter_inits,
     upper_bounds = upper_bounds,
     global_algorithm = global_algorithm,
@@ -437,14 +638,15 @@
     local_options = local_options,
     finite_bounds = finite_bounds,
     do_global = isTRUE(do_global_coarse),
-    do_multistart = FALSE,
-    n_starts = 1L,
-    jitter_sd = 0,
-    seed = 1L,
+    do_multistart = FALSE,          # coarse stage: keep cheap by default
+    n_starts = as.integer(n_starts),
+    jitter_sd = jitter_sd,
+    seed = as.integer(seed),
+    global_n_starts = as.integer(global_n_starts),
     worker_parallel = FALSE,
     worker_verbose = FALSE
   )
 
-  res$best$ldmppr_delta <- delta
-  res
+  lvl_fit
 }
+

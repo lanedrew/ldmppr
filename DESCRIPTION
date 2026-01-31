@@ -36,6 +36,7 @@ Imports:
     nloptr, 
     GET,
     progress,
+    progressr,
     future,
     furrr,
     foreach,
@@ -50,7 +51,8 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0),
-    dplyr
+    dplyr,
+    rstudioapi
 VignetteBuilder: knitr
 Depends: 
     R (>= 3.5.0)

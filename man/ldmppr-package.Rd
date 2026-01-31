@@ -12,6 +12,7 @@ A suite of tools for estimating, assessing model fit, simulating from, and visua
 Useful links:
 \itemize{
   \item \url{https://github.com/lanedrew/ldmppr}
+  \item \url{https://lanedrew.github.io/ldmppr/}
   \item Report bugs at \url{https://github.com/lanedrew/ldmppr/issues}
 }
 

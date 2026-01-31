@@ -22,7 +22,7 @@ ldmppr_mark_model(
 
 \method{print}{ldmppr_mark_model}(x, ...)
 
-predict.ldmppr_mark_model(object, new_data, ...)
+\method{predict}{ldmppr_mark_model}(object, new_data, ...)
 
 save_mark_model(object, path, ...)
 
@@ -78,14 +78,14 @@ to make saving/loading robust across R sessions.
 \itemize{
 \item \code{print(ldmppr_mark_model)}: Print a brief summary of the mark model.
 
+\item \code{predict(ldmppr_mark_model)}: Predict marks for new data.
+
 \item \code{save_mark_model(ldmppr_mark_model)}: Save method for \code{ldmppr_mark_model}.
 
 }}
 \section{Functions}{
 \itemize{
 \item \code{ldmppr_mark_model()}: Create a mark model container.
-
-\item \code{predict.ldmppr_mark_model()}: Predict marks for new data.
 
 \item \code{save_mark_model()}: Save a mark model to disk.
 

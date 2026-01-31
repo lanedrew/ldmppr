@@ -32,7 +32,12 @@
 #' @param n_sim number of simulated datasets to generate.
 #' @param save_sims \code{TRUE} or \code{FALSE} indicating whether to save and return the simulated metrics.
 #' @param verbose \code{TRUE} or \code{FALSE} indicating whether to show progress of model checking.
+#'   When \code{TRUE}, progress is reported via \pkg{progressr} (if available) and is compatible with parallel execution.
 #' @param seed integer seed for reproducibility.
+#' @param parallel \code{TRUE} or \code{FALSE}. If \code{TRUE}, simulations are run in parallel via \pkg{furrr}/\pkg{future}.
+#' @param num_cores number of workers to use when \code{parallel=TRUE}. Defaults to one fewer than the number of detected cores.
+#' @param set_future_plan \code{TRUE} or \code{FALSE}. If \code{TRUE} and \code{parallel=TRUE}, set a local \pkg{future}
+#'   plan internally (default behavior uses \code{multisession}).
 #'
 #' @return an object of class \code{"ldmppr_model_check"}.
 #'
@@ -56,39 +61,29 @@
 #' @examples
 #' # Note: The example below is provided for illustrative purposes and may take some time to run.
 #' \donttest{
-#' # Load the small example data
 #' data(small_example_data)
 #'
-#' # Load the example mark model that previously was trained on the small example data
 #' file_path <- system.file("extdata", "example_mark_model.rds", package = "ldmppr")
 #' mark_model <- load_mark_model(file_path)
 #'
-#' # Load the raster files
 #' raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
 #'                            pattern = "\\.tif$", full.names = TRUE)
 #' raster_paths <- raster_paths[!grepl("_med\\.tif$", raster_paths)]
 #' rasters <- lapply(raster_paths, terra::rast)
-#'
-#' # Scale the rasters
 #' scaled_raster_list <- scale_rasters(rasters)
 #'
-#' # Generate the reference pattern
 #' reference_data <- generate_mpp(
 #'   locations = small_example_data[, c("x", "y")],
 #'   marks = small_example_data$size,
 #'   xy_bounds = c(0, 25, 0, 25)
 #' )
 #'
-#'
-#' # Specify the estimated parameters of the self-correcting process
-#' # Note: These would generally be estimated using estimate_process_parameters.
-#' # These values are estimates from the small_example_data generating script.
 #' estimated_parameters <- c(
 #'   0.05167978, 8.20702166, 0.02199940, 2.63236890,
 #'   1.82729512, 0.65330061, 0.86666748, 0.04681878
 #' )
 #'
-#' # Check the model fit
+#' # NOTE: examples are run by CRAN with --run-donttest; keep parallel=FALSE here.
 #' example_model_fit <- check_model_fit(
 #'   reference_data = reference_data,
 #'   t_min = 0,
@@ -106,11 +101,12 @@
 #'   n_sim = 100,
 #'   save_sims = FALSE,
 #'   verbose = TRUE,
-#'   seed = 90210
+#'   seed = 90210,
+#'   parallel = FALSE
 #' )
 #'
 #' plot(example_model_fit, which = 'combined')
-#'}
+#' }
 #' @export
 check_model_fit <- function(reference_data = NULL,
                             t_min = 0,
@@ -129,14 +125,17 @@ check_model_fit <- function(reference_data = NULL,
                             n_sim = 2500,
                             save_sims = TRUE,
                             verbose = TRUE,
-                            seed = 0) {
+                            seed = 0,
+                            parallel = FALSE,
+                            num_cores = max(1L, parallel::detectCores() - 1L),
+                            set_future_plan = FALSE) {
 
   process <- match.arg(process)
 
   # ---- argument checks ----
   if (is.null(t_min) || t_min < 0 || t_min >= t_max) stop("Provide a value >= 0 and < t_max for `t_min`.", call. = FALSE)
   if (is.null(t_max) || t_max <= t_min || t_max > 1) stop("Provide a value > t_min and <= 1 for `t_max`.", call. = FALSE)
-  if (!edge_correction %in% c("none", "toroidal")) stop("Provide `correction` as 'none' or 'toroidal'.", call. = FALSE)
+  if (!edge_correction %in% c("none", "toroidal")) stop("Provide `edge_correction` as 'none' or 'toroidal'.", call. = FALSE)
   if (!is.logical(include_comp_inds)) stop("`include_comp_inds` must be TRUE/FALSE.", call. = FALSE)
   if (!is.logical(thinning)) stop("`thinning` must be TRUE/FALSE.", call. = FALSE)
   if (!is.logical(save_sims)) stop("`save_sims` must be TRUE/FALSE.", call. = FALSE)
@@ -149,6 +148,7 @@ check_model_fit <- function(reference_data = NULL,
   if (is.null(raster_list) || !is.list(raster_list)) stop("Provide a list of rasters for `raster_list`.", call. = FALSE)
   if (!is.logical(scaled_rasters)) stop("`scaled_rasters` must be TRUE/FALSE.", call. = FALSE)
   if (is.null(mark_model)) stop("Provide a `mark_model` (ldmppr_mark_model or legacy) for predicting marks.", call. = FALSE)
+  if (!is.logical(parallel)) stop("`parallel` must be TRUE/FALSE.", call. = FALSE)
 
   # ---- resolve mark model ----
   mark_model <- as_mark_model(mark_model)
@@ -195,6 +195,35 @@ check_model_fit <- function(reference_data = NULL,
     raster_list <- scale_rasters(raster_list)
   }
 
+  # ---- parallel plan handling (multisession default) ----
+  will_parallelize <- isTRUE(parallel) && n_sim > 1L
+  if (isTRUE(set_future_plan) && isTRUE(will_parallelize)) {
+    if (!requireNamespace("future", quietly = TRUE)) {
+      stop("Package 'future' is required when set_future_plan=TRUE and parallel=TRUE.", call. = FALSE)
+    }
+    original_plan <- future::plan()
+    on.exit(future::plan(original_plan), add = TRUE)
+
+    num_cores <- max(1L, as.integer(num_cores))
+    future::plan(future::multisession, workers = num_cores)
+
+    if (isTRUE(verbose)) message("future plan set to multisession with workers = ", num_cores)
+  }
+
+  # ---- terra serialization safeguard for multisession ----
+  # Wrap SpatRaster so it can be serialized to multisession workers (prevents "external pointer is not valid")
+  wrapped_rasters <- FALSE
+  if (isTRUE(will_parallelize) &&
+      requireNamespace("terra", quietly = TRUE) &&
+      length(raster_list) > 0 &&
+      any(vapply(raster_list, inherits, logical(1), what = "SpatRaster"))) {
+
+    raster_list <- lapply(raster_list, function(r) {
+      if (inherits(r, "SpatRaster")) terra::wrap(r) else r
+    })
+    wrapped_rasters <- TRUE
+  }
+
   # ---- choose r grid using reference K ----
   K_ref <- spatstat.explore::Kest(spatstat.geom::unmark(reference_data))
   d <- K_ref$r
@@ -210,21 +239,32 @@ check_model_fit <- function(reference_data = NULL,
   n_real <- numeric(n_sim)
 
   sim_one <- function() {
+    # Unwrap rasters inside worker if needed (namespace-only loads; no attach/startup chatter)
+    rl <- raster_list
+    if (isTRUE(wrapped_rasters) && requireNamespace("terra", quietly = TRUE)) {
+      rl <- lapply(rl, function(r) {
+        if (inherits(r, "PackedSpatRaster")) terra::unwrap(r) else r
+      })
+    }
+
     sim_df <- if (isTRUE(thinning)) {
-      simulate_sc(t_min = t_min, t_max = t_max, sc_params = sc_params, anchor_point = anchor_point, xy_bounds = xy_bounds)$thinned
+      simulate_sc(t_min = t_min, t_max = t_max, sc_params = sc_params,
+                  anchor_point = anchor_point, xy_bounds = xy_bounds)$thinned
     } else {
-      simulate_sc(t_min = t_min, t_max = t_max, sc_params = sc_params, anchor_point = anchor_point, xy_bounds = xy_bounds)$unthinned
+      simulate_sc(t_min = t_min, t_max = t_max, sc_params = sc_params,
+                  anchor_point = anchor_point, xy_bounds = xy_bounds)$unthinned
     }
 
     n_real_i <- nrow(sim_df)
     if (n_real_i < 1) {
-      return(list(n = 0, K = rep(NA_real_, d_length), F = rep(NA_real_, d_length), G = rep(NA_real_, d_length),
+      return(list(n = 0,
+                  K = rep(NA_real_, d_length), F = rep(NA_real_, d_length), G = rep(NA_real_, d_length),
                   J = rep(NA_real_, d_length), E = rep(NA_real_, d_length), V = rep(NA_real_, d_length)))
     }
 
     pred_marks <- predict_marks(
       sim_realization = sim_df,
-      raster_list = raster_list,
+      raster_list = rl,
       scaled_rasters = TRUE,
       mark_model = mark_model,
       xy_bounds = xy_bounds,
@@ -246,27 +286,70 @@ check_model_fit <- function(reference_data = NULL,
     )
   }
 
-  # ---- simulate ----
-  if (isTRUE(verbose)) {
-    pb <- progress::progress_bar$new(
-      format = "Model check simulations: [:bar] :percent in :elapsed, ETA: :eta",
-      total = n_sim, clear = FALSE, width = 80
-    )
-    pb$tick(0)
-    for (j in seq_len(n_sim)) {
-      res <- sim_one()
-      n_real[j] <- res$n
-      K_PP[, j] <- res$K
-      F_PP[, j] <- res$F
-      G_PP[, j] <- res$G
-      J_PP[, j] <- res$J
-      E_PP[, j] <- res$E
-      V_PP[, j] <- res$V
-      pb$tick()
+  # ---- simulate (parallel or sequential) ----
+  if (isTRUE(will_parallelize)) {
+    if (!requireNamespace("furrr", quietly = TRUE) || !requireNamespace("future", quietly = TRUE)) {
+      stop("Parallel execution requires packages 'future' and 'furrr'.", call. = FALSE)
     }
-  } else {
+
+    # Goal 1: avoid repeated "Registered S3 method overwritten ..." spam from worker startup
+    #   -> do NOT attach packages on workers (packages = character(0))
+    #   -> do NOT relay packageStartupMessage conditions back to the main R session
+    #
+    # Goal 2: progress that doesn't look "stuck" in RStudio
+    #   -> use smaller future chunks so progress updates arrive sooner
+    #   -> use the RStudio handler when available
+    workers_for_chunks <- max(1L, as.integer(num_cores))
+    chunk_size <- max(1L, floor(n_sim / (workers_for_chunks * 20L)))  # ~20 chunks/worker
+
+    furrr_opts <- furrr::furrr_options(
+      seed = TRUE,
+      packages = character(0),
+      stdout = FALSE,
+      # Relay all conditions EXCEPT package startup messages (this is what prints the overwrite notices)
+      conditions = structure("condition", exclude = c("packageStartupMessage")),
+      # Smaller chunks => earlier/more frequent progress updates
+      chunk_size = chunk_size
+    )
+
+    use_progressr <- isTRUE(verbose) && requireNamespace("progressr", quietly = TRUE)
+
+    if (isTRUE(use_progressr)) {
+      # Choose a handler that works well in RStudio on macOS
+      handler_name <- "txtprogressbar"
+      if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+        handler_name <- "rstudio"
+      }
+
+      old_handlers <- try(progressr::handlers(), silent = TRUE)
+      on.exit({
+        if (!inherits(old_handlers, "try-error")) progressr::handlers(old_handlers)
+      }, add = TRUE)
+
+      progressr::handlers(handler_name)
+
+      results <- progressr::with_progress({
+        p <- progressr::progressor(steps = n_sim)
+        furrr::future_map(
+          seq_len(n_sim),
+          function(i) {
+            out <- sim_one()
+            p()
+            out
+          },
+          .options = furrr_opts
+        )
+      })
+    } else {
+      results <- furrr::future_map(
+        seq_len(n_sim),
+        function(i) sim_one(),
+        .options = furrr_opts
+      )
+    }
+
     for (j in seq_len(n_sim)) {
-      res <- sim_one()
+      res <- results[[j]]
       n_real[j] <- res$n
       K_PP[, j] <- res$K
       F_PP[, j] <- res$F
@@ -274,6 +357,38 @@ check_model_fit <- function(reference_data = NULL,
       J_PP[, j] <- res$J
       E_PP[, j] <- res$E
       V_PP[, j] <- res$V
+    }
+
+  } else {
+    # Sequential: keep your existing progress behavior
+    if (isTRUE(verbose)) {
+      pb <- progress::progress_bar$new(
+        format = "Model check simulations: [:bar] :percent in :elapsed, ETA: :eta",
+        total = n_sim, clear = FALSE, width = 80
+      )
+      pb$tick(0)
+      for (j in seq_len(n_sim)) {
+        res <- sim_one()
+        n_real[j] <- res$n
+        K_PP[, j] <- res$K
+        F_PP[, j] <- res$F
+        G_PP[, j] <- res$G
+        J_PP[, j] <- res$J
+        E_PP[, j] <- res$E
+        V_PP[, j] <- res$V
+        pb$tick()
+      }
+    } else {
+      for (j in seq_len(n_sim)) {
+        res <- sim_one()
+        n_real[j] <- res$n
+        K_PP[, j] <- res$K
+        F_PP[, j] <- res$F
+        G_PP[, j] <- res$G
+        J_PP[, j] <- res$J
+        E_PP[, j] <- res$E
+        V_PP[, j] <- res$V
+      }
     }
   }
 
@@ -292,9 +407,7 @@ check_model_fit <- function(reference_data = NULL,
   ))
   r_envL <- GET::global_envelope_test(C_ref_L, type = "rank")
 
-  # F/G truncation safeguards
   safe_crossing_idx <- function(mat) {
-    # For each sim curve, find first index where >= 1; return max across sims
     idx <- apply(mat, 2, function(x) {
       w <- which(x >= 1)
       if (length(w) == 0) return(NA_integer_)
@@ -378,6 +491,9 @@ check_model_fit <- function(reference_data = NULL,
     competition_radius = competition_radius,
     n_sim = n_sim,
     seed = seed,
+    parallel = parallel,
+    num_cores = as.integer(num_cores),
+    set_future_plan = set_future_plan,
     inferred = list(
       reference_data = is.null(match.call()$reference_data),
       xy_bounds = is.null(match.call()$xy_bounds),

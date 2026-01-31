@@ -24,6 +24,7 @@ estimate_process_parameters(
   local_algorithm = "NLOPT_LN_BOBYQA",
   global_options = list(maxeval = 150),
   local_options = list(maxeval = 300, xtol_rel = 1e-05, maxtime = NULL),
+  global_n_starts = 1L,
   n_starts = 1L,
   jitter_sd = 0.35,
   seed = 1L,
@@ -41,7 +42,9 @@ If a matrix is provided for delta search, it must have column names \code{c("x",
 
 \item{upper_bounds}{numeric vector of length 3 giving \code{c(b_t, b_x, b_y)}.}
 
-\item{parameter_inits}{numeric vector of length 8 giving initialization values for the model parameters.}
+\item{parameter_inits}{(optional) numeric vector of length 8 giving initialization values
+for the model parameters. If \code{NULL}, sensible defaults are derived from \code{data}
+and \code{upper_bounds}.}
 
 \item{delta}{(optional) numeric scalar used only when \code{data} contains \code{(x,y,size)} but not \code{time}.}
 
@@ -74,6 +77,8 @@ the global and local optimization stages, respectively.}
 
 \item{global_options, local_options}{named lists of options to pass to \code{nloptr::nloptr()} for
 the global and local optimization stages, respectively.}
+
+\item{global_n_starts}{integer number of restarts to use for the global optimization stage.}
 
 \item{n_starts}{integer number of multi-start initializations to use for the local optimization stage.}
 
@@ -154,9 +159,9 @@ fit_delta <- estimate_process_parameters(
   ),
   global_options = list(maxeval = 100),
   local_options  = list(maxeval = 100, xtol_rel = 1e-3),
-  n_starts = 3,
-  refine_best_delta = TRUE,
-  verbose = TRUE
+  n_starts = 1,
+  refine_best_delta = FALSE,
+  verbose = FALSE
 )
 plot(fit_delta)
 }
@@ -164,6 +169,6 @@ plot(fit_delta)
 }
 \references{
 Møller, J., Ghorbani, M., & Rubak, E. (2016). Mechanistic spatio-temporal point process models
-for marked point processes, with a view to forest stand data. \emph{Biometrics}, 72(3), 687–696.
+for marked point processes, with a view to forest stand data. \emph{Biometrics}, 72(3), 687-696.
 \doi{10.1111/biom.12466}.
 }

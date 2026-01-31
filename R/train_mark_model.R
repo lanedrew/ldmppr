@@ -29,7 +29,6 @@
 #' @param verbose \code{TRUE} or \code{FALSE} indicating whether to show progress of model training.
 #'
 #' @return an object of class \code{"ldmppr_mark_model"} containing the trained mark model.
-#' @export
 #'
 #' @examples
 #' # Load the small example data
@@ -66,6 +65,7 @@
 #'
 #' print(mark_model)
 #'
+#' @export
 train_mark_model <- function(data,
                              raster_list = NULL,
                              scaled_rasters = FALSE,
@@ -83,6 +83,21 @@ train_mark_model <- function(data,
                              cv_folds = 5,
                              tuning_grid_size = 200,
                              verbose = TRUE) {
+
+  # -------------------------
+  # helpers (local)
+  # -------------------------
+  .elapsed_sec <- function(t0) as.numeric((proc.time() - t0)[3])
+  .fmt_time <- function(x) {
+    if (!is.finite(x)) return("NA")
+    if (x < 60) return(sprintf("%.1fs", x))
+    if (x < 3600) return(sprintf("%.1fm", x / 60))
+    sprintf("%.2fh", x / 3600)
+  }
+  .vcat <- function(...) if (isTRUE(verbose)) message(...)
+  .step_header <- function(i, n, label) .vcat(sprintf("Step %d/%d: %s", i, n, label))
+
+  t_total <- proc.time()
 
   # -------------------------
   # argument checks
@@ -110,7 +125,23 @@ train_mark_model <- function(data,
   if (isTRUE(save_model) && is.null(save_path)) stop("Provide save_path when save_model=TRUE.", call. = FALSE)
   if (!is.logical(verbose)) stop("Provide a logical value for verbose.", call. = FALSE)
 
-  # Coerce training data (handles ldmppr_fit)
+  # -------------------------
+  # high-level banner
+  # -------------------------
+  .vcat("Training mark model")
+  .vcat("  Model type: ", model_type)
+  .vcat("  Selection metric: ", selection_metric)
+  .vcat("  CV folds: ", cv_folds)
+  .vcat("  Tuning grid size: ", tuning_grid_size)
+  .vcat("  Include competition indices: ", if (isTRUE(include_comp_inds)) "yes" else "no")
+  .vcat("  Edge correction: ", edge_correction)
+
+  # -------------------------
+  # Step 1: coerce training data
+  # -------------------------
+  n_steps <- 6L
+  step_t <- proc.time()
+  .step_header(1, n_steps, "Preparing training data...")
   coerced <- .coerce_training_df(data, delta = delta, xy_bounds = xy_bounds)
   df <- coerced$df
   xy_bounds <- coerced$xy_bounds
@@ -128,10 +159,16 @@ train_mark_model <- function(data,
   tuning_grid_size <- as.integer(tuning_grid_size)
   if (is.na(tuning_grid_size) || tuning_grid_size < 1L) stop("tuning_grid_size must be >= 1.", call. = FALSE)
 
+  .vcat("  Rows: ", nrow(df))
+  .vcat("  Done in ", .fmt_time(.elapsed_sec(step_t)), ".")
+
   # -------------------------
-  # parallel backend (foreach)
+  # Step 2: parallel backend (foreach)
   # -------------------------
+  step_t <- proc.time()
+  .step_header(2, n_steps, "Configuring parallel backend...")
   cl <- NULL
+  n_workers <- 1L
   if (isTRUE(parallel)) {
     n_workers <- if (!is.null(n_cores)) as.integer(n_cores) else max(1L, floor(parallel::detectCores() / 2))
     cl <- parallel::makePSOCKcluster(n_workers)
@@ -140,24 +177,32 @@ train_mark_model <- function(data,
       parallel::stopCluster(cl)
       foreach::registerDoSEQ()
     }, add = TRUE)
+    .vcat("  Parallel: on (PSOCK workers = ", n_workers, ")")
   } else {
     foreach::registerDoSEQ()
+    .vcat("  Parallel: off")
   }
 
+  # If parallel resampling, force engine threads to 1 to avoid nested parallelism.
+  engine_threads <- if (isTRUE(parallel)) 1L else max(1L, parallel::detectCores() - 1L)
+  .vcat("  Model engine threads: ", engine_threads)
+  .vcat("  Done in ", .fmt_time(.elapsed_sec(step_t)), ".")
+
   # -------------------------
-  # raster covariates
+  # Step 3: raster scaling + covariate extraction
   # -------------------------
+  step_t <- proc.time()
+  .step_header(3, n_steps, "Extracting raster covariates...")
   if (!isTRUE(scaled_rasters)) {
     raster_list <- scale_rasters(raster_list)
+    .vcat("  Scaled rasters internally (scaled_rasters = FALSE).")
+  } else {
+    .vcat("  Using pre-scaled rasters (scaled_rasters = TRUE).")
   }
 
-  # IMPORTANT: keep x,y in the SAME coordinate system the user provides;
-  # do NOT shift by lower bounds unless you do it everywhere (training + predict).
   s <- as.matrix(df[, c("x", "y")])
-
   X <- extract_covars(locations = s, raster_list = raster_list)
 
-  # terra::extract commonly returns ID; drop and repair names to avoid tibble collisions
   if ("ID" %in% names(X)) {
     X <- X[, names(X) != "ID", drop = FALSE]
   }
@@ -166,8 +211,16 @@ train_mark_model <- function(data,
   X$x <- df$x
   X$y <- df$y
   X$time <- df$time
+  .vcat("  Extracted ", ncol(X) - 3L, " raster feature(s).")
+  .vcat("  Done in ", .fmt_time(.elapsed_sec(step_t)), ".")
 
+  # -------------------------
+  # Step 4: competition indices (optional)
+  # -------------------------
+  step_t <- proc.time()
+  .step_header(4, n_steps, "Building model matrix (and competition indices if requested)...")
   if (isTRUE(include_comp_inds)) {
+    .vcat("  Computing competition indices (radius = ", competition_radius, ").")
     X$near_nbr_dist <- NA_real_
     X$near_nbr_num <- NA_real_
     X$avg_nbr_dist <- NA_real_
@@ -175,7 +228,6 @@ train_mark_model <- function(data,
     X$near_nbr_time_all <- NA_real_
     X$near_nbr_time_dist_ratio <- NA_real_
 
-    # distance matrix
     if (edge_correction %in% c("none", "truncation")) {
       distance_matrix <- as.matrix(stats::dist(s, method = "euclidean"))
     } else {
@@ -186,7 +238,13 @@ train_mark_model <- function(data,
       )
     }
 
-    for (i in seq_len(nrow(X))) {
+    # Lightweight progress without extra deps:
+    n_pts <- nrow(X)
+    for (i in seq_len(n_pts)) {
+      if (isTRUE(verbose) && n_pts >= 2000L && (i %% 500L == 0L)) {
+        .vcat("  ...processed ", i, "/", n_pts, " points")
+      }
+
       close_points <- unique(which(distance_matrix[i, ] < competition_radius & distance_matrix[i, ] != 0))
       close_times <- X$time[close_points]
 
@@ -204,9 +262,9 @@ train_mark_model <- function(data,
   model_data <- data.frame(size = df$size, X)
 
   if (edge_correction == "truncation") {
-    # Apply truncation in ORIGINAL coordinate scale
     ax <- xy_bounds[1]; bx <- xy_bounds[2]
     ay <- xy_bounds[3]; by <- xy_bounds[4]
+    before_n <- nrow(model_data)
     model_data <- model_data[
       model_data$x > (ax + 15) &
         model_data$x < (bx - 15) &
@@ -215,15 +273,20 @@ train_mark_model <- function(data,
       ,
       drop = FALSE
     ]
+    .vcat("  Truncation kept ", nrow(model_data), "/", before_n, " rows.")
   }
 
   if (nrow(model_data) < 2) stop("Not enough observations to train a model after filtering.", call. = FALSE)
-
-  if (isTRUE(verbose)) message("Processing data...")
+  .vcat("  Final training rows: ", nrow(model_data))
+  .vcat("  Final feature columns (incl x,y,time): ", ncol(model_data) - 1L)
+  .vcat("  Done in ", .fmt_time(.elapsed_sec(step_t)), ".")
 
   # -------------------------
-  # tidymodels spec
+  # Step 5: tune/fit model
   # -------------------------
+  step_t <- proc.time()
+  .step_header(5, n_steps, "Fitting model (with optional CV tuning)...")
+
   metric_set <- if (selection_metric == "rsq") {
     yardstick::metric_set(yardstick::rmse, yardstick::mae, yardstick::rsq)
   } else {
@@ -235,20 +298,19 @@ train_mark_model <- function(data,
     parallel_over = if (isTRUE(parallel)) "resamples" else NULL
   )
 
-  # If parallel resampling, force engine threads to 1 to avoid nested parallelism.
-  engine_threads <- if (isTRUE(parallel)) 1L else max(1L, parallel::detectCores() - 1L)
-
-  # Use an unprepped recipe in the workflow; we'll prep once at the end for storage.
   recipe_spec <- recipes::recipe(size ~ ., data = model_data)
-
   do_tuning <- (cv_folds >= 2L) && (nrow(model_data) >= cv_folds)
 
-  if (!do_tuning && isTRUE(verbose)) {
-    message("Skipping CV tuning (cv_folds <= 1 or not enough rows). Fitting a single model with default hyperparameters.")
+  if (isTRUE(do_tuning)) {
+    total_fits <- cv_folds * tuning_grid_size
+    .vcat("  Tuning enabled: ", cv_folds, "-fold CV with ", tuning_grid_size, " candidate(s).")
+    .vcat("  Total model fits: ", total_fits, " (", cv_folds, " folds x ", tuning_grid_size, " grid).")
+    if (isTRUE(parallel)) .vcat("  Parallelizing over resamples with ", n_workers, " worker(s).")
+  } else {
+    .vcat("  Tuning skipped (cv_folds < 2 or not enough rows). Fitting one model with defaults.")
   }
 
   if (model_type == "xgboost") {
-    if (isTRUE(verbose)) message("Training XGBoost model...")
 
     spec <- parsnip::boost_tree(
       mode = "regression",
@@ -279,7 +341,6 @@ train_mark_model <- function(data,
         dials::learn_rate(),
         dials::loss_reduction()
       )
-
       grid <- dials::grid_space_filling(params, size = tuning_grid_size)
 
       tuned <- tune::tune_grid(
@@ -301,7 +362,6 @@ train_mark_model <- function(data,
     engine <- "xgboost"
 
   } else {
-    if (isTRUE(verbose)) message("Training Random Forest model...")
 
     spec <- parsnip::rand_forest(
       mode = "regression",
@@ -339,9 +399,13 @@ train_mark_model <- function(data,
     engine <- "ranger"
   }
 
-  if (isTRUE(verbose)) message("Training complete!")
+  .vcat("  Done in ", .fmt_time(.elapsed_sec(step_t)), ".")
 
-  # Prep recipe for storage + stable feature order during predict()
+  # -------------------------
+  # Step 6: finalize object + save
+  # -------------------------
+  step_t <- proc.time()
+  .step_header(6, n_steps, "Finalizing output object...")
   preprocessing_recipe <- recipes::prep(recipe_spec, training = model_data, retain = TRUE)
   baked <- recipes::bake(preprocessing_recipe, new_data = model_data)
   baked$size <- NULL
@@ -366,7 +430,11 @@ train_mark_model <- function(data,
 
   if (isTRUE(save_model)) {
     save_mark_model(mm, save_path)
+    .vcat("  Saved model to: ", save_path)
   }
+  .vcat("  Done in ", .fmt_time(.elapsed_sec(step_t)), ".")
 
+  .vcat("Training complete. Total time: ", .fmt_time(.elapsed_sec(t_total)), ".")
   mm
 }
+

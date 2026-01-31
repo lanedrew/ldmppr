@@ -12,6 +12,9 @@
 #' @param x_grid,y_grid,t_grid numeric vectors defining the integration grid for \eqn{(x,y,t)}.
 #' @param upper_bounds numeric vector of length 3 giving \code{c(b_t, b_x, b_y)}.
 #' @param parameter_inits numeric vector of length 8 giving initialization values for the model parameters.
+#' @param parameter_inits (optional) numeric vector of length 8 giving initialization values
+#'   for the model parameters. If \code{NULL}, sensible defaults are derived from \code{data}
+#'   and \code{upper_bounds}.
 #' @param delta (optional) numeric scalar used only when \code{data} contains \code{(x,y,size)} but not \code{time}.
 #' @param delta_values (optional) numeric vector. If supplied, the function fits the model for each value of \code{delta_values}
 #'   (mapping \code{size -> time} via \code{\link{power_law_mapping}}) and returns the best fit (lowest objective).
@@ -34,6 +37,7 @@
 #' the global and local optimization stages, respectively.
 #' @param global_options,local_options named lists of options to pass to \code{nloptr::nloptr()} for
 #' the global and local optimization stages, respectively.
+#' @param global_n_starts integer number of restarts to use for the global optimization stage.
 #' @param n_starts integer number of multi-start initializations to use for the local optimization stage.
 #' @param jitter_sd numeric standard deviation used to jitter the multi-start initializations.
 #' @param seed integer random seed used for multi-start initialization jittering.
@@ -52,7 +56,7 @@
 #'
 #' @references
 #' Møller, J., Ghorbani, M., & Rubak, E. (2016). Mechanistic spatio-temporal point process models
-#' for marked point processes, with a view to forest stand data. \emph{Biometrics}, 72(3), 687–696.
+#' for marked point processes, with a view to forest stand data. \emph{Biometrics}, 72(3), 687-696.
 #' \doi{10.1111/biom.12466}.
 #'
 #' @examples
@@ -107,9 +111,9 @@
 #'   ),
 #'   global_options = list(maxeval = 100),
 #'   local_options  = list(maxeval = 100, xtol_rel = 1e-3),
-#'   n_starts = 3,
-#'   refine_best_delta = TRUE,
-#'   verbose = TRUE
+#'   n_starts = 1,
+#'   refine_best_delta = FALSE,
+#'   verbose = FALSE
 #' )
 #' plot(fit_delta)
 #' }
@@ -134,6 +138,7 @@ estimate_process_parameters <- function(data,
                                         local_algorithm = "NLOPT_LN_BOBYQA",
                                         global_options = list(maxeval = 150),
                                         local_options = list(maxeval = 300, xtol_rel = 1e-5, maxtime = NULL),
+                                        global_n_starts = 1L,
                                         n_starts = 1L,
                                         jitter_sd = 0.35,
                                         seed = 1L,
@@ -147,10 +152,52 @@ estimate_process_parameters <- function(data,
     stop("Only process='self_correcting' is currently implemented.", call. = FALSE)
   }
 
+  # ---- user-friendly helpers ----
+  .vmsg <- function(..., .indent = 0L) {
+    if (!isTRUE(verbose)) return(invisible(NULL))
+    prefix <- if (.indent > 0L) paste(rep("  ", .indent), collapse = "") else ""
+    message(prefix, paste0(..., collapse = ""))
+    invisible(NULL)
+  }
+
+  .fmt_sec <- function(sec) {
+    sec <- as.numeric(sec)
+    if (!is.finite(sec)) return("NA")
+    if (sec < 60) return(sprintf("%.1fs", sec))
+    if (sec < 3600) return(sprintf("%.1fmin", sec / 60))
+    sprintf("%.2fh", sec / 3600)
+  }
+
+  .tic <- function() proc.time()[["elapsed"]]
+  .toc <- function(t0) proc.time()[["elapsed"]] - t0
+
+  # ---- Derive default inits if user did not provide them ----
+  if (is.null(upper_bounds) || length(upper_bounds) != 3L ||
+      anyNA(upper_bounds) || any(!is.finite(upper_bounds))) {
+    stop("Provide `upper_bounds = c(b_t, b_x, b_y)` as finite numeric values.", call. = FALSE)
+  }
+
+  if (is.null(parameter_inits)) {
+    delta_for_init <- delta
+    if (is.null(delta_for_init) && !is.null(delta_values)) delta_for_init <- 1L
+
+    parameter_inits <- .default_parameter_inits_sc(
+      data = data,
+      upper_bounds = upper_bounds,
+      delta = delta_for_init
+    )
+
+    .vmsg("Using default starting values (parameter_inits) since none were provided.")
+    .vmsg("Initial values: ", paste(signif(parameter_inits, 4), collapse = ", "), .indent = 1L)
+  }
+
   .validate_common_inputs(x_grid, y_grid, t_grid, upper_bounds, parameter_inits)
 
   n_starts <- as.integer(n_starts)
   if (n_starts < 1L) stop("n_starts must be >= 1.", call. = FALSE)
+
+  global_n_starts <- as.integer(global_n_starts)
+  if (global_n_starts < 1L) stop("global_n_starts must be >= 1.", call. = FALSE)
 
   # Will we actually use furrr?
   will_parallelize <- isTRUE(parallel) && (
@@ -159,15 +206,8 @@ estimate_process_parameters <- function(data,
   )
 
   max_workers <- if (!is.null(delta_values)) length(delta_values) else if (n_starts > 1L) n_starts else NULL
-  original_plan <- .maybe_set_future_plan(
-    set_future_plan = set_future_plan,
-    will_parallelize = will_parallelize,
-    num_cores = num_cores,
-    max_workers = max_workers,
-    verbose = verbose
-  )
-  if (!is.null(original_plan)) on.exit(future::plan(original_plan), add = TRUE)
 
+  # ---- precompute schedule + bounds so we can print an upfront "plan" ----
   grid_schedule <- .make_grid_schedule(
     x_grid = x_grid, y_grid = y_grid, t_grid = t_grid,
     upper_bounds = upper_bounds,
@@ -180,20 +220,70 @@ estimate_process_parameters <- function(data,
     .validate_finite_bounds(finite_bounds)
   }
 
-  t_start <- proc.time()
+  # ---- progress summary upfront ----
+  .vmsg("Estimating self-correcting process parameters")
+  .vmsg("Strategy: ", strategy, if (!is.null(delta_values)) " (delta search)" else "", .indent = 1L)
+
+  if (!is.null(delta_values)) {
+    .vmsg("Delta candidates: ", length(delta_values), .indent = 1L)
+  } else {
+    .vmsg("Delta: ", if (!is.null(delta)) delta else "already in data (time provided)", .indent = 1L)
+  }
+
+  .vmsg("Local optimizer: ", local_algorithm,
+        " (maxeval=", local_options[["maxeval"]] %||% NA, ")", .indent = 1L)
+
+  if (strategy %in% c("global_local", "multires_global_local")) {
+    .vmsg("Global optimizer: ", global_algorithm,
+          " (maxeval=", global_options[["maxeval"]] %||% NA, ")", .indent = 1L)
+  }
+
+  if (strategy == "multires_global_local") {
+    .vmsg("Grid refinement levels: ", length(grid_schedule), .indent = 1L)
+  } else {
+    .vmsg("Grid levels: 1", .indent = 1L)
+  }
+
+  .vmsg("Local starts per level: ", n_starts, .indent = 1L)
+  if (strategy %in% c("global_local", "multires_global_local")) {
+    .vmsg("Global starts (first level only): ", global_n_starts, .indent = 1L)
+  }
+
+  if (will_parallelize) {
+    .vmsg("Parallel: on", .indent = 1L)
+    .vmsg("Requested workers: ", as.integer(num_cores), .indent = 2L)
+  } else {
+    .vmsg("Parallel: off", .indent = 1L)
+  }
+
+  # ---- maybe set future plan ----
+  original_plan <- .maybe_set_future_plan(
+    set_future_plan = set_future_plan,
+    will_parallelize = will_parallelize,
+    num_cores = num_cores,
+    max_workers = max_workers,
+    verbose = FALSE  # suppress helper's own message; we already summarized
+  )
+  if (!is.null(original_plan)) on.exit(future::plan(original_plan), add = TRUE)
+
+  t_all <- .tic()
 
   # -------------------------------------------------------------------
-  # MODE A: single fit
+  # MODE A: single fit (no delta search)
   # -------------------------------------------------------------------
   if (is.null(delta_values)) {
+
+    .vmsg("Step 1/2: Preparing data and objective function...")
+    t_prep <- .tic()
 
     data_mat  <- .build_sc_matrix(data, delta = delta)
     data_orig <- attr(data_mat, "ldmppr_original")
     if (is.null(data_orig)) {
-      # Fallback: keep *something* reproducible rather than NULL
-      # (train_mark_model may still error later if `size` is absent)
       data_orig <- if (is.data.frame(data)) data else as.data.frame(data_mat)
     }
+
+    .vmsg("Prepared ", nrow(data_mat), " points.", .indent = 1L)
+    .vmsg("Done in ", .fmt_sec(.toc(t_prep)), ".", .indent = 1L)
 
     do_global_first <- (strategy %in% c("global_local", "multires_global_local"))
     do_multires     <- (strategy == "multires_global_local")
@@ -201,11 +291,32 @@ estimate_process_parameters <- function(data,
     current_params <- parameter_inits
     stage_store <- list()
 
+    .vmsg("Step 2/2: Optimizing parameters...")
     n_levels <- length(grid_schedule)
+
     for (lvl in seq_len(n_levels)) {
       grids_lvl <- grid_schedule[[lvl]]
       do_global <- do_global_first && (lvl == 1L)
       do_multistart <- (n_starts > 1L)
+
+      nx <- length(grids_lvl$x); ny <- length(grids_lvl$y); nt <- length(grids_lvl$t)
+      lvl_label <- if (do_multires) {
+        paste0("Level ", lvl, " of ", n_levels, " (grid ", nx, "x", ny, "x", nt, ")")
+      } else {
+        paste0("Single level (grid ", nx, "x", ny, "x", nt, ")")
+      }
+
+      .vmsg(lvl_label)
+      if (do_global) {
+        .vmsg("Global search: ", global_n_starts, " start(s), then local refinement.", .indent = 1L)
+      } else {
+        .vmsg("Local refinement only.", .indent = 1L)
+      }
+      if (do_multistart) {
+        .vmsg("Local multi-start: ", n_starts, " start(s).", .indent = 1L)
+      }
+
+      t_lvl <- .tic()
 
       lvl_fit <- .fit_one_level_sc(
         level_grids = grids_lvl,
@@ -222,16 +333,21 @@ estimate_process_parameters <- function(data,
         n_starts = n_starts,
         jitter_sd = jitter_sd,
         seed = seed,
+        global_n_starts = global_n_starts,
         worker_parallel = isTRUE(parallel) && (n_starts > 1L),
-        worker_verbose = verbose && (lvl == n_levels)
+        worker_verbose = FALSE
       )
 
       stage_store[[lvl]] <- lvl_fit
       current_params <- lvl_fit$best$solution
+
+      .vmsg("Completed in ", .fmt_sec(.toc(t_lvl)), ".", .indent = 1L)
+      .vmsg("Best objective: ", signif(lvl_fit$best$objective, 8), .indent = 1L)
+
       if (!do_multires) break
     }
 
-    secs <- (proc.time() - t_start)[3]
+    secs <- .toc(t_all)
 
     final_grid <- list(
       x_grid = grid_schedule[[length(stage_store)]]$x,
@@ -240,7 +356,6 @@ estimate_process_parameters <- function(data,
       upper_bounds = upper_bounds
     )
 
-    # IMPORTANT: pass data + data_original through the constructor (not after)
     fit_obj <- new_ldmppr_fit(
       process = "self_correcting",
       fit = stage_store[[length(stage_store)]]$best,
@@ -255,6 +370,7 @@ estimate_process_parameters <- function(data,
       timing = list(seconds = secs)
     )
 
+    .vmsg("Finished. Total time: ", .fmt_sec(secs), ".")
     return(fit_obj)
   }
 
@@ -270,7 +386,8 @@ estimate_process_parameters <- function(data,
     if (!ok) stop("For `delta_values`, matrix `data` must have colnames including 'x', 'y', 'size'.", call. = FALSE)
   }
 
-  if (isTRUE(verbose)) message("Starting delta search with ", length(delta_values), " delta values.")
+  .vmsg("Step 1/3: Coarse search over delta values (", length(delta_values), " candidates)...")
+  t_coarse <- .tic()
 
   coarse_grids <- grid_schedule[[1]]
   do_global_coarse <- (strategy %in% c("global_local", "multires_global_local"))
@@ -287,7 +404,10 @@ estimate_process_parameters <- function(data,
       global_options = global_options,
       local_options = local_options,
       finite_bounds = finite_bounds,
-      do_global_coarse = do_global_coarse
+      do_global_coarse = do_global_coarse,
+      global_n_starts = global_n_starts,
+      seed = seed,
+      jitter_sd = jitter_sd
     )
   }
 
@@ -308,28 +428,31 @@ estimate_process_parameters <- function(data,
   best_idx <- which.min(coarse_obj)
   best_delta <- delta_values[best_idx]
 
-  if (isTRUE(verbose)) {
-    message("Coarse delta search complete. Best delta = ", best_delta,
-            " (objective=", signif(coarse_obj[best_idx], 8), ").")
-  }
+  .vmsg("Coarse delta search done in ", .fmt_sec(.toc(t_coarse)), ".")
+  .vmsg("Best delta: ", best_delta, " (objective=", signif(coarse_obj[best_idx], 8), ").", .indent = 1L)
+
+  .vmsg("Step 2/3: Building data under best delta and selecting best coarse fit...")
+  mat_best  <- .build_sc_matrix(data, delta = best_delta)
+  orig_best <- attr(mat_best, "ldmppr_original")
+  if (is.null(orig_best)) orig_best <- if (is.data.frame(data)) data else as.data.frame(mat_best)
 
   refined_store <- NULL
   final_fit <- coarse_results[[best_idx]]$best
   final_params <- final_fit$solution
 
-  # Build best transformed data now (and preserve original)
-  mat_best  <- .build_sc_matrix(data, delta = best_delta)
-  orig_best <- attr(mat_best, "ldmppr_original")
-  if (is.null(orig_best)) {
-    orig_best <- if (is.data.frame(data)) data else as.data.frame(mat_best)
-  }
-
   if (isTRUE(refine_best_delta) && length(grid_schedule) > 1L) {
-    if (isTRUE(verbose)) message("Refining best delta across finer grids...")
+    .vmsg("Step 3/3: Refining best delta on finer grids (", length(grid_schedule) - 1L, " more level(s))...")
+    t_ref <- .tic()
 
     refined_store <- list()
     for (lvl in 2:length(grid_schedule)) {
       grids_lvl <- grid_schedule[[lvl]]
+      nx <- length(grids_lvl$x); ny <- length(grids_lvl$y); nt <- length(grids_lvl$t)
+
+      .vmsg("Refinement level ", lvl, " of ", length(grid_schedule),
+            " (grid ", nx, "x", ny, "x", nt, ")", .indent = 1L)
+
+      t_lvl <- .tic()
       lvl_fit <- .fit_one_level_sc(
         level_grids = grids_lvl,
         data_mat = mat_best,
@@ -346,17 +469,21 @@ estimate_process_parameters <- function(data,
         jitter_sd = jitter_sd,
         seed = seed,
         worker_parallel = FALSE,
-        worker_verbose = verbose && (lvl == length(grid_schedule))
+        worker_verbose = FALSE
       )
       refined_store[[lvl]] <- lvl_fit
       final_fit <- lvl_fit$best
       final_params <- lvl_fit$best$solution
+
+      .vmsg("Completed in ", .fmt_sec(.toc(t_lvl)), "; objective=", signif(final_fit$objective, 8), ".", .indent = 2L)
     }
 
-    if (isTRUE(verbose)) message("Refinement complete (best delta = ", best_delta, ").")
+    .vmsg("Refinement done in ", .fmt_sec(.toc(t_ref)), ".")
+  } else {
+    .vmsg("Step 3/3: Skipping refinement (refine_best_delta=FALSE or only one grid level).")
   }
 
-  secs <- (proc.time() - t_start)[3]
+  secs <- .toc(t_all)
 
   final_grid <- list(
     x_grid = grid_schedule[[length(grid_schedule)]]$x,
@@ -365,7 +492,6 @@ estimate_process_parameters <- function(data,
     upper_bounds = upper_bounds
   )
 
-  # IMPORTANT: pass data + data_original through constructor
   fit_obj <- new_ldmppr_fit(
     process = "self_correcting",
     fit = final_fit,
@@ -386,6 +512,6 @@ estimate_process_parameters <- function(data,
     timing = list(seconds = secs)
   )
 
+  .vmsg("Finished. Total time: ", .fmt_sec(secs), ".")
   fit_obj
 }
-
