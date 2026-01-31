@@ -61,7 +61,7 @@ page](https://github.com/rspatial/terra).
   : Fitted point-process model object
 - [`ldmppr_mark_model()`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)
   [`print(`*`<ldmppr_mark_model>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)
-  [`predict.ldmppr_mark_model()`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)
+  [`predict(`*`<ldmppr_mark_model>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)
   [`save_mark_model()`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)
   [`load_mark_model()`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)
   : Mark model object

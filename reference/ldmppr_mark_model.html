@@ -65,7 +65,8 @@ saved/loaded with <code>save_mark_model</code> and <code>load_mark_model</code>.
 <span><span class="co"># S3 method for class 'ldmppr_mark_model'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">predict.ldmppr_mark_model</span><span class="op">(</span><span class="va">object</span>, <span class="va">new_data</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="co"># S3 method for class 'ldmppr_mark_model'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">new_data</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">save_mark_model</span><span class="op">(</span><span class="va">object</span>, <span class="va">path</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
@@ -149,13 +150,13 @@ to make saving/loading robust across R sessions.</p>
     <h2 id="methods-by-generic-">Methods (by generic)<a class="anchor" aria-label="anchor" href="#methods-by-generic-"></a></h2>
 
 <ul><li><p><code>print(ldmppr_mark_model)</code>: Print a brief summary of the mark model.</p></li>
+<li><p><code>predict(ldmppr_mark_model)</code>: Predict marks for new data.</p></li>
 <li><p><code>save_mark_model(ldmppr_mark_model)</code>: Save method for <code>ldmppr_mark_model</code>.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
 
 <ul><li><p><code>ldmppr_mark_model()</code>: Create a mark model container.</p></li>
-<li><p><code>predict.ldmppr_mark_model()</code>: Predict marks for new data.</p></li>
 <li><p><code>save_mark_model()</code>: Save a mark model to disk.</p></li>
 <li><p><code>load_mark_model()</code>: Load a saved mark model from disk.</p></li>
 </ul></div>

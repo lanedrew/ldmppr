@@ -266,9 +266,35 @@ parameter tuning grid for the model.</p>
 <span>  tuning_grid_size <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Processing data...</span></span>
-<span><span class="co">#&gt; Training XGBoost model...</span></span>
-<span><span class="co">#&gt; Training complete!</span></span>
+<span><span class="co">#&gt; Training mark model</span></span>
+<span><span class="co">#&gt;   Model type: xgboost</span></span>
+<span><span class="co">#&gt;   Selection metric: rmse</span></span>
+<span><span class="co">#&gt;   CV folds: 5</span></span>
+<span><span class="co">#&gt;   Tuning grid size: 20</span></span>
+<span><span class="co">#&gt;   Include competition indices: no</span></span>
+<span><span class="co">#&gt;   Edge correction: none</span></span>
+<span><span class="co">#&gt; Step 1/6: Preparing training data...</span></span>
+<span><span class="co">#&gt;   Rows: 121</span></span>
+<span><span class="co">#&gt;   Done in 0.0s.</span></span>
+<span><span class="co">#&gt; Step 2/6: Configuring parallel backend...</span></span>
+<span><span class="co">#&gt;   Parallel: off</span></span>
+<span><span class="co">#&gt;   Model engine threads: 3</span></span>
+<span><span class="co">#&gt;   Done in 0.0s.</span></span>
+<span><span class="co">#&gt; Step 3/6: Extracting raster covariates...</span></span>
+<span><span class="co">#&gt;   Using pre-scaled rasters (scaled_rasters = TRUE).</span></span>
+<span><span class="co">#&gt;   Extracted 4 raster feature(s).</span></span>
+<span><span class="co">#&gt;   Done in 0.0s.</span></span>
+<span><span class="co">#&gt; Step 4/6: Building model matrix (and competition indices if requested)...</span></span>
+<span><span class="co">#&gt;   Final training rows: 121</span></span>
+<span><span class="co">#&gt;   Final feature columns (incl x,y,time): 7</span></span>
+<span><span class="co">#&gt;   Done in 0.0s.</span></span>
+<span><span class="co">#&gt; Step 5/6: Fitting model (with optional CV tuning)...</span></span>
+<span><span class="co">#&gt;   Tuning enabled: 5-fold CV with 20 candidate(s).</span></span>
+<span><span class="co">#&gt;   Total model fits: 100 (5 folds x 20 grid).</span></span>
+<span><span class="co">#&gt;   Done in 27.7s.</span></span>
+<span><span class="co">#&gt; Step 6/6: Finalizing output object...</span></span>
+<span><span class="co">#&gt;   Done in 0.0s.</span></span>
+<span><span class="co">#&gt; Training complete. Total time: 27.8s.</span></span>
 <span></span>
 <span><span class="co"># Print method for ldmppr_mark_model objects</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">mark_model</span><span class="op">)</span></span>

@@ -200,9 +200,35 @@ mark_model <- train_mark_model(
   tuning_grid_size = 20,
   verbose = TRUE
 )
-#> Processing data...
-#> Training XGBoost model...
-#> Training complete!
+#> Training mark model
+#>   Model type: xgboost
+#>   Selection metric: rmse
+#>   CV folds: 5
+#>   Tuning grid size: 20
+#>   Include competition indices: no
+#>   Edge correction: none
+#> Step 1/6: Preparing training data...
+#>   Rows: 121
+#>   Done in 0.0s.
+#> Step 2/6: Configuring parallel backend...
+#>   Parallel: off
+#>   Model engine threads: 3
+#>   Done in 0.0s.
+#> Step 3/6: Extracting raster covariates...
+#>   Using pre-scaled rasters (scaled_rasters = TRUE).
+#>   Extracted 4 raster feature(s).
+#>   Done in 0.0s.
+#> Step 4/6: Building model matrix (and competition indices if requested)...
+#>   Final training rows: 121
+#>   Final feature columns (incl x,y,time): 7
+#>   Done in 0.0s.
+#> Step 5/6: Fitting model (with optional CV tuning)...
+#>   Tuning enabled: 5-fold CV with 20 candidate(s).
+#>   Total model fits: 100 (5 folds x 20 grid).
+#>   Done in 27.7s.
+#> Step 6/6: Finalizing output object...
+#>   Done in 0.0s.
+#> Training complete. Total time: 27.8s.
 
 # Print method for ldmppr_mark_model objects
 print(mark_model)

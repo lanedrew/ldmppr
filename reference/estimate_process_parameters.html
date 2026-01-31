@@ -75,6 +75,7 @@ gentle-decay (power-law) mapping <code><a href="power_law_mapping.html">power_la
 <span>  local_algorithm <span class="op">=</span> <span class="st">"NLOPT_LN_BOBYQA"</span>,</span>
 <span>  global_options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>maxeval <span class="op">=</span> <span class="fl">150</span><span class="op">)</span>,</span>
 <span>  local_options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>maxeval <span class="op">=</span> <span class="fl">300</span>, xtol_rel <span class="op">=</span> <span class="fl">1e-05</span>, maxtime <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,</span>
+<span>  global_n_starts <span class="op">=</span> <span class="fl">1L</span>,</span>
 <span>  n_starts <span class="op">=</span> <span class="fl">1L</span>,</span>
 <span>  jitter_sd <span class="op">=</span> <span class="fl">0.35</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">1L</span>,</span>
@@ -105,7 +106,9 @@ If a matrix is provided for delta search, it must have column names <code>c("x",
 
 
 <dt id="arg-parameter-inits">parameter_inits<a class="anchor" aria-label="anchor" href="#arg-parameter-inits"></a></dt>
-<dd><p>numeric vector of length 8 giving initialization values for the model parameters.</p></dd>
+<dd><p>(optional) numeric vector of length 8 giving initialization values
+for the model parameters. If <code>NULL</code>, sensible defaults are derived from <code>data</code>
+and <code>upper_bounds</code>.</p></dd>
 
 
 <dt id="arg-delta">delta<a class="anchor" aria-label="anchor" href="#arg-delta"></a></dt>
@@ -160,6 +163,10 @@ the global and local optimization stages, respectively.</p></dd>
 the global and local optimization stages, respectively.</p></dd>
 
 
+<dt id="arg-global-n-starts">global_n_starts<a class="anchor" aria-label="anchor" href="#arg-global-n-starts"></a></dt>
+<dd><p>integer number of restarts to use for the global optimization stage.</p></dd>
+
+
 <dt id="arg-n-starts">n_starts<a class="anchor" aria-label="anchor" href="#arg-n-starts"></a></dt>
 <dd><p>integer number of multi-start initializations to use for the local optimization stage.</p></dd>
 
@@ -195,7 +202,7 @@ separately for each mapped dataset and selecting the best objective value.</p>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Møller, J., Ghorbani, M., &amp; Rubak, E. (2016). Mechanistic spatio-temporal point process models
-for marked point processes, with a view to forest stand data. <em>Biometrics</em>, 72(3), 687–696.
+for marked point processes, with a view to forest stand data. <em>Biometrics</em>, 72(3), 687-696.
 <a href="https://doi.org/10.1111/biom.12466" class="external-link">doi:10.1111/biom.12466</a>
 .</p>
     </div>
@@ -227,306 +234,24 @@ for marked point processes, with a view to forest stand data. <em>Biometrics</em
 <span class="r-in"><span>  local_options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>maxeval <span class="op">=</span> <span class="fl">25</span>, xtol_rel <span class="op">=</span> <span class="fl">1e-2</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 404.701347</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 45923038155926103673291145216000.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 78087.881491</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 171968.209533</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 940760247304106907466985088483328.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 20017012287594692.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 254775.568361</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 174158343736330902177636877864870488008832579534848.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 201218.394367</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 32381.148017</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 11</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 15058294657.892656</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 107943864513997882050839200077666245943009026290043801921106944066584576.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 13</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 147097287123348780304402743296.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 14</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 14375379367243273994240.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 15</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 30070153044072322507472896.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 16</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 217314.615778</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 17</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 38670.744812</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 1010802732162535189251096576.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 19</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 106485702101798596202388801556010936441860259840.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 20</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 66873985828083630638538166783515688281504570915227659403264.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 21</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 7901633076114307311206400.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 22</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 91276717821269456.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 23</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 1148645666142653.500000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 24</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 653954833.232074</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 25</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 22159601.644635</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 26</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 17233067599545188389627336065024.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 27</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 101104.434107</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 28</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 121085.305693</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 29</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 505474482997232622632359031734028907702051198694935679262855547322368.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 30</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 8971405842.576874</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 31</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 111782973114252148736.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 32</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 844306549745744655417344.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 33</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 3906492369088589919005543871746037674881843200.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 34</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 198091.764497</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 35</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 104662927010373686871656215443598797382523889385472.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 36</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 230785.686246</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 37</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 153600543133855134955337390897630289781063680.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 38</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 165386943553418657792.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 39</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 294412.973215</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 40</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 385051795701.325012</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 41</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 96398601805121156284416.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 42</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 164366153952334025844246376885068721851523206745172374314946502544326656.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 43</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 12453106510695707443200.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 44</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 246192.058728</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 45</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 20415725700646879424141066240.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 46</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 338634619072566.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 47</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 68195845750752668549120.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 48</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 105156637364695.687500</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 49</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 4440816766978062163988447232.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 50</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 2786416611.047494</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 51</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 156592725560245249369964544.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 52</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 212718543402225078931455252723370332179315439735785601570497888256.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 53</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 747590996447196.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 54</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 7558982430442756253941760.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 55</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 30827315293811611009024.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 56</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 150671.915023</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 57</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 896721095489466594936726878372992385024.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 58</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 139223.217097</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 59</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 133907.064272</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 60</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 40340.465061</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 61</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 7222956718646460538886673316725481537536.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 62</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 906106223317.164429</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 63</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 216375.348560</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 64</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 2737546883.053558</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 65</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 364714488112.936584</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 66</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 138188207947423888.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 67</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 662161381610068470437680272086747842609152.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 68</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 164156.770154</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 69</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 1993493441896515214502321975197696.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 70</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 43071126334185040820097154700736987136.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 71</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 12694315964512.470703</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 72</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 46292227.462435</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 73</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 597869393769638474905800032085960082401027095379407347384320.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 74</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 251719908430498799362378360671054313029632.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 75</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 30775311642453508096.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 76</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 70004.959765</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 77</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 48895.313312</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 78</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 26096.067108</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 79</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 7857261346491830563426363724791808.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 80</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 41823574117923445222716473344.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 81</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 183845723254411111694336.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 82</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 483066781178.234009</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 83</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 261093.910842</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 84</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 283941229676853752965890048.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 85</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 87752.130227</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 86</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 231107273213.754242</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 87</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 376101071705449363985628397568.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 88</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 1546403401225115034276618970244253807558336348065628160.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 89</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 7657006205025329110148308660838727680.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 667883231646187.750000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 91</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 8752.895823</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 92</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 45113857.979421</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 93</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 3317473876001.270996</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 94</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 9907056567260950.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 95</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 3664195.141817</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 96</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 745074920119510214581600387072.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 97</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 136137856620.304489</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 98</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 155843.002185</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 99</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 38953514741537432832776050370130626851922274942976.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 6269666523972620.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 101</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 1497408810818644424211429335236608.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 102</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 193013901141598371840.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 103</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 817182132595478370037755147201513209419071621051965900387778560.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 104</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 1842.843150</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 105</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 471614.091710</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 106</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 2002070293371325959558785505689600.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 107</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 384710.887866</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 108</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 222467030067.887329</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 109</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 22397.213129</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 110</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 39174.045770</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 111</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 421940.452065</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 112</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 105170.071978</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 113</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 5787967828003260416.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 114</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 107340.265310</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 115</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 3650695277460.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 116</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 5112385967418802933990404208972891527315672870521703820954756448256.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 117</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 717.538863</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 118</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 3236014711056652208495750139786395524268032.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 119</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 1431264.751184</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 120</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 11401.650042</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 121</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 9145.616576</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 122</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 9862037240323361371899185035422104985131810816.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 123</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 1583.942957</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 124</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 115325.466740</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 125</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 6954177.308699</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 126</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 35549.611541</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 127</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 2192225649838467472949248.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 128</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 2279822572316647.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 129</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 175645.762059</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 130</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 355386.797053</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 131</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 25173413066597.238281</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 132</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 26238250738.606255</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 133</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 26659.672197</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 134</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 8022157.458195</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 135</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 13194.682213</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 136</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 9315662265147977555921960956067193682691055785380256153600.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 137</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 2100.416559</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 138</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 7342883254405956.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 139</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 452957.242745</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 140</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 35821471315227391629186826240.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 141</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 39030.316192</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 142</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 334505352333192.687500</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 143</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 326655279841829.812500</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 144</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 12732536935000506.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 145</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 2264257.790699</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 146</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 2305065.194891</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 147</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 28798.220003</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 148</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 63662.306827</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 149</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 647253809085.549805</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> iteration: 150</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 	f(x) = 111802587299600351232.000000</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Estimating self-correcting process parameters</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Strategy: global_local</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Delta: 1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Local optimizer: NLOPT_LN_BOBYQA (maxeval=25)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Global optimizer: NLOPT_GN_CRS2_LM (maxeval=150)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Grid levels: 1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Local starts per level: 1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Global starts (first level only): 1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Parallel: off</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Step 1/2: Preparing data and objective function...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Prepared 121 points.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 0.0s.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Step 2/2: Optimizing parameters...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Single level (grid 5x5x5)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Global search: 1 start(s), then local refinement.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Completed in 0.0s.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Best objective: 269.07245</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Finished. Total time: 0.0s.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.5000000 7.6837649 0.0302285 1.5000000 3.2000000 0.7500000 3.0000000</span>
@@ -556,15 +281,10 @@ for marked point processes, with a view to forest stand data. <em>Biometrics</em
 <span class="r-in"><span>  <span class="op">)</span>,</span></span>
 <span class="r-in"><span>  global_options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>maxeval <span class="op">=</span> <span class="fl">100</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  local_options  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>maxeval <span class="op">=</span> <span class="fl">100</span>, xtol_rel <span class="op">=</span> <span class="fl">1e-3</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  n_starts <span class="op">=</span> <span class="fl">3</span>,</span></span>
-<span class="r-in"><span>  refine_best_delta <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
-<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span>  n_starts <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>  refine_best_delta <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> future plan set to multisession with workers = 2</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Starting delta search with 5 delta values.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Coarse delta search complete. Best delta = 1 (objective=186.63324).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Refining best delta across finer grids...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Refinement complete (best delta = 1).</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_delta</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="estimate_process_parameters-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>

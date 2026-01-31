@@ -22,7 +22,8 @@ ldmppr_mark_model(
 # S3 method for class 'ldmppr_mark_model'
 print(x, ...)
 
-predict.ldmppr_mark_model(object, new_data, ...)
+# S3 method for class 'ldmppr_mark_model'
+predict(object, new_data, ...)
 
 save_mark_model(object, path, ...)
 
@@ -104,14 +105,14 @@ payload to make saving/loading robust across R sessions.
 
 - `print(ldmppr_mark_model)`: Print a brief summary of the mark model.
 
+- `predict(ldmppr_mark_model)`: Predict marks for new data.
+
 - `save_mark_model(ldmppr_mark_model)`: Save method for
   `ldmppr_mark_model`.
 
 ## Functions
 
 - `ldmppr_mark_model()`: Create a mark model container.
-
-- `predict.ldmppr_mark_model()`: Predict marks for new data.
 
 - `save_mark_model()`: Save a mark model to disk.
 

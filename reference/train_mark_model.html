@@ -189,9 +189,35 @@ If <code>cv_folds &lt;= 1</code>, tuning is skipped and the model is fit once wi
 <span class="r-in"><span>  tuning_grid_size <span class="op">=</span> <span class="fl">2</span>,</span></span>
 <span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Processing data...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Training XGBoost model...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Training complete!</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Training mark model</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Model type: xgboost</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Selection metric: rmse</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   CV folds: 3</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Tuning grid size: 2</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Include competition indices: no</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Edge correction: none</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Step 1/6: Preparing training data...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Rows: 121</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 0.0s.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Step 2/6: Configuring parallel backend...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Parallel: off</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Model engine threads: 3</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 0.0s.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Step 3/6: Extracting raster covariates...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Using pre-scaled rasters (scaled_rasters = TRUE).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Extracted 4 raster feature(s).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 0.0s.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Step 4/6: Building model matrix (and competition indices if requested)...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Final training rows: 121</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Final feature columns (incl x,y,time): 7</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 0.0s.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Step 5/6: Fitting model (with optional CV tuning)...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Tuning enabled: 3-fold CV with 2 candidate(s).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Total model fits: 6 (3 folds x 2 grid).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 2.7s.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Step 6/6: Finalizing output object...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 0.0s.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Training complete. Total time: 2.7s.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">mark_model</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;ldmppr_mark_model&gt;</span>
