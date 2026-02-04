@@ -71,35 +71,34 @@ full log-likelihood using <code><a href="https://astamm.github.io/nloptr/referen
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>A data.frame or matrix. Must contain either columns <code>(time, x, y)</code>
+<dd><p>a data.frame or matrix. Must contain either columns <code>(time, x, y)</code>
 or <code>(x, y, size)</code>. If a matrix is provided without time, it must have
 column names <code>c("x","y","size")</code>.</p></dd>
 
 
 <dt id="arg-process">process<a class="anchor" aria-label="anchor" href="#arg-process"></a></dt>
-<dd><p>Character string specifying the process model. Currently supports
-<code>"self_correcting"</code>.</p></dd>
+<dd><p>type of process used (currently supports <code>"self_correcting"</code>).</p></dd>
 
 
 <dt id="arg-grids">grids<a class="anchor" aria-label="anchor" href="#arg-grids"></a></dt>
-<dd><p>A <code><a href="ldmppr_grids.html">ldmppr_grids</a></code> object specifying the integration grid schedule
+<dd><p>a <code><a href="ldmppr_grids.html">ldmppr_grids</a></code> object specifying the integration grid schedule
 (single-level or multi-resolution). The integration bounds are taken from
 <code>grids$upper_bounds</code>.</p></dd>
 
 
 <dt id="arg-budgets">budgets<a class="anchor" aria-label="anchor" href="#arg-budgets"></a></dt>
-<dd><p>A <code><a href="ldmppr_budgets.html">ldmppr_budgets</a></code> object controlling optimizer options
+<dd><p>a <code><a href="ldmppr_budgets.html">ldmppr_budgets</a></code> object controlling optimizer options
 for the global stage and local stages (first level vs refinement levels).</p></dd>
 
 
 <dt id="arg-parameter-inits">parameter_inits<a class="anchor" aria-label="anchor" href="#arg-parameter-inits"></a></dt>
-<dd><p>Optional numeric vector of length 8 giving initialization values
+<dd><p>(optional) numeric vector of length 8 giving initialization values
 for the model parameters. If <code>NULL</code>, defaults are derived from <code>data</code> and
 <code>grids$upper_bounds</code>.</p></dd>
 
 
 <dt id="arg-delta">delta<a class="anchor" aria-label="anchor" href="#arg-delta"></a></dt>
-<dd><p>Optional numeric scalar or vector. Used only when <code>data</code> does not contain
+<dd><p>(optional) numeric scalar or vector. Used only when <code>data</code> does not contain
 <code>time</code> (i.e., data has <code>(x,y,size)</code>).</p><ul><li><p>If <code>length(delta) == 1</code>, fits the model once using <code>power_law_mapping(size, delta)</code>.</p></li>
 <li><p>If <code>length(delta) &gt; 1</code>, performs a delta-search by fitting the model for each candidate value
     and selecting the best objective. If <code>refine_best_delta = TRUE</code> and multiple grid levels are used,
@@ -109,35 +108,35 @@ and is an error when <code>length(delta)&gt;1</code>.</p></dd>
 
 
 <dt id="arg-parallel">parallel<a class="anchor" aria-label="anchor" href="#arg-parallel"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, uses furrr/future to parallelize either:
+<dd><p><code>TRUE</code> or <code>FALSE</code> specifying furrr/future to parallelize either:
 (a) over candidate <code>delta</code> values (when <code>length(delta) &gt; 1</code>), and/or
 (b) over local multi-start initializations (when <code>starts$local &gt; 1</code>), and/or
 (c) over global restarts (when <code>starts$global &gt; 1</code>).</p></dd>
 
 
 <dt id="arg-num-cores">num_cores<a class="anchor" aria-label="anchor" href="#arg-num-cores"></a></dt>
-<dd><p>Integer number of workers to use when <code>set_future_plan = TRUE</code>.</p></dd>
+<dd><p>number of workers to use when <code>set_future_plan = TRUE</code>.</p></dd>
 
 
 <dt id="arg-set-future-plan">set_future_plan<a class="anchor" aria-label="anchor" href="#arg-set-future-plan"></a></dt>
-<dd><p>If <code>TRUE</code>, temporarily sets
+<dd><p><code>TRUE</code> or <code>FALSE</code>, temporarily sets
 <code>future::plan(multisession, workers = num_cores)</code> and restores the original plan on exit.</p></dd>
 
 
 <dt id="arg-strategy">strategy<a class="anchor" aria-label="anchor" href="#arg-strategy"></a></dt>
-<dd><p>Character string specifying the estimation strategy:</p><ul><li><p><code>"local"</code>: local optimization only (single-level or multi-level polish).</p></li>
+<dd><p>character string specifying the estimation strategy:</p><ul><li><p><code>"local"</code>: local optimization only (single-level or multi-level polish).</p></li>
 <li><p><code>"global_local"</code>: global optimization then local polish (single grid level).</p></li>
 <li><p><code>"multires_global_local"</code>: multi-resolution (coarsest uses global+local; refinements use local only).</p></li>
 </ul></dd>
 
 
 <dt id="arg-global-algorithm-local-algorithm">global_algorithm, local_algorithm<a class="anchor" aria-label="anchor" href="#arg-global-algorithm-local-algorithm"></a></dt>
-<dd><p>Character strings specifying the NLopt algorithms to use for
+<dd><p>NLopt algorithms to use for
 the global and local optimization stages, respectively.</p></dd>
 
 
 <dt id="arg-starts">starts<a class="anchor" aria-label="anchor" href="#arg-starts"></a></dt>
-<dd><p>A list controlling restart and jitter behavior:</p><ul><li><p><code>global</code>: integer, number of global restarts at the first/coarsest level (default 1).</p></li>
+<dd><p>a list controlling restart and jitter behavior:</p><ul><li><p><code>global</code>: integer, number of global restarts at the first/coarsest level (default 1).</p></li>
 <li><p><code>local</code>: integer, number of local multi-starts per level (default 1).</p></li>
 <li><p><code>jitter_sd</code>: numeric SD for jittering (default 0.35).</p></li>
 <li><p><code>seed</code>: integer base seed (default 1).</p></li>
@@ -145,23 +144,23 @@ the global and local optimization stages, respectively.</p></dd>
 
 
 <dt id="arg-finite-bounds">finite_bounds<a class="anchor" aria-label="anchor" href="#arg-finite-bounds"></a></dt>
-<dd><p>Optional list with components <code>lb</code> and <code>ub</code> giving finite lower and
+<dd><p>(optional) list with components <code>lb</code> and <code>ub</code> giving finite lower and
 upper bounds for all 8 parameters. If <code>NULL</code>, bounds are derived from <code>parameter_inits</code>.
-Global algorithms in NLopt require finite bounds.</p></dd>
+Global algorithms and select local algorithms in NLopt require finite bounds.</p></dd>
 
 
 <dt id="arg-refine-best-delta">refine_best_delta<a class="anchor" aria-label="anchor" href="#arg-refine-best-delta"></a></dt>
-<dd><p>Logical. If <code>TRUE</code> and <code>length(delta) &gt; 1</code>, performs refinement
+<dd><p><code>TRUE</code> or <code>FALSE</code>. If <code>TRUE</code> and <code>length(delta) &gt; 1</code>, performs refinement
 of the best <code>delta</code> across additional grid levels (if available).</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical. If <code>TRUE</code>, prints progress messages during fitting.</p></dd>
+<dd><p><code>TRUE</code> or <code>FALSE</code> indicating whether to show progress of model estimation.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An object of class <code>"ldmppr_fit"</code> containing the best <code>nloptr</code> fit and
+    <p>an object of class <code>"ldmppr_fit"</code> containing the best <code>nloptr</code> fit and
   (optionally) stored fits from global restarts and/or a delta search.</p>
     </div>
     <div class="section level2">
@@ -185,8 +184,10 @@ for marked point processes, with a view to forest stand data. <em>Biometrics</em
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">small_example_data</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Load example data</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">small_example_data</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Define grids and budgets</span></span></span>
 <span class="r-in"><span><span class="va">ub</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">25</span>, <span class="fl">25</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">g</span>  <span class="op">&lt;-</span> <span class="fu"><a href="ldmppr_grids.html">ldmppr_grids</a></span><span class="op">(</span>upper_bounds <span class="op">=</span> <span class="va">ub</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>,<span class="fl">10</span>,<span class="fl">10</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">b</span>  <span class="op">&lt;-</span> <span class="fu"><a href="ldmppr_budgets.html">ldmppr_budgets</a></span><span class="op">(</span></span></span>
@@ -195,6 +196,7 @@ for marked point processes, with a view to forest stand data. <em>Biometrics</em
 <span class="r-in"><span>  local_budget_refinement_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>maxeval <span class="op">=</span> <span class="fl">25</span>, xtol_rel <span class="op">=</span> <span class="fl">1e-2</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Estimate parameters using a single delta value</span></span></span>
 <span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">estimate_process_parameters</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">small_example_data</span>,</span></span>
 <span class="r-in"><span>  grids <span class="op">=</span> <span class="va">g</span>,</span></span>
@@ -224,15 +226,16 @@ for marked point processes, with a view to forest stand data. <em>Biometrics</em
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Global search: 2 restart(s), then local refinement.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Local multi-start: 2 start(s).</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Completed in 0.1s.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Best objective: 206.51357</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Best objective: 317.13058</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Finished. Total time: 0.1s.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.481320332 6.469020333 0.007726837 1.091222084 1.618151230 0.067189964</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [7] 0.538492308 0.027606541</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 4.757216e+00 2.190015e-02 8.182097e-07 1.493670e-06 2.722307e+00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [6] 8.140992e-07 4.958124e+00 8.890184e-02</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 'log Lik.' -206.5136 (df=8)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 'log Lik.' -317.1306 (df=8)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># Estimate parameters using multiple delta values (delta search)</span></span></span>
 <span class="r-in"><span><span class="va">g2</span> <span class="op">&lt;-</span> <span class="fu"><a href="ldmppr_grids.html">ldmppr_grids</a></span><span class="op">(</span>upper_bounds <span class="op">=</span> <span class="va">ub</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span>,<span class="fl">8</span>,<span class="fl">8</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>,<span class="fl">12</span>,<span class="fl">12</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fit_delta</span> <span class="op">&lt;-</span> <span class="fu">estimate_process_parameters</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">small_example_data</span>, <span class="co"># x,y,size</span></span></span>

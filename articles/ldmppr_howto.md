@@ -242,10 +242,10 @@ mark_model <- train_mark_model(
 #> Step 5/6: Fitting model (with optional CV tuning)...
 #>   Tuning enabled: 5-fold CV with 20 candidate(s).
 #>   Total model fits: 100 (5 folds x 20 grid).
-#>   Done in 28.6s.
+#>   Done in 28.9s.
 #> Step 6/6: Finalizing output object...
 #>   Done in 0.0s.
-#> Training complete. Total time: 28.6s.
+#> Training complete. Total time: 28.9s.
 
 # Print method for ldmppr_mark_model objects
 print(mark_model)

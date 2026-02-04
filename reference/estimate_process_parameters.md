@@ -31,18 +31,17 @@ estimate_process_parameters(
 
 - data:
 
-  A data.frame or matrix. Must contain either columns `(time, x, y)` or
+  a data.frame or matrix. Must contain either columns `(time, x, y)` or
   `(x, y, size)`. If a matrix is provided without time, it must have
   column names `c("x","y","size")`.
 
 - process:
 
-  Character string specifying the process model. Currently supports
-  `"self_correcting"`.
+  type of process used (currently supports `"self_correcting"`).
 
 - grids:
 
-  A
+  a
   [`ldmppr_grids`](https://lanedrew.github.io/ldmppr/reference/ldmppr_grids.md)
   object specifying the integration grid schedule (single-level or
   multi-resolution). The integration bounds are taken from
@@ -50,20 +49,20 @@ estimate_process_parameters(
 
 - budgets:
 
-  A
+  a
   [`ldmppr_budgets`](https://lanedrew.github.io/ldmppr/reference/ldmppr_budgets.md)
   object controlling optimizer options for the global stage and local
   stages (first level vs refinement levels).
 
 - parameter_inits:
 
-  Optional numeric vector of length 8 giving initialization values for
+  (optional) numeric vector of length 8 giving initialization values for
   the model parameters. If `NULL`, defaults are derived from `data` and
   `grids$upper_bounds`.
 
 - delta:
 
-  Optional numeric scalar or vector. Used only when `data` does not
+  (optional) numeric scalar or vector. Used only when `data` does not
   contain `time` (i.e., data has `(x,y,size)`).
 
   - If `length(delta) == 1`, fits the model once using
@@ -79,24 +78,24 @@ estimate_process_parameters(
 
 - parallel:
 
-  Logical. If `TRUE`, uses furrr/future to parallelize either: (a) over
-  candidate `delta` values (when `length(delta) > 1`), and/or (b) over
-  local multi-start initializations (when `starts$local > 1`),
+  `TRUE` or `FALSE` specifying furrr/future to parallelize either: (a)
+  over candidate `delta` values (when `length(delta) > 1`), and/or (b)
+  over local multi-start initializations (when `starts$local > 1`),
   and/or (c) over global restarts (when `starts$global > 1`).
 
 - num_cores:
 
-  Integer number of workers to use when `set_future_plan = TRUE`.
+  number of workers to use when `set_future_plan = TRUE`.
 
 - set_future_plan:
 
-  If `TRUE`, temporarily sets
+  `TRUE` or `FALSE`, temporarily sets
   `future::plan(multisession, workers = num_cores)` and restores the
   original plan on exit.
 
 - strategy:
 
-  Character string specifying the estimation strategy:
+  character string specifying the estimation strategy:
 
   - `"local"`: local optimization only (single-level or multi-level
     polish).
@@ -109,12 +108,12 @@ estimate_process_parameters(
 
 - global_algorithm, local_algorithm:
 
-  Character strings specifying the NLopt algorithms to use for the
-  global and local optimization stages, respectively.
+  NLopt algorithms to use for the global and local optimization stages,
+  respectively.
 
 - starts:
 
-  A list controlling restart and jitter behavior:
+  a list controlling restart and jitter behavior:
 
   - `global`: integer, number of global restarts at the first/coarsest
     level (default 1).
@@ -128,22 +127,25 @@ estimate_process_parameters(
 
 - finite_bounds:
 
-  Optional list with components `lb` and `ub` giving finite lower and
+  (optional) list with components `lb` and `ub` giving finite lower and
   upper bounds for all 8 parameters. If `NULL`, bounds are derived from
-  `parameter_inits`. Global algorithms in NLopt require finite bounds.
+  `parameter_inits`. Global algorithms and select local algorithms in
+  NLopt require finite bounds.
 
 - refine_best_delta:
 
-  Logical. If `TRUE` and `length(delta) > 1`, performs refinement of the
-  best `delta` across additional grid levels (if available).
+  `TRUE` or `FALSE`. If `TRUE` and `length(delta) > 1`, performs
+  refinement of the best `delta` across additional grid levels (if
+  available).
 
 - verbose:
 
-  Logical. If `TRUE`, prints progress messages during fitting.
+  `TRUE` or `FALSE` indicating whether to show progress of model
+  estimation.
 
 ## Value
 
-An object of class `"ldmppr_fit"` containing the best `nloptr` fit and
+an object of class `"ldmppr_fit"` containing the best `nloptr` fit and
 (optionally) stored fits from global restarts and/or a delta search.
 
 ## Details
@@ -171,8 +173,10 @@ view to forest stand data. *Biometrics*, 72(3), 687-696.
 ## Examples
 
 ``` r
+# Load example data
 data(small_example_data)
 
+# Define grids and budgets
 ub <- c(1, 25, 25)
 g  <- ldmppr_grids(upper_bounds = ub, levels = list(c(10,10,10)))
 b  <- ldmppr_budgets(
@@ -181,6 +185,7 @@ b  <- ldmppr_budgets(
   local_budget_refinement_levels = list(maxeval = 25, xtol_rel = 1e-2)
 )
 
+# Estimate parameters using a single delta value
 fit <- estimate_process_parameters(
   data = small_example_data,
   grids = g,
@@ -210,15 +215,16 @@ fit <- estimate_process_parameters(
 #>   Global search: 2 restart(s), then local refinement.
 #>   Local multi-start: 2 start(s).
 #>   Completed in 0.1s.
-#>   Best objective: 206.51357
+#>   Best objective: 317.13058
 #> Finished. Total time: 0.1s.
 coef(fit)
-#> [1] 0.481320332 6.469020333 0.007726837 1.091222084 1.618151230 0.067189964
-#> [7] 0.538492308 0.027606541
+#> [1] 4.757216e+00 2.190015e-02 8.182097e-07 1.493670e-06 2.722307e+00
+#> [6] 8.140992e-07 4.958124e+00 8.890184e-02
 logLik(fit)
-#> 'log Lik.' -206.5136 (df=8)
+#> 'log Lik.' -317.1306 (df=8)
 
 # \donttest{
+# Estimate parameters using multiple delta values (delta search)
 g2 <- ldmppr_grids(upper_bounds = ub, levels = list(c(8,8,8), c(12,12,12)))
 fit_delta <- estimate_process_parameters(
   data = small_example_data, # x,y,size

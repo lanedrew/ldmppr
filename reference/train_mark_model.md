@@ -22,7 +22,7 @@ train_mark_model(
   save_model = FALSE,
   save_path = NULL,
   parallel = TRUE,
-  n_cores = NULL,
+  num_cores = NULL,
   include_comp_inds = FALSE,
   competition_radius = 15,
   edge_correction = "none",
@@ -76,7 +76,7 @@ train_mark_model(
   `TRUE` or `FALSE` indicating whether to use parallelization in model
   training.
 
-- n_cores:
+- num_cores:
 
   number of cores to use in parallel model training (if `parallel` is
   `TRUE`).
@@ -182,7 +182,7 @@ mark_model <- train_mark_model(
 #>   Done in 2.7s.
 #> Step 6/6: Finalizing output object...
 #>   Done in 0.0s.
-#> Training complete. Total time: 2.8s.
+#> Training complete. Total time: 2.7s.
 
 print(mark_model)
 #> <ldmppr_mark_model>

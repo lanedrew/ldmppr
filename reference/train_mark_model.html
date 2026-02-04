@@ -65,7 +65,7 @@ Allows the user to incorporate location specific information and competition ind
 <span>  save_model <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  save_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  parallel <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  n_cores <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  num_cores <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  include_comp_inds <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  competition_radius <span class="op">=</span> <span class="fl">15</span>,</span>
 <span>  edge_correction <span class="op">=</span> <span class="st">"none"</span>,</span>
@@ -118,7 +118,7 @@ If <code>data</code> is an <code>ldmppr_fit</code> and time is missing, the func
 <dd><p><code>TRUE</code> or <code>FALSE</code> indicating whether to use parallelization in model training.</p></dd>
 
 
-<dt id="arg-n-cores">n_cores<a class="anchor" aria-label="anchor" href="#arg-n-cores"></a></dt>
+<dt id="arg-num-cores">num_cores<a class="anchor" aria-label="anchor" href="#arg-num-cores"></a></dt>
 <dd><p>number of cores to use in parallel model training (if <code>parallel</code> is <code>TRUE</code>).</p></dd>
 
 
@@ -217,7 +217,7 @@ If <code>cv_folds &lt;= 1</code>, tuning is skipped and the model is fit once wi
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 2.7s.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Step 6/6: Finalizing output object...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 0.0s.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Training complete. Total time: 2.8s.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Training complete. Total time: 2.7s.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">mark_model</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;ldmppr_mark_model&gt;</span>
