@@ -1,7 +1,7 @@
 #' Plot a marked point process
 #'
-#' @param mpp_data \code{ppp} object with marks or data frame with columns (x, y, size).
-#' @param pattern_type type of pattern to plot ("reference" or "simulated").
+#' @param mpp_data \code{ppp} object with marks or data.frame with columns (\code{x}, \code{y}, \code{size}).
+#' @param pattern_type type of pattern to plot (\code{"reference"} or \code{"simulated"}).
 #'
 #' @return a \code{ggplot} object of the marked point process.
 #'

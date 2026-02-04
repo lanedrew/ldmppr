@@ -48,11 +48,13 @@ print.ldmppr_model_check <- function(x, ...) {
 #' @export
 summary.ldmppr_model_check <- function(object, ...) {
   # GET global_envelope_test objects usually have p-values; be conservative if field names differ
-  p_comb <- object$combined_env$p %||% object$combined_env$p_value %||% NA_real_
-  per_stat <- vapply(object$envs, function(e) e$p %||% e$p_value %||% NA_real_, numeric(1))
+  p_comb <- attributes(object$combined_env)$p %||% object$combined_env$p_value %||% NA_real_
+  per_stat <- vapply(object$envs, function(e) attributes(e)$p %||% e$p_value %||% NA_real_, numeric(1))
+  alpha <- attributes(object$combined_env)$alpha %||% 0.05
 
   out <- list(
     p_combined = p_comb,
+    alpha = alpha,
     p_individual = per_stat,
     settings = object$settings
   )
@@ -68,7 +70,7 @@ summary.ldmppr_model_check <- function(object, ...) {
 #' @export
 print.summary.ldmppr_model_check <- function(x, ...) {
   cat("<summary: ldmppr_model_check>\n")
-  cat("  combined p-value: ", x$p_combined, "\n", sep = "")
+  cat("  combined p-value: ", x$p_combined, " for alpha = ", x$alpha, "\n", sep = "")
   cat("  individual p-values:\n")
   print(x$p_individual)
   invisible(x)
