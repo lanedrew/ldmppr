@@ -1,6 +1,7 @@
 # Example \`ldmppr\` Workflow on Simulated Data
 
 ``` r
+set.seed(90210)
 library(ldmppr)
 library(dplyr)
 #> 
@@ -83,8 +84,7 @@ function. These inputs are accepted as:
 
 - a matrix/data.frame with columns `(time, x, y)`, **or**
 - a matrix/data.frame with columns `(x, y, size)` plus a mapping
-  hyperparameter `delta` (or a vector `delta_values` for a
-  delta-search).
+  hyperparameter `delta` (or a vector `delta` for a delta-search).
 
 The power law mapping function depends on the hyperparameter `delta`,
 which controls the shape of the mapping relationship between sizes and
@@ -101,57 +101,74 @@ Below we show the common case where you start from `(x, y, size)` with
 # Use the (x, y, size) form and let estimate_process_parameters() construct time via delta
 parameter_estimation_data <- small_example_data
 
-# Define the integration / grid values used by the likelihood approximation
-x_grid <- seq(0, 25, length.out = 20)
-y_grid <- seq(0, 25, length.out = 20)
-t_grid <- seq(0, 1,  length.out = 20)
+# Upper bounds for (t, x, y)
+ub <- c(1, 25, 25)
+
+# Define the integration / grid schedule used by the likelihood approximation
+grids <- ldmppr_grids(
+  upper_bounds = ub,
+  levels = list(c(20, 20, 20))
+)
+
+# Define optimizer budgets/options for the global + local stages
+budgets <- ldmppr_budgets(
+  global_options = list(maxeval = 150),
+  local_budget_first_level = list(maxeval = 300, xtol_rel = 1e-5),
+  local_budget_refinement_levels = list(maxeval = 300, xtol_rel = 1e-5)
+)
 
 # Parameter initialization values: (alpha1, beta1, gamma1, alpha2, beta2, alpha3, beta3, gamma3)
 parameter_inits <- c(1.5, 8.5, 0.015, 1.5, 3.2, 0.75, 3, 0.08)
 
-# Upper bounds for (t, x, y)
-upper_bounds <- c(1, 25, 25)
-
-
 fit_sc <- estimate_process_parameters(
   data = parameter_estimation_data,
-  process = "self_correcting",
-  x_grid = x_grid,
-  y_grid = y_grid,
-  t_grid = t_grid,
-  upper_bounds = upper_bounds,
+  grids = grids,
+  budgets = budgets,
   parameter_inits = parameter_inits,
   delta = 1,
   parallel = FALSE,
-  strategy = c("global_local"),
+  strategy = "global_local",
   global_algorithm = "NLOPT_GN_CRS2_LM",
   local_algorithm = "NLOPT_LN_BOBYQA",
-  global_options = list(maxeval = 150),
-  local_options = list(maxeval = 300, xtol_rel = 1e-5, maxtime = NULL),
-  verbose = FALSE
+  verbose = TRUE
 )
-
+#> Estimating self-correcting process parameters
+#>   Strategy: global_local
+#>   Delta: 1
+#>   Grids: 1 level(s)
+#>   Local optimizer: NLOPT_LN_BOBYQA
+#>   Global optimizer: NLOPT_GN_CRS2_LM
+#>   Starts: global=1, local=1, jitter_sd=0.35, seed=1
+#>   Parallel: off
+#> Step 1/2: Preparing data and objective function...
+#>   Prepared 121 points.
+#>   Done in 0.0s.
+#> Step 2/2: Optimizing parameters...
+#> Single level (grid 20x20x20)
+#>   Global search: 1 restart(s), then local refinement.
+#>   Completed in 0.5s.
+#>   Best objective: 174.58351
+#> Finished. Total time: 0.5s.
 # Print method for ldmppr_fit objects
-print(fit_sc)
+fit_sc
 #> <ldmppr_fit>
 #>   process: self_correcting
 #>   engine:  nloptr
 #>   n_obs:   121
 #>   delta*:  1
-#>   objective(best): 157.7901
-#>  optimal parameters: -2.35915611.212930.018337991.5852524.4480860.70535082.3648550.08446602
+#>   objective (best): 174.5835
+#>  optimal parameters:  -1.153893 10.13079 0.02562104 1.762711 2.576579 0.793192 2.500101 0.1115519
 
-# Extract parameters
 estimated_parameters <- coef(fit_sc)
 estimated_parameters
-#> [1] -2.35915570 11.21293135  0.01833799  1.58525187  4.44808655  0.70535081
-#> [7]  2.36485473  0.08446602
+#> [1] -1.15389260 10.13079399  0.02562104  1.76271138  2.57657919  0.79319202
+#> [7]  2.50010138  0.11155188
 ```
 
 **Notes**
 
 - If you want to search over possible mappings between size and time,
-  provide `delta_values = c(...)` and set `parallel = TRUE` to run one
+  provide `delta = c(...)` and set `parallel = TRUE` to run one
   optimizer per delta (optionally in parallel).
 - For better accuracy you typically want denser grids than in this
   vignette example; the small grid here is chosen to keep runtime
@@ -225,10 +242,10 @@ mark_model <- train_mark_model(
 #> Step 5/6: Fitting model (with optional CV tuning)...
 #>   Tuning enabled: 5-fold CV with 20 candidate(s).
 #>   Total model fits: 100 (5 folds x 20 grid).
-#>   Done in 27.7s.
+#>   Done in 28.6s.
 #> Step 6/6: Finalizing output object...
 #>   Done in 0.0s.
-#> Training complete. Total time: 27.8s.
+#> Training complete. Total time: 28.6s.
 
 # Print method for ldmppr_mark_model objects
 print(mark_model)
@@ -358,11 +375,11 @@ plot(simulated)
 head(as.data.frame(simulated))
 #>        time         x         y    marks
 #> 1 0.0000000 10.000000 14.000000 900.3945
-#> 2 0.5665075  6.876867 11.000582 616.8078
-#> 3 0.5681509 23.172989  5.596634 509.3947
-#> 4 0.5888005 15.098973 22.274414 606.6250
-#> 5 0.5888236  9.816135 12.080103 576.7651
-#> 6 0.5995983  7.749460  7.628359 630.4380
+#> 2 0.4430049 21.577247 23.111446 541.6990
+#> 3 0.5039294 16.632781 22.061460 647.5046
+#> 4 0.5408029  8.470302 22.657083 587.2133
+#> 5 0.5605597 13.255630 11.320682 749.7777
+#> 6 0.5762588 15.930922  8.571894 558.3950
 ```
 
 ------------------------------------------------------------------------

@@ -10,6 +10,17 @@
   : Extract covariate values from a set of rasters
 - [`generate_mpp()`](https://lanedrew.github.io/ldmppr/reference/generate_mpp.md)
   : Generate a marked process given locations and marks
+- [`print(`*`<ldmppr_budgets>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_budgets-class.md)
+  [`summary(`*`<ldmppr_budgets>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_budgets-class.md)
+  [`print(`*`<summary.ldmppr_budgets>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_budgets-class.md)
+  [`as.data.frame(`*`<ldmppr_budgets>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_budgets-class.md)
+  [`length(`*`<ldmppr_budgets>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_budgets-class.md)
+  [`` `[`( ``*`<ldmppr_budgets>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_budgets-class.md)
+  [`as.list(`*`<ldmppr_budgets>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_budgets-class.md)
+  : Optimization budget specification object
+- [`ldmppr_budgets()`](https://lanedrew.github.io/ldmppr/reference/ldmppr_budgets.md)
+  : Create an optimization budget specification for
+  estimate_process_parameters()
 - [`print(`*`<ldmppr_fit>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_fit.md)
   [`coef(`*`<ldmppr_fit>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_fit.md)
   [`logLik(`*`<ldmppr_fit>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_fit.md)
@@ -18,6 +29,16 @@
   [`plot(`*`<ldmppr_fit>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_fit.md)
   [`as_nloptr()`](https://lanedrew.github.io/ldmppr/reference/ldmppr_fit.md)
   : Fitted point-process model object
+- [`print(`*`<ldmppr_grids>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_grids-class.md)
+  [`summary(`*`<ldmppr_grids>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_grids-class.md)
+  [`print(`*`<summary.ldmppr_grids>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_grids-class.md)
+  [`as.data.frame(`*`<ldmppr_grids>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_grids-class.md)
+  [`length(`*`<ldmppr_grids>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_grids-class.md)
+  [`` `[`( ``*`<ldmppr_grids>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_grids-class.md)
+  [`as.list(`*`<ldmppr_grids>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_grids-class.md)
+  : Grid schedule object
+- [`ldmppr_grids()`](https://lanedrew.github.io/ldmppr/reference/ldmppr_grids.md)
+  : Create a grid schedule for estimate_process_parameters()
 - [`ldmppr_mark_model()`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)
   [`print(`*`<ldmppr_mark_model>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)
   [`predict(`*`<ldmppr_mark_model>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)

@@ -51,8 +51,8 @@ scale_rasters(rast_list)
 #> coord. ref. : lon/lat WGS 84 (CRS84) (OGC:CRS84) 
 #> source(s)   : memory
 #> name        :     lyr.1 
-#> min value   : -1.621179 
-#> max value   :  1.662840 
+#> min value   : -2.002002 
+#> max value   :  1.479849 
 #> 
 #> [[2]]
 #> class       : SpatRaster 
@@ -62,7 +62,7 @@ scale_rasters(rast_list)
 #> coord. ref. : lon/lat WGS 84 (CRS84) (OGC:CRS84) 
 #> source(s)   : memory
 #> name        :     lyr.1 
-#> min value   : -1.569532 
-#> max value   :  1.731932 
+#> min value   : -1.540647 
+#> max value   :  1.840785 
 #> 
 ```

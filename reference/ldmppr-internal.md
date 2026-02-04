@@ -85,4 +85,31 @@ resolve_reference_ppp(reference_data, process_fit, xy_bounds)
 .infer_xy_bounds(process_fit)
 
 .infer_anchor_point(process_fit)
+
+new_ldmppr_budgets(
+  global_options,
+  local_budget_first_level,
+  local_budget_refinement_levels = NULL
+)
+
+is_ldmppr_budgets(x)
+
+as_ldmppr_budgets(x, ...)
+
+.validate_ldmppr_budgets(b)
+
+new_ldmppr_grids(levels, upper_bounds, labels = NULL, include_endpoints = TRUE)
+
+is_ldmppr_grids(x)
+
+as_ldmppr_grids(x, ...)
+
+.validate_ldmppr_grids(g)
+
+.ldmppr_make_grid_schedule(
+  upper_bounds,
+  levels,
+  labels = NULL,
+  include_endpoints = TRUE
+)
 ```

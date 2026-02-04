@@ -32,7 +32,8 @@ check_model_fit(
   seed = 0,
   parallel = FALSE,
   num_cores = max(1L, parallel::detectCores() - 1L),
-  set_future_plan = FALSE
+  set_future_plan = FALSE,
+  mark_delta = NULL
 )
 ```
 
@@ -138,6 +139,11 @@ check_model_fit(
 
   `TRUE` or `FALSE`. If `TRUE` and `parallel=TRUE`, set a local future
   plan internally (default behavior uses `multisession`).
+
+- mark_delta:
+
+  (optional) numeric value to rescale the time covariate used by the
+  mark model.
 
 ## Value
 

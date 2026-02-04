@@ -182,7 +182,7 @@ mark_model <- train_mark_model(
 #>   Done in 2.7s.
 #> Step 6/6: Finalizing output object...
 #>   Done in 0.0s.
-#> Training complete. Total time: 2.7s.
+#> Training complete. Total time: 2.8s.
 
 print(mark_model)
 #> <ldmppr_mark_model>
