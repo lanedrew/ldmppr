@@ -12,11 +12,11 @@ plot_mpp(mpp_data, pattern_type = c("reference", "simulated"))
 
 - mpp_data:
 
-  `ppp` object with marks or data frame with columns (x, y, size).
+  `ppp` object with marks or data.frame with columns (`x`, `y`, `size`).
 
 - pattern_type:
 
-  type of pattern to plot ("reference" or "simulated").
+  type of pattern to plot (`"reference"` or `"simulated"`).
 
 ## Value
 
