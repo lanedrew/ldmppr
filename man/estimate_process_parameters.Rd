@@ -7,159 +7,145 @@
 estimate_process_parameters(
   data,
   process = c("self_correcting"),
-  x_grid = NULL,
-  y_grid = NULL,
-  t_grid = NULL,
-  upper_bounds = NULL,
+  grids,
+  budgets,
   parameter_inits = NULL,
   delta = NULL,
-  delta_values = NULL,
   parallel = FALSE,
   num_cores = max(1L, parallel::detectCores() - 1L),
   set_future_plan = FALSE,
   strategy = c("local", "global_local", "multires_global_local"),
-  grid_levels = NULL,
-  refine_best_delta = TRUE,
   global_algorithm = "NLOPT_GN_CRS2_LM",
   local_algorithm = "NLOPT_LN_BOBYQA",
-  global_options = list(maxeval = 150),
-  local_options = list(maxeval = 300, xtol_rel = 1e-05, maxtime = NULL),
-  global_n_starts = 1L,
-  n_starts = 1L,
-  jitter_sd = 0.35,
-  seed = 1L,
+  starts = list(global = 1L, local = 1L, jitter_sd = 0.35, seed = 1L),
   finite_bounds = NULL,
+  refine_best_delta = TRUE,
   verbose = TRUE
 )
 }
 \arguments{
-\item{data}{a data.frame or matrix. Must contain either columns \code{(time, x, y)} or \code{(x, y, size)}.
-If a matrix is provided for delta search, it must have column names \code{c("x","y","size")}.}
+\item{data}{A data.frame or matrix. Must contain either columns \code{(time, x, y)}
+or \code{(x, y, size)}. If a matrix is provided without time, it must have
+column names \code{c("x","y","size")}.}
 
-\item{process}{character string specifying the process model. Currently supports \code{"self_correcting"}.}
+\item{process}{Character string specifying the process model. Currently supports
+\code{"self_correcting"}.}
 
-\item{x_grid, y_grid, t_grid}{numeric vectors defining the integration grid for \eqn{(x,y,t)}.}
+\item{grids}{A \code{\link{ldmppr_grids}} object specifying the integration grid schedule
+(single-level or multi-resolution). The integration bounds are taken from
+\code{grids$upper_bounds}.}
 
-\item{upper_bounds}{numeric vector of length 3 giving \code{c(b_t, b_x, b_y)}.}
+\item{budgets}{A \code{\link{ldmppr_budgets}} object controlling optimizer options
+for the global stage and local stages (first level vs refinement levels).}
 
-\item{parameter_inits}{(optional) numeric vector of length 8 giving initialization values
-for the model parameters. If \code{NULL}, sensible defaults are derived from \code{data}
-and \code{upper_bounds}.}
+\item{parameter_inits}{Optional numeric vector of length 8 giving initialization values
+for the model parameters. If \code{NULL}, defaults are derived from \code{data} and
+\code{grids$upper_bounds}.}
 
-\item{delta}{(optional) numeric scalar used only when \code{data} contains \code{(x,y,size)} but not \code{time}.}
+\item{delta}{Optional numeric scalar or vector. Used only when \code{data} does not contain
+\code{time} (i.e., data has \code{(x,y,size)}).
+\itemize{
+  \item If \code{length(delta) == 1}, fits the model once using \code{power_law_mapping(size, delta)}.
+  \item If \code{length(delta) > 1}, performs a delta-search by fitting the model for each candidate value
+    and selecting the best objective. If \code{refine_best_delta = TRUE} and multiple grid levels are used,
+    the best delta is refined on the remaining (finer) grid levels.
+}
+If \code{data} already contains \code{time}, \code{delta} is ignored when \code{length(delta)==1}
+and is an error when \code{length(delta)>1}.}
 
-\item{delta_values}{(optional) numeric vector. If supplied, the function fits the model for each value of \code{delta_values}
-(mapping \code{size -> time} via \code{\link{power_law_mapping}}) and returns the best fit (lowest objective).}
-
-\item{parallel}{logical. If \code{TRUE}, uses furrr/future to parallelize either
-(a) over \code{delta_values} (when provided) or (b) over multi-start initializations
-(when \code{delta_values} is \code{NULL} and \code{n_starts > 1}).}
+\item{parallel}{Logical. If \code{TRUE}, uses furrr/future to parallelize either:
+(a) over candidate \code{delta} values (when \code{length(delta) > 1}), and/or
+(b) over local multi-start initializations (when \code{starts$local > 1}), and/or
+(c) over global restarts (when \code{starts$global > 1}).}
 
 \item{num_cores}{Integer number of workers to use when \code{set_future_plan = TRUE}.}
 
-\item{set_future_plan}{\code{TRUE} or \code{FALSE}, if \code{TRUE}, temporarily sets \code{future::plan(multisession, workers = num_cores)}
-and restores the original plan on exit.}
+\item{set_future_plan}{If \code{TRUE}, temporarily sets
+\code{future::plan(multisession, workers = num_cores)} and restores the original plan on exit.}
 
 \item{strategy}{Character string specifying the estimation strategy:
-- \code{"local"}: single-level local optimization from \code{parameter_inits}.
-- \code{"global_local"}: single-level global optimization (from \code{parameter_inits}) followed by local polish.
-- \code{"multires_global_local"}: multi-resolution fitting over \code{grid_levels} (coarsest level uses global + local; finer levels use local polish only).}
+\itemize{
+  \item \code{"local"}: local optimization only (single-level or multi-level polish).
+  \item \code{"global_local"}: global optimization then local polish (single grid level).
+  \item \code{"multires_global_local"}: multi-resolution (coarsest uses global+local; refinements use local only).
+}}
 
-\item{grid_levels}{(optional) list defining the multi-resolution grid schedule when \code{strategy = "multires_global_local"}.
-Each entry can be a numeric vector \code{c(nx, ny, nt)} or a list with named entries \code{list(nx=..., ny=..., nt=...)}.
-If \code{NULL}, uses the supplied \code{(x_grid, y_grid, t_grid)} as a single level.}
-
-\item{refine_best_delta}{\code{TRUE} or \code{FALSE}, if \code{TRUE} and \code{delta_values} is supplied, performs a final refinement
-fit at the best delta found using the full multi-resolution strategy.}
-
-\item{global_algorithm, local_algorithm}{character strings specifying the NLopt algorithms to use for
+\item{global_algorithm, local_algorithm}{Character strings specifying the NLopt algorithms to use for
 the global and local optimization stages, respectively.}
 
-\item{global_options, local_options}{named lists of options to pass to \code{nloptr::nloptr()} for
-the global and local optimization stages, respectively.}
+\item{starts}{A list controlling restart and jitter behavior:
+\itemize{
+  \item \code{global}: integer, number of global restarts at the first/coarsest level (default 1).
+  \item \code{local}: integer, number of local multi-starts per level (default 1).
+  \item \code{jitter_sd}: numeric SD for jittering (default 0.35).
+  \item \code{seed}: integer base seed (default 1).
+}}
 
-\item{global_n_starts}{integer number of restarts to use for the global optimization stage.}
+\item{finite_bounds}{Optional list with components \code{lb} and \code{ub} giving finite lower and
+upper bounds for all 8 parameters. If \code{NULL}, bounds are derived from \code{parameter_inits}.
+Global algorithms in NLopt require finite bounds.}
 
-\item{n_starts}{integer number of multi-start initializations to use for the local optimization stage.}
+\item{refine_best_delta}{Logical. If \code{TRUE} and \code{length(delta) > 1}, performs refinement
+of the best \code{delta} across additional grid levels (if available).}
 
-\item{jitter_sd}{numeric standard deviation used to jitter the multi-start initializations.}
-
-\item{seed}{integer random seed used for multi-start initialization jittering.}
-
-\item{finite_bounds}{(optional) list with components \code{lb} and \code{ub} giving finite lower and upper bounds
-for all 8 parameters. Used only when the selected optimization algorithms require finite bounds.}
-
-\item{verbose}{\code{TRUE} or \code{FALSE}, if \code{TRUE}, prints progress messages during fitting.}
+\item{verbose}{Logical. If \code{TRUE}, prints progress messages during fitting.}
 }
 \value{
-an object of class \code{"ldmppr_fit"} containing the best \code{nloptr} fit and (optionally) all fits from a delta search.
+An object of class \code{"ldmppr_fit"} containing the best \code{nloptr} fit and
+  (optionally) stored fits from global restarts and/or a delta search.
 }
 \description{
-Estimate spatio-temporal point process parameters by maximizing the (approximate) full log-likelihood
-using \code{\link[nloptr:nloptr]{nloptr}}. For the self-correcting process, the arrival times must be on \eqn{(0,1)}
-and can either be supplied directly in \code{data} as \code{time}, or constructed from \code{size} via the
-gentle-decay (power-law) mapping \code{\link{power_law_mapping}} using \code{delta} (single fit) or
-\code{delta_values} (delta search).
+Estimate spatio-temporal point process parameters by maximizing the (approximate)
+full log-likelihood using \code{\link[nloptr:nloptr]{nloptr}}.
 }
 \details{
-For the self-correcting process, the log-likelihood integral is approximated using the supplied grid
-\code{(x_grid, y_grid, t_grid)} over the bounded domain \code{upper_bounds}.
-When \code{delta_values} is supplied, this function performs a grid search over \code{delta} values, fitting the model
-separately for each mapped dataset and selecting the best objective value.
+For the self-correcting process, arrival times must lie on \eqn{(0,1)} and can be
+supplied directly in \code{data} as \code{time}, or constructed from \code{size}
+via the gentle-decay (power-law) mapping \code{\link{power_law_mapping}} using
+\code{delta}. When \code{delta} is a vector, the model is fit for each candidate
+value and the best objective is selected.
+
+This function supports multi-resolution estimation via a \code{\link{ldmppr_grids}}
+schedule. If multiple grid levels are provided, the coarsest level may use a global
+optimizer followed by local refinement, and subsequent levels run local refinement only.
 }
 \examples{
 data(small_example_data)
 
-x_grid <- seq(0, 25, length.out = 5)
-y_grid <- seq(0, 25, length.out = 5)
-t_grid <- seq(0, 1,  length.out = 5)
-
-parameter_inits <- c(1.5, 8.5, .015, 1.5, 3.2, .75, 3, .08)
-upper_bounds <- c(1, 25, 25)
+ub <- c(1, 25, 25)
+g  <- ldmppr_grids(upper_bounds = ub, levels = list(c(10,10,10)))
+b  <- ldmppr_budgets(
+  global_options = list(maxeval = 150),
+  local_budget_first_level = list(maxeval = 50, xtol_rel = 1e-2),
+  local_budget_refinement_levels = list(maxeval = 25, xtol_rel = 1e-2)
+)
 
 fit <- estimate_process_parameters(
   data = small_example_data,
-  process = "self_correcting",
-  x_grid = x_grid,
-  y_grid = y_grid,
-  t_grid = t_grid,
-  upper_bounds = upper_bounds,
-  parameter_inits = parameter_inits,
+  grids = g,
+  budgets = b,
   delta = 1,
   strategy = "global_local",
   global_algorithm = "NLOPT_GN_CRS2_LM",
-  local_algorithm = "NLOPT_LN_BOBYQA",
-  global_options = list(maxeval = 150),
-  local_options = list(maxeval = 25, xtol_rel = 1e-2),
+  local_algorithm  = "NLOPT_LN_BOBYQA",
+  starts = list(global = 2, local = 2, jitter_sd = 0.25, seed = 1),
   verbose = TRUE
 )
-
 coef(fit)
 logLik(fit)
 
 \donttest{
-# Delta-search example (data has x,y,size; time is derived internally for each delta)
+g2 <- ldmppr_grids(upper_bounds = ub, levels = list(c(8,8,8), c(12,12,12)))
 fit_delta <- estimate_process_parameters(
   data = small_example_data, # x,y,size
-  process = "self_correcting",
-  x_grid = x_grid,
-  y_grid = y_grid,
-  t_grid = t_grid,
-  upper_bounds = upper_bounds,
-  parameter_inits = parameter_inits,
-  delta_values = c(0.35, 0.5, 0.65, 0.9, 1.0),
+  grids = g2,
+  budgets = b,
+  delta = c(0.35, 0.5, 0.65, 0.9, 1.0),
   parallel = TRUE,
   set_future_plan = TRUE,
   num_cores = 2,
   strategy = "multires_global_local",
-  grid_levels = list(
-  list(nx = 5, ny = 5, nt = 5),
-  list(nx = 8, ny = 8, nt = 8),
-  list(nx = 10, ny = 10, nt = 10)
-  ),
-  global_options = list(maxeval = 100),
-  local_options  = list(maxeval = 100, xtol_rel = 1e-3),
-  n_starts = 1,
+  starts = list(local = 1),
   refine_best_delta = FALSE,
   verbose = FALSE
 )

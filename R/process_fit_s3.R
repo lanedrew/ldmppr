@@ -40,8 +40,8 @@ print.ldmppr_fit <- function(x, ...) {
   if (!is.null(x$data_summary$n)) cat("  n_obs:   ", x$data_summary$n, "\n", sep = "")
   if (!is.null(x$mapping$delta_values)) cat("  n_deltas:", length(x$mapping$delta_values), "\n", sep = "")
   if (!is.null(x$mapping$delta) && !is.na(x$mapping$delta)) cat("  delta*:  ", x$mapping$delta, "\n", sep = "")
-  if (!is.null(x$fit$objective)) cat("  objective(best): ", signif(x$fit$objective, 8), "\n", sep = "")
-  if (!is.null(x$fit$solution)) cat(" optimal parameters: ", signif(x$fit$solution, 8), "\n", sep = "")
+  if (!is.null(x$fit$objective)) cat("  objective (best): ", signif(x$fit$objective, 8), "\n", sep = "")
+  if (!is.null(x$fit$solution)) cat(" optimal parameters: ", signif(x$fit$solution, 8), "\n", sep = " ")
   invisible(x)
 }
 

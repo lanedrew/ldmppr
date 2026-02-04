@@ -25,7 +25,8 @@ check_model_fit(
   seed = 0,
   parallel = FALSE,
   num_cores = max(1L, parallel::detectCores() - 1L),
-  set_future_plan = FALSE
+  set_future_plan = FALSE,
+  mark_delta = NULL
 )
 }
 \arguments{
@@ -80,6 +81,8 @@ When \code{TRUE}, progress is reported via \pkg{progressr} (if available) and is
 
 \item{set_future_plan}{\code{TRUE} or \code{FALSE}. If \code{TRUE} and \code{parallel=TRUE}, set a local \pkg{future}
 plan internally (default behavior uses \code{multisession}).}
+
+\item{mark_delta}{(optional) numeric value to rescale the time covariate used by the mark model.}
 }
 \value{
 an object of class \code{"ldmppr_model_check"}.

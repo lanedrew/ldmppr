@@ -22,6 +22,15 @@
 \alias{.as_sc_params}
 \alias{.infer_xy_bounds}
 \alias{.infer_anchor_point}
+\alias{new_ldmppr_budgets}
+\alias{is_ldmppr_budgets}
+\alias{as_ldmppr_budgets}
+\alias{.validate_ldmppr_budgets}
+\alias{new_ldmppr_grids}
+\alias{is_ldmppr_grids}
+\alias{as_ldmppr_grids}
+\alias{.validate_ldmppr_grids}
+\alias{.ldmppr_make_grid_schedule}
 \title{Internal helpers (not part of the public API)}
 \usage{
 new_ldmppr_model_check(
@@ -103,6 +112,33 @@ resolve_reference_ppp(reference_data, process_fit, xy_bounds)
 .infer_xy_bounds(process_fit)
 
 .infer_anchor_point(process_fit)
+
+new_ldmppr_budgets(
+  global_options,
+  local_budget_first_level,
+  local_budget_refinement_levels = NULL
+)
+
+is_ldmppr_budgets(x)
+
+as_ldmppr_budgets(x, ...)
+
+.validate_ldmppr_budgets(b)
+
+new_ldmppr_grids(levels, upper_bounds, labels = NULL, include_endpoints = TRUE)
+
+is_ldmppr_grids(x)
+
+as_ldmppr_grids(x, ...)
+
+.validate_ldmppr_grids(g)
+
+.ldmppr_make_grid_schedule(
+  upper_bounds,
+  levels,
+  labels = NULL,
+  include_endpoints = TRUE
+)
 }
 \description{
 These functions are used internally by ldmppr and are not intended to be

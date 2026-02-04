@@ -38,6 +38,7 @@
 #' @param num_cores number of workers to use when \code{parallel=TRUE}. Defaults to one fewer than the number of detected cores.
 #' @param set_future_plan \code{TRUE} or \code{FALSE}. If \code{TRUE} and \code{parallel=TRUE}, set a local \pkg{future}
 #'   plan internally (default behavior uses \code{multisession}).
+#' @param mark_delta (optional) numeric value to rescale the time covariate used by the mark model.
 #'
 #' @return an object of class \code{"ldmppr_model_check"}.
 #'
@@ -128,7 +129,8 @@ check_model_fit <- function(reference_data = NULL,
                             seed = 0,
                             parallel = FALSE,
                             num_cores = max(1L, parallel::detectCores() - 1L),
-                            set_future_plan = FALSE) {
+                            set_future_plan = FALSE,
+                            mark_delta = NULL) {
 
   process <- match.arg(process)
 
@@ -149,6 +151,9 @@ check_model_fit <- function(reference_data = NULL,
   if (!is.logical(scaled_rasters)) stop("`scaled_rasters` must be TRUE/FALSE.", call. = FALSE)
   if (is.null(mark_model)) stop("Provide a `mark_model` (ldmppr_mark_model or legacy) for predicting marks.", call. = FALSE)
   if (!is.logical(parallel)) stop("`parallel` must be TRUE/FALSE.", call. = FALSE)
+  if (!is.null(mark_delta) && (is.na(mark_delta) || !is.numeric(mark_delta) || length(mark_delta) != 1L)) {
+    stop("`mark_delta` must be NULL or a single numeric value.", call. = FALSE)
+  }
 
   # ---- resolve mark model ----
   mark_model <- as_mark_model(mark_model)
@@ -205,13 +210,14 @@ check_model_fit <- function(reference_data = NULL,
     on.exit(future::plan(original_plan), add = TRUE)
 
     num_cores <- max(1L, as.integer(num_cores))
-    future::plan(future::multisession, workers = num_cores)
+
+    # stdout=FALSE suppresses worker console noise (including S3 overwrite messages)
+    future::plan(future::multisession, workers = num_cores, stdout = FALSE)
 
     if (isTRUE(verbose)) message("future plan set to multisession with workers = ", num_cores)
   }
 
   # ---- terra serialization safeguard for multisession ----
-  # Wrap SpatRaster so it can be serialized to multisession workers (prevents "external pointer is not valid")
   wrapped_rasters <- FALSE
   if (isTRUE(will_parallelize) &&
       requireNamespace("terra", quietly = TRUE) &&
@@ -239,7 +245,7 @@ check_model_fit <- function(reference_data = NULL,
   n_real <- numeric(n_sim)
 
   sim_one <- function() {
-    # Unwrap rasters inside worker if needed (namespace-only loads; no attach/startup chatter)
+    # Unwrap rasters inside worker if needed
     rl <- raster_list
     if (isTRUE(wrapped_rasters) && requireNamespace("terra", quietly = TRUE)) {
       rl <- lapply(rl, function(r) {
@@ -260,6 +266,11 @@ check_model_fit <- function(reference_data = NULL,
       return(list(n = 0,
                   K = rep(NA_real_, d_length), F = rep(NA_real_, d_length), G = rep(NA_real_, d_length),
                   J = rep(NA_real_, d_length), E = rep(NA_real_, d_length), V = rep(NA_real_, d_length)))
+    }
+
+    # Optional: rescale the time covariate used by the mark model for congruence
+    if (!is.null(mark_delta) && ("time" %in% names(sim_df))) {
+      sim_df$time <- power_law_mapping(sim_df$time, mark_delta)
     }
 
     pred_marks <- predict_marks(
@@ -286,65 +297,44 @@ check_model_fit <- function(reference_data = NULL,
     )
   }
 
+  sim_one_quiet <- function(i) {
+    suppressPackageStartupMessages(
+      suppressMessages(
+        sim_one()
+      )
+    )
+  }
+
   # ---- simulate (parallel or sequential) ----
   if (isTRUE(will_parallelize)) {
     if (!requireNamespace("furrr", quietly = TRUE) || !requireNamespace("future", quietly = TRUE)) {
       stop("Parallel execution requires packages 'future' and 'furrr'.", call. = FALSE)
     }
 
-    # Goal 1: avoid repeated "Registered S3 method overwritten ..." spam from worker startup
-    #   -> do NOT attach packages on workers (packages = character(0))
-    #   -> do NOT relay packageStartupMessage conditions back to the main R session
-    #
-    # Goal 2: progress that doesn't look "stuck" in RStudio
-    #   -> use smaller future chunks so progress updates arrive sooner
-    #   -> use the RStudio handler when available
-    workers_for_chunks <- max(1L, as.integer(num_cores))
-    chunk_size <- max(1L, floor(n_sim / (workers_for_chunks * 20L)))  # ~20 chunks/worker
-
-    furrr_opts <- furrr::furrr_options(
-      seed = TRUE,
-      packages = character(0),
-      stdout = FALSE,
-      # Relay all conditions EXCEPT package startup messages (this is what prints the overwrite notices)
-      conditions = structure("condition", exclude = c("packageStartupMessage")),
-      # Smaller chunks => earlier/more frequent progress updates
-      chunk_size = chunk_size
-    )
-
     use_progressr <- isTRUE(verbose) && requireNamespace("progressr", quietly = TRUE)
 
     if (isTRUE(use_progressr)) {
-      # Choose a handler that works well in RStudio on macOS
-      handler_name <- "txtprogressbar"
-      if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
-        handler_name <- "rstudio"
-      }
-
-      old_handlers <- try(progressr::handlers(), silent = TRUE)
-      on.exit({
-        if (!inherits(old_handlers, "try-error")) progressr::handlers(old_handlers)
-      }, add = TRUE)
-
-      progressr::handlers(handler_name)
-
       results <- progressr::with_progress({
+        # Prefer RStudio handler if available; else fallback
+        if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+          progressr::handlers("rstudio")
+        } else {
+          progressr::handlers("txtprogressbar")
+        }
+
         p <- progressr::progressor(steps = n_sim)
+
         furrr::future_map(
           seq_len(n_sim),
-          function(i) {
-            out <- sim_one()
-            p()
-            out
-          },
-          .options = furrr_opts
+          function(i) { out <- sim_one_quiet(i); p(); out },
+          .options = furrr::furrr_options(seed = TRUE)
         )
       })
     } else {
       results <- furrr::future_map(
         seq_len(n_sim),
-        function(i) sim_one(),
-        .options = furrr_opts
+        sim_one_quiet,
+        .options = furrr::furrr_options(seed = TRUE)
       )
     }
 
@@ -360,7 +350,6 @@ check_model_fit <- function(reference_data = NULL,
     }
 
   } else {
-    # Sequential: keep your existing progress behavior
     if (isTRUE(verbose)) {
       pb <- progress::progress_bar$new(
         format = "Model check simulations: [:bar] :percent in :elapsed, ETA: :eta",
@@ -494,6 +483,7 @@ check_model_fit <- function(reference_data = NULL,
     parallel = parallel,
     num_cores = as.integer(num_cores),
     set_future_plan = set_future_plan,
+    mark_delta = mark_delta,
     inferred = list(
       reference_data = is.null(match.call()$reference_data),
       xy_bounds = is.null(match.call()$xy_bounds),
@@ -510,3 +500,4 @@ check_model_fit <- function(reference_data = NULL,
     call = match.call()
   )
 }
+

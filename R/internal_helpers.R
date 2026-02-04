@@ -358,12 +358,17 @@ as_mark_model <- function(mark_model) {
 .coerce_training_df <- function(x, delta = NULL, xy_bounds = NULL) {
   # x can be data.frame or ldmppr_fit
   fit <- NULL
+
+  delta_provided <- !is.null(delta) && !is.na(delta)
+
   if (inherits(x, "ldmppr_fit")) {
     fit <- x
+
     # prefer data_original; fallback to NULL (we can't invent size)
     x <- fit$data_original %||% NULL
     if (is.null(x)) {
-      stop("`data` is an ldmppr_fit but `data_original` is NULL; cannot train mark model without size.", call. = FALSE)
+      stop("`data` is an ldmppr_fit but `data_original` is NULL; cannot train mark model without size.",
+           call. = FALSE)
     }
 
     # default xy_bounds from fit if not supplied
@@ -374,11 +379,19 @@ as_mark_model <- function(mark_model) {
       }
     }
 
-    # if time missing, derive from fit mapping delta (preferred) or user delta
-    if (!("time" %in% names(x)) && ("size" %in% names(x))) {
-      d_use <- fit$mapping$delta %||% delta
+    # If user supplied delta, ALWAYS overwrite time using that delta.
+    # Otherwise, only derive time if missing, using fit$mapping$delta if available.
+    if (!("size" %in% names(x))) {
+      stop("Training data must contain column `size`.", call. = FALSE)
+    }
+
+    if (delta_provided) {
+      x$time <- power_law_mapping(x$size, delta)
+    } else if (!("time" %in% names(x))) {
+      d_use <- fit$mapping$delta %||% NULL
       if (is.null(d_use) || is.na(d_use)) {
-        stop("Training data has no `time`. Provide `delta`, or ensure fit$mapping$delta is present.", call. = FALSE)
+        stop("Training data has no `time`. Provide `delta`, or ensure fit$mapping$delta is present.",
+             call. = FALSE)
       }
       x$time <- power_law_mapping(x$size, d_use)
     }
@@ -393,9 +406,11 @@ as_mark_model <- function(mark_model) {
     stop("Training data must contain columns: x, y, size (and optionally time).", call. = FALSE)
   }
 
-  if (!("time" %in% names(x))) {
-    if (is.null(delta)) stop("Training data has no `time`. Provide `delta`.", call. = FALSE)
+  # If user supplied delta, ALWAYS overwrite time, even if time exists.
+  if (delta_provided) {
     x$time <- power_law_mapping(x$size, delta)
+  } else if (!("time" %in% names(x))) {
+    stop("Training data has no `time`. Provide `delta`.", call. = FALSE)
   }
 
   list(df = x, xy_bounds = xy_bounds, fit = fit)
@@ -541,4 +556,207 @@ resolve_reference_ppp <- function(reference_data, process_fit, xy_bounds) {
   }
 
   NULL
+}
+
+
+## ------------------------ ldmppr_budgets helpers ------------------------
+#' @rdname ldmppr-internal
+#' @keywords internal
+new_ldmppr_budgets <- function(global_options,
+                               local_budget_first_level,
+                               local_budget_refinement_levels = NULL) {
+
+  x <- list(
+    global_options = global_options %||% list(),
+    local_budget_first_level = local_budget_first_level %||% list(),
+    local_budget_refinement_levels = local_budget_refinement_levels
+  )
+  class(x) <- "ldmppr_budgets"
+  .validate_ldmppr_budgets(x)
+  x
+}
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+is_ldmppr_budgets <- function(x) inherits(x, "ldmppr_budgets")
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+as_ldmppr_budgets <- function(x, ...) {
+  if (is_ldmppr_budgets(x)) return(x)
+
+  # allow coercion from a plain list with the expected names
+  if (is.list(x) &&
+      all(c("global_options", "local_budget_first_level") %in% names(x))) {
+    return(new_ldmppr_budgets(
+      global_options = x$global_options %||% list(),
+      local_budget_first_level = x$local_budget_first_level %||% list(),
+      local_budget_refinement_levels = x$local_budget_refinement_levels
+    ))
+  }
+
+  stop("Cannot coerce to ldmppr_budgets. Provide an ldmppr_budgets object or a list with ",
+       "global_options and local_budget_first_level.", call. = FALSE)
+}
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+.validate_ldmppr_budgets <- function(b) {
+  if (!is_ldmppr_budgets(b)) stop("Invalid ldmppr_budgets object.", call. = FALSE)
+
+  if (!is.list(b$global_options)) {
+    stop("ldmppr_budgets: global_options must be a list.", call. = FALSE)
+  }
+  if (!is.list(b$local_budget_first_level)) {
+    stop("ldmppr_budgets: local_budget_first_level must be a list.", call. = FALSE)
+  }
+  if (!is.null(b$local_budget_refinement_levels) && !is.list(b$local_budget_refinement_levels)) {
+    stop("ldmppr_budgets: local_budget_refinement_levels must be NULL or a list.", call. = FALSE)
+  }
+
+  invisible(TRUE)
+}
+
+
+## ------------------------ ldmppr_grids helpers ------------------------
+#' @rdname ldmppr-internal
+#' @keywords internal
+new_ldmppr_grids <- function(levels, upper_bounds, labels = NULL, include_endpoints = TRUE) {
+  x <- list(
+    levels = levels,
+    upper_bounds = upper_bounds,
+    labels = labels %||% rep("", length(levels)),
+    include_endpoints = isTRUE(include_endpoints)
+  )
+  class(x) <- "ldmppr_grids"
+  .validate_ldmppr_grids(x)
+  x
+}
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+is_ldmppr_grids <- function(x) inherits(x, "ldmppr_grids")
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+as_ldmppr_grids <- function(x, ...) {
+  if (is_ldmppr_grids(x)) return(x)
+
+  if (is.list(x) && !is.null(x$levels) && !is.null(x$upper_bounds)) {
+    return(new_ldmppr_grids(
+      levels = x$levels,
+      upper_bounds = x$upper_bounds,
+      labels = x$labels %||% NULL,
+      include_endpoints = x$include_endpoints %||% TRUE
+    ))
+  }
+
+  stop("Cannot coerce to ldmppr_grids.", call. = FALSE)
+}
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+.validate_ldmppr_grids <- function(g) {
+  if (!is.list(g) || !is_ldmppr_grids(g)) stop("Invalid ldmppr_grids object.", call. = FALSE)
+
+  ub <- g$upper_bounds
+  if (is.null(ub) || length(ub) != 3L || anyNA(ub) || any(!is.finite(ub))) {
+    stop("ldmppr_grids: upper_bounds must be finite numeric length 3: c(b_t, b_x, b_y).", call. = FALSE)
+  }
+  if (ub[1] <= 0 || ub[2] <= 0 || ub[3] <= 0) {
+    stop("ldmppr_grids: upper_bounds must be positive.", call. = FALSE)
+  }
+
+  lvls <- g$levels
+  if (!is.list(lvls) || length(lvls) < 1L) {
+    stop("ldmppr_grids: must contain at least one grid level.", call. = FALSE)
+  }
+
+  for (i in seq_along(lvls)) {
+    L <- lvls[[i]]
+    if (!is.list(L) || !all(c("x", "y", "t") %in% names(L))) {
+      stop("ldmppr_grids: each level must be a list with x, y, t.", call. = FALSE)
+    }
+    for (nm in c("x", "y", "t")) {
+      v <- L[[nm]]
+      if (!is.numeric(v) || length(v) < 2L || anyNA(v) || any(!is.finite(v))) {
+        stop("ldmppr_grids: each of x, y, t must be numeric vectors (len>=2), finite, non-NA.", call. = FALSE)
+      }
+      if (is.unsorted(v, strictly = FALSE)) {
+        stop("ldmppr_grids: each of x, y, t must be non-decreasing (sorted).", call. = FALSE)
+      }
+    }
+
+    if (min(L$x) < 0 || max(L$x) > ub[2]) stop("ldmppr_grids: x grid exceeds upper_bounds.", call. = FALSE)
+    if (min(L$y) < 0 || max(L$y) > ub[3]) stop("ldmppr_grids: y grid exceeds upper_bounds.", call. = FALSE)
+    if (min(L$t) < 0 || max(L$t) > ub[1]) stop("ldmppr_grids: t grid exceeds upper_bounds.", call. = FALSE)
+  }
+
+  invisible(TRUE)
+}
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+.ldmppr_make_grid_schedule <- function(upper_bounds,
+                                       levels,
+                                       labels = NULL,
+                                       include_endpoints = TRUE) {
+  if (is.null(upper_bounds) || length(upper_bounds) != 3L ||
+      anyNA(upper_bounds) || any(!is.finite(upper_bounds))) {
+    stop("upper_bounds must be finite numeric length 3: c(b_t, b_x, b_y).", call. = FALSE)
+  }
+  if (!is.list(levels) || length(levels) < 1L) {
+    stop("levels must be a non-empty list.", call. = FALSE)
+  }
+
+  mk_level <- function(level) {
+    if (is.numeric(level) && length(level) == 3L) {
+      nx <- as.integer(level[1]); ny <- as.integer(level[2]); nt <- as.integer(level[3])
+      if (anyNA(c(nx, ny, nt)) || any(c(nx, ny, nt) < 2L)) {
+        stop("Grid level counts must be >= 2.", call. = FALSE)
+      }
+      return(list(
+        x = seq(0, upper_bounds[2], length.out = nx),
+        y = seq(0, upper_bounds[3], length.out = ny),
+        t = seq(0, upper_bounds[1], length.out = nt)
+      ))
+    }
+
+    if (is.list(level) && all(c("nx", "ny", "nt") %in% names(level))) {
+      nx <- as.integer(level$nx); ny <- as.integer(level$ny); nt <- as.integer(level$nt)
+      if (anyNA(c(nx, ny, nt)) || any(c(nx, ny, nt) < 2L)) {
+        stop("Grid level nx/ny/nt must be >= 2.", call. = FALSE)
+      }
+      return(list(
+        x = seq(0, upper_bounds[2], length.out = nx),
+        y = seq(0, upper_bounds[3], length.out = ny),
+        t = seq(0, upper_bounds[1], length.out = nt)
+      ))
+    }
+
+    if (is.list(level) && all(c("x", "y", "t") %in% names(level))) {
+      return(list(
+        x = as.numeric(level$x),
+        y = as.numeric(level$y),
+        t = as.numeric(level$t)
+      ))
+    }
+
+    stop("Each grid level must be c(nx,ny,nt), list(nx,ny,nt), or list(x,y,t).", call. = FALSE)
+  }
+
+  lev_out <- lapply(levels, mk_level)
+
+  if (!is.null(labels)) {
+    if (!is.character(labels) || length(labels) != length(lev_out)) {
+      stop("labels must be NULL or a character vector with length equal to levels.", call. = FALSE)
+    }
+  }
+
+  list(
+    levels = lev_out,
+    upper_bounds = as.numeric(upper_bounds),
+    labels = labels %||% rep("", length(lev_out)),
+    include_endpoints = isTRUE(include_endpoints)
+  )
 }

@@ -10,34 +10,69 @@
 # ---------------------------------------------------------------------
 
 #' @noRd
-.validate_common_inputs <- function(x_grid, y_grid, t_grid, upper_bounds, parameter_inits) {
-  if (is.null(x_grid) || is.null(y_grid) || is.null(t_grid)) {
-    stop("Provide grid values for x_grid, y_grid, and t_grid.", call. = FALSE)
+.validate_epp_inputs <- function(data,
+                                 grids,
+                                 budgets,
+                                 parameter_inits,
+                                 delta,
+                                 strategy,
+                                 global_algorithm,
+                                 local_algorithm,
+                                 starts) {
+
+  if (!is.data.frame(data) && !is.matrix(data)) {
+    stop("`data` must be a data.frame or matrix.", call. = FALSE)
   }
-  if (!is.numeric(x_grid) || !is.numeric(y_grid) || !is.numeric(t_grid)) {
-    stop("x_grid, y_grid, and t_grid must be numeric vectors.", call. = FALSE)
-  }
-  if (anyNA(x_grid) || anyNA(y_grid) || anyNA(t_grid)) {
-    stop("x_grid, y_grid, and t_grid may not contain NA.", call. = FALSE)
+  if (!is_ldmppr_grids(grids)) stop("`grids` must be an ldmppr_grids object.", call. = FALSE)
+  if (!is_ldmppr_budgets(budgets)) stop("`budgets` must be an ldmppr_budgets object.", call. = FALSE)
+
+  ub <- grids$upper_bounds
+  if (is.null(ub) || length(ub) != 3L || anyNA(ub) || any(!is.finite(ub))) {
+    stop("`grids$upper_bounds` must be finite numeric length 3: c(b_t, b_x, b_y).", call. = FALSE)
   }
 
-  if (is.null(upper_bounds) || length(upper_bounds) != 3) {
-    stop("Provide `upper_bounds = c(b_t, b_x, b_y)`.", call. = FALSE)
-  }
-  if (anyNA(upper_bounds) || any(!is.finite(upper_bounds))) {
-    stop("upper_bounds must be finite numeric values.", call. = FALSE)
-  }
-  if (upper_bounds[1] < max(t_grid) || upper_bounds[2] < max(x_grid) || upper_bounds[3] < max(y_grid)) {
-    stop("Grid values for t, x, or y exceed upper_bounds.", call. = FALSE)
+  # data shape checks
+  has_time <- FALSE
+  has_size <- FALSE
+
+  if (is.data.frame(data)) {
+    has_time <- all(c("time", "x", "y") %in% names(data))
+    has_size <- all(c("x", "y", "size") %in% names(data))
+  } else {
+    cn <- colnames(data)
+    has_time <- !is.null(cn) && all(c("time", "x", "y") %in% cn)
+    has_size <- !is.null(cn) && all(c("x", "y", "size") %in% cn)
+    if (is.null(cn) && ncol(data) == 3L) has_time <- TRUE # legacy
   }
 
-  if (is.null(parameter_inits) || length(parameter_inits) != 8 ||
-      anyNA(parameter_inits) || any(!is.finite(parameter_inits))) {
-    stop("Provide valid `parameter_inits` (numeric length 8, finite).", call. = FALSE)
+  if (!has_time && !has_size) {
+    stop("`data` must contain either (time,x,y) or (x,y,size).", call. = FALSE)
   }
-  if (any(parameter_inits[2:8] < 0)) {
-    stop("Provide valid `parameter_inits`: entries 2:8 must be >= 0.", call. = FALSE)
+
+  # delta rules
+  if (has_time && !is.null(delta) && length(delta) > 1L) {
+    stop("Delta search (length(delta)>1) is not valid when `data` already contains time.", call. = FALSE)
   }
+  if (!has_time && has_size && is.null(delta)) {
+    stop("`data` has (x,y,size) but no time. Provide `delta`.", call. = FALSE)
+  }
+
+  # parameter_inits if provided
+  if (!is.null(parameter_inits)) {
+    if (!is.numeric(parameter_inits) || length(parameter_inits) != 8L ||
+        anyNA(parameter_inits) || any(!is.finite(parameter_inits))) {
+      stop("`parameter_inits` must be numeric length 8, finite, non-NA.", call. = FALSE)
+    }
+    if (any(parameter_inits[2:8] < 0)) stop("`parameter_inits[2:8]` must be >= 0.", call. = FALSE)
+  }
+
+  # strategy vs grids
+  if (strategy == "global_local" && length(grids$levels) != 1L) {
+    stop("strategy='global_local' requires a single grid level in `grids`.", call. = FALSE)
+  }
+
+  # starts normalization
+  .normalize_epp_starts(starts)
 
   invisible(TRUE)
 }
@@ -70,68 +105,43 @@
   original_plan
 }
 
-# ---------------------------------------------------------------------
-# Grid schedule helpers
-# ---------------------------------------------------------------------
 
-#' @noRd
-.make_grid_level <- function(level, upper_bounds) {
-  # level can be c(nx,ny,nt) or list(nx=,ny=,nt=)
-  if (is.numeric(level) && length(level) == 3) {
-    nx <- as.integer(level[1]); ny <- as.integer(level[2]); nt <- as.integer(level[3])
-  } else if (is.list(level) && all(c("nx", "ny", "nt") %in% names(level))) {
-    nx <- as.integer(level$nx); ny <- as.integer(level$ny); nt <- as.integer(level$nt)
-  } else {
-    stop("grid_levels entries must be c(nx,ny,nt) or list(nx=,ny=,nt=).", call. = FALSE)
-  }
-
-  if (nx < 2L || ny < 2L || nt < 2L) {
-    stop("Each grid level must have nx, ny, nt >= 2.", call. = FALSE)
-  }
-
-  list(
-    x = seq(0, upper_bounds[2], length.out = nx),
-    y = seq(0, upper_bounds[3], length.out = ny),
-    t = seq(0, upper_bounds[1], length.out = nt)
-  )
-}
-
-#' @noRd
-.make_grid_schedule <- function(x_grid, y_grid, t_grid, upper_bounds, grid_levels = NULL) {
-  if (is.null(grid_levels)) {
-    return(list(list(x = x_grid, y = y_grid, t = t_grid)))
-  }
-  if (!is.list(grid_levels) || length(grid_levels) < 1) {
-    stop("grid_levels must be NULL or a non-empty list.", call. = FALSE)
-  }
-  lapply(grid_levels, .make_grid_level, upper_bounds = upper_bounds)
-}
-
-# ---------------------------------------------------------------------
-# Bounds helpers (finite bounds used by BOBYQA / NEWUOA / PRAXIS)
-# ---------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
+# Bounds helpers (finite bounds used by global algorithms and BOBYQA / NEWUOA / PRAXIS)
+# -------------------------------------------------------------------------------------
 
 #' @noRd
 .needs_finite_bounds <- function(alg) {
-  alg %in% c("NLOPT_LN_BOBYQA", "NLOPT_LN_NEWUOA", "NLOPT_LN_PRAXIS")
+  # NLopt docs: all global algorithms require bound constraints
+  # (and several local methods behave best / require bounds too).
+  is_global <- is.character(alg) && length(alg) == 1L && grepl("^NLOPT_G", alg)
+
+  is_local_bound_req <- alg %in% c(
+    "NLOPT_LN_BOBYQA",
+    "NLOPT_LN_NEWUOA",
+    "NLOPT_LN_PRAXIS"
+  )
+
+  is_global || is_local_bound_req
 }
 
 #' @noRd
 .derive_finite_bounds <- function(init,
-                                  mult = 25,
-                                  min_ub = c(NA_real_, 50, 5, 50, 50, 50, 50, 5)) {
-  # init is length 8; parameter 1 may be signed, others nonnegative
+                                  mult = 15,
+                                  min_ub = c(NA_real_, 25, 2, 25, 10, 25, 25, 2),
+                                  max_ub = c(NA_real_, 500, 50, 500, 50, 500, 500, 50)) {
   if (length(init) != 8) stop("init must be length 8.", call. = FALSE)
 
   ub_pos <- pmax(min_ub[-1], abs(init[-1]) * mult, 1e-3)
+  ub_pos <- pmin(ub_pos, max_ub[-1])
 
-  # alpha_1 can be negative; give symmetric bounds around 0
   a1_span <- max(10, abs(init[1]) * mult)
   lb <- c(-a1_span, rep(0, 7))
-  ub <- c(a1_span, ub_pos)
+  ub <- c( a1_span, ub_pos)
 
   list(lb = lb, ub = ub)
 }
+
 
 #' @noRd
 .validate_finite_bounds <- function(finite_bounds) {
@@ -316,12 +326,14 @@
   t_span <- max(t, na.rm = TRUE) - min(t, na.rm = TRUE)
   if (!is.finite(t_span) || t_span <= 0) t_span <- 1
 
-  alpha1 <- log((n + 1) / t_span)
+  tbar <- mean(t)
+  alpha_base <- log(n / t_span)
 
-  # beta1 has support [0, Inf) in our optimization bounds, so avoid boundary at 0
+  gamma1 <- max(min_gamma1, alpha_base / max(1, n))  # ~ log(n)/n scale
   beta1  <- max(min_beta1, 1e-2)
 
-  gamma1 <- max(min_gamma1, 0.05)
+  # Make log-intensity around mid-run roughly alpha_base
+  alpha1 <- alpha_base - beta1 * tbar + gamma1 * (n/2)
 
   # --- spatial inhibition scale: alpha2 ---
   w <- upper_bounds[2]
@@ -620,7 +632,6 @@
                                  finite_bounds,
                                  do_global_coarse = TRUE,
                                  global_n_starts = 1L,
-                                 n_starts = 1L,
                                  jitter_sd = 0.35,
                                  seed = 1L) {
 
@@ -639,7 +650,6 @@
     finite_bounds = finite_bounds,
     do_global = isTRUE(do_global_coarse),
     do_multistart = FALSE,          # coarse stage: keep cheap by default
-    n_starts = as.integer(n_starts),
     jitter_sd = jitter_sd,
     seed = as.integer(seed),
     global_n_starts = as.integer(global_n_starts),
@@ -650,3 +660,23 @@
   lvl_fit
 }
 
+
+#' @noRd
+.normalize_epp_starts <- function(starts) {
+  if (is.null(starts)) starts <- list()
+  if (!is.list(starts)) stop("`starts` must be a list.", call. = FALSE)
+
+  out <- list(
+    global    = as.integer(starts$global %||% 1L),
+    local     = as.integer(starts$local  %||% 1L),
+    jitter_sd = as.numeric(starts$jitter_sd %||% 0.35),
+    seed      = as.integer(starts$seed %||% 1L)
+  )
+
+  if (is.na(out$global) || out$global < 1L) stop("starts$global must be >= 1.", call. = FALSE)
+  if (is.na(out$local)  || out$local  < 1L) stop("starts$local must be >= 1.", call. = FALSE)
+  if (!is.finite(out$jitter_sd) || out$jitter_sd < 0) stop("starts$jitter_sd must be >= 0.", call. = FALSE)
+  if (is.na(out$seed)) stop("starts$seed must be a finite integer.", call. = FALSE)
+
+  out
+}

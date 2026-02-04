@@ -1,58 +1,72 @@
 #' Estimate point process parameters using log-likelihood maximization
 #'
-#' Estimate spatio-temporal point process parameters by maximizing the (approximate) full log-likelihood
-#' using \code{\link[nloptr:nloptr]{nloptr}}. For the self-correcting process, the arrival times must be on \eqn{(0,1)}
-#' and can either be supplied directly in \code{data} as \code{time}, or constructed from \code{size} via the
-#' gentle-decay (power-law) mapping \code{\link{power_law_mapping}} using \code{delta} (single fit) or
-#' \code{delta_values} (delta search).
+#' Estimate spatio-temporal point process parameters by maximizing the (approximate)
+#' full log-likelihood using \code{\link[nloptr:nloptr]{nloptr}}.
 #'
-#' @param data a data.frame or matrix. Must contain either columns \code{(time, x, y)} or \code{(x, y, size)}.
-#'   If a matrix is provided for delta search, it must have column names \code{c("x","y","size")}.
-#' @param process character string specifying the process model. Currently supports \code{"self_correcting"}.
-#' @param x_grid,y_grid,t_grid numeric vectors defining the integration grid for \eqn{(x,y,t)}.
-#' @param upper_bounds numeric vector of length 3 giving \code{c(b_t, b_x, b_y)}.
-#' @param parameter_inits numeric vector of length 8 giving initialization values for the model parameters.
-#' @param parameter_inits (optional) numeric vector of length 8 giving initialization values
-#'   for the model parameters. If \code{NULL}, sensible defaults are derived from \code{data}
-#'   and \code{upper_bounds}.
-#' @param delta (optional) numeric scalar used only when \code{data} contains \code{(x,y,size)} but not \code{time}.
-#' @param delta_values (optional) numeric vector. If supplied, the function fits the model for each value of \code{delta_values}
-#'   (mapping \code{size -> time} via \code{\link{power_law_mapping}}) and returns the best fit (lowest objective).
-#' @param parallel logical. If \code{TRUE}, uses furrr/future to parallelize either
-#'   (a) over \code{delta_values} (when provided) or (b) over multi-start initializations
-#'   (when \code{delta_values} is \code{NULL} and \code{n_starts > 1}).
+#' For the self-correcting process, arrival times must lie on \eqn{(0,1)} and can be
+#' supplied directly in \code{data} as \code{time}, or constructed from \code{size}
+#' via the gentle-decay (power-law) mapping \code{\link{power_law_mapping}} using
+#' \code{delta}. When \code{delta} is a vector, the model is fit for each candidate
+#' value and the best objective is selected.
+#'
+#' This function supports multi-resolution estimation via a \code{\link{ldmppr_grids}}
+#' schedule. If multiple grid levels are provided, the coarsest level may use a global
+#' optimizer followed by local refinement, and subsequent levels run local refinement only.
+#'
+#' @param data A data.frame or matrix. Must contain either columns \code{(time, x, y)}
+#'   or \code{(x, y, size)}. If a matrix is provided without time, it must have
+#'   column names \code{c("x","y","size")}.
+#' @param process Character string specifying the process model. Currently supports
+#'   \code{"self_correcting"}.
+#' @param grids A \code{\link{ldmppr_grids}} object specifying the integration grid schedule
+#'   (single-level or multi-resolution). The integration bounds are taken from
+#'   \code{grids$upper_bounds}.
+#' @param budgets A \code{\link{ldmppr_budgets}} object controlling optimizer options
+#'   for the global stage and local stages (first level vs refinement levels).
+#' @param parameter_inits Optional numeric vector of length 8 giving initialization values
+#'   for the model parameters. If \code{NULL}, defaults are derived from \code{data} and
+#'   \code{grids$upper_bounds}.
+#' @param delta Optional numeric scalar or vector. Used only when \code{data} does not contain
+#'   \code{time} (i.e., data has \code{(x,y,size)}).
+#'   \itemize{
+#'     \item If \code{length(delta) == 1}, fits the model once using \code{power_law_mapping(size, delta)}.
+#'     \item If \code{length(delta) > 1}, performs a delta-search by fitting the model for each candidate value
+#'       and selecting the best objective. If \code{refine_best_delta = TRUE} and multiple grid levels are used,
+#'       the best delta is refined on the remaining (finer) grid levels.
+#'   }
+#'   If \code{data} already contains \code{time}, \code{delta} is ignored when \code{length(delta)==1}
+#'   and is an error when \code{length(delta)>1}.
+#' @param parallel Logical. If \code{TRUE}, uses furrr/future to parallelize either:
+#'   (a) over candidate \code{delta} values (when \code{length(delta) > 1}), and/or
+#'   (b) over local multi-start initializations (when \code{starts$local > 1}), and/or
+#'   (c) over global restarts (when \code{starts$global > 1}).
 #' @param num_cores Integer number of workers to use when \code{set_future_plan = TRUE}.
-#' @param set_future_plan \code{TRUE} or \code{FALSE}, if \code{TRUE}, temporarily sets \code{future::plan(multisession, workers = num_cores)}
-#'   and restores the original plan on exit.
+#' @param set_future_plan If \code{TRUE}, temporarily sets
+#'   \code{future::plan(multisession, workers = num_cores)} and restores the original plan on exit.
 #' @param strategy Character string specifying the estimation strategy:
-#'  - \code{"local"}: single-level local optimization from \code{parameter_inits}.
-#'  - \code{"global_local"}: single-level global optimization (from \code{parameter_inits}) followed by local polish.
-#'  - \code{"multires_global_local"}: multi-resolution fitting over \code{grid_levels} (coarsest level uses global + local; finer levels use local polish only).
-#' @param grid_levels (optional) list defining the multi-resolution grid schedule when \code{strategy = "multires_global_local"}.
-#' Each entry can be a numeric vector \code{c(nx, ny, nt)} or a list with named entries \code{list(nx=..., ny=..., nt=...)}.
-#' If \code{NULL}, uses the supplied \code{(x_grid, y_grid, t_grid)} as a single level.
-#' @param refine_best_delta \code{TRUE} or \code{FALSE}, if \code{TRUE} and \code{delta_values} is supplied, performs a final refinement
-#'  fit at the best delta found using the full multi-resolution strategy.
-#' @param global_algorithm,local_algorithm character strings specifying the NLopt algorithms to use for
-#' the global and local optimization stages, respectively.
-#' @param global_options,local_options named lists of options to pass to \code{nloptr::nloptr()} for
-#' the global and local optimization stages, respectively.
-#' @param global_n_starts integer number of restarts to use for the global optimization stage.
-#' @param n_starts integer number of multi-start initializations to use for the local optimization stage.
-#' @param jitter_sd numeric standard deviation used to jitter the multi-start initializations.
-#' @param seed integer random seed used for multi-start initialization jittering.
-#' @param finite_bounds (optional) list with components \code{lb} and \code{ub} giving finite lower and upper bounds
-#' for all 8 parameters. Used only when the selected optimization algorithms require finite bounds.
-#' @param verbose \code{TRUE} or \code{FALSE}, if \code{TRUE}, prints progress messages during fitting.
+#'  \itemize{
+#'    \item \code{"local"}: local optimization only (single-level or multi-level polish).
+#'    \item \code{"global_local"}: global optimization then local polish (single grid level).
+#'    \item \code{"multires_global_local"}: multi-resolution (coarsest uses global+local; refinements use local only).
+#'  }
+#' @param global_algorithm,local_algorithm Character strings specifying the NLopt algorithms to use for
+#'   the global and local optimization stages, respectively.
+#' @param starts A list controlling restart and jitter behavior:
+#'   \itemize{
+#'     \item \code{global}: integer, number of global restarts at the first/coarsest level (default 1).
+#'     \item \code{local}: integer, number of local multi-starts per level (default 1).
+#'     \item \code{jitter_sd}: numeric SD for jittering (default 0.35).
+#'     \item \code{seed}: integer base seed (default 1).
+#'   }
+#' @param finite_bounds Optional list with components \code{lb} and \code{ub} giving finite lower and
+#'   upper bounds for all 8 parameters. If \code{NULL}, bounds are derived from \code{parameter_inits}.
+#'   Global algorithms in NLopt require finite bounds.
+#' @param refine_best_delta Logical. If \code{TRUE} and \code{length(delta) > 1}, performs refinement
+#'   of the best \code{delta} across additional grid levels (if available).
+#' @param verbose Logical. If \code{TRUE}, prints progress messages during fitting.
 #'
-#'
-#' @details
-#' For the self-correcting process, the log-likelihood integral is approximated using the supplied grid
-#' \code{(x_grid, y_grid, t_grid)} over the bounded domain \code{upper_bounds}.
-#' When \code{delta_values} is supplied, this function performs a grid search over \code{delta} values, fitting the model
-#' separately for each mapped dataset and selecting the best objective value.
-#'
-#' @return an object of class \code{"ldmppr_fit"} containing the best \code{nloptr} fit and (optionally) all fits from a delta search.
+#' @return An object of class \code{"ldmppr_fit"} containing the best \code{nloptr} fit and
+#'   (optionally) stored fits from global restarts and/or a delta search.
 #'
 #' @references
 #' Møller, J., Ghorbani, M., & Rubak, E. (2016). Mechanistic spatio-temporal point process models
@@ -62,56 +76,40 @@
 #' @examples
 #' data(small_example_data)
 #'
-#' x_grid <- seq(0, 25, length.out = 5)
-#' y_grid <- seq(0, 25, length.out = 5)
-#' t_grid <- seq(0, 1,  length.out = 5)
-#'
-#' parameter_inits <- c(1.5, 8.5, .015, 1.5, 3.2, .75, 3, .08)
-#' upper_bounds <- c(1, 25, 25)
+#' ub <- c(1, 25, 25)
+#' g  <- ldmppr_grids(upper_bounds = ub, levels = list(c(10,10,10)))
+#' b  <- ldmppr_budgets(
+#'   global_options = list(maxeval = 150),
+#'   local_budget_first_level = list(maxeval = 50, xtol_rel = 1e-2),
+#'   local_budget_refinement_levels = list(maxeval = 25, xtol_rel = 1e-2)
+#' )
 #'
 #' fit <- estimate_process_parameters(
 #'   data = small_example_data,
-#'   process = "self_correcting",
-#'   x_grid = x_grid,
-#'   y_grid = y_grid,
-#'   t_grid = t_grid,
-#'   upper_bounds = upper_bounds,
-#'   parameter_inits = parameter_inits,
+#'   grids = g,
+#'   budgets = b,
 #'   delta = 1,
 #'   strategy = "global_local",
 #'   global_algorithm = "NLOPT_GN_CRS2_LM",
-#'   local_algorithm = "NLOPT_LN_BOBYQA",
-#'   global_options = list(maxeval = 150),
-#'   local_options = list(maxeval = 25, xtol_rel = 1e-2),
+#'   local_algorithm  = "NLOPT_LN_BOBYQA",
+#'   starts = list(global = 2, local = 2, jitter_sd = 0.25, seed = 1),
 #'   verbose = TRUE
 #' )
-#'
 #' coef(fit)
 #' logLik(fit)
 #'
 #' \donttest{
-#' # Delta-search example (data has x,y,size; time is derived internally for each delta)
+#' g2 <- ldmppr_grids(upper_bounds = ub, levels = list(c(8,8,8), c(12,12,12)))
 #' fit_delta <- estimate_process_parameters(
 #'   data = small_example_data, # x,y,size
-#'   process = "self_correcting",
-#'   x_grid = x_grid,
-#'   y_grid = y_grid,
-#'   t_grid = t_grid,
-#'   upper_bounds = upper_bounds,
-#'   parameter_inits = parameter_inits,
-#'   delta_values = c(0.35, 0.5, 0.65, 0.9, 1.0),
+#'   grids = g2,
+#'   budgets = b,
+#'   delta = c(0.35, 0.5, 0.65, 0.9, 1.0),
 #'   parallel = TRUE,
 #'   set_future_plan = TRUE,
 #'   num_cores = 2,
 #'   strategy = "multires_global_local",
-#'   grid_levels = list(
-#'   list(nx = 5, ny = 5, nt = 5),
-#'   list(nx = 8, ny = 8, nt = 8),
-#'   list(nx = 10, ny = 10, nt = 10)
-#'   ),
-#'   global_options = list(maxeval = 100),
-#'   local_options  = list(maxeval = 100, xtol_rel = 1e-3),
-#'   n_starts = 1,
+#'   starts = list(local = 1),
 #'   refine_best_delta = FALSE,
 #'   verbose = FALSE
 #' )
@@ -121,36 +119,38 @@
 #' @export
 estimate_process_parameters <- function(data,
                                         process = c("self_correcting"),
-                                        x_grid = NULL,
-                                        y_grid = NULL,
-                                        t_grid = NULL,
-                                        upper_bounds = NULL,
+                                        grids,
+                                        budgets,
                                         parameter_inits = NULL,
                                         delta = NULL,
-                                        delta_values = NULL,
                                         parallel = FALSE,
                                         num_cores = max(1L, parallel::detectCores() - 1L),
                                         set_future_plan = FALSE,
                                         strategy = c("local", "global_local", "multires_global_local"),
-                                        grid_levels = NULL,
-                                        refine_best_delta = TRUE,
                                         global_algorithm = "NLOPT_GN_CRS2_LM",
-                                        local_algorithm = "NLOPT_LN_BOBYQA",
-                                        global_options = list(maxeval = 150),
-                                        local_options = list(maxeval = 300, xtol_rel = 1e-5, maxtime = NULL),
-                                        global_n_starts = 1L,
-                                        n_starts = 1L,
-                                        jitter_sd = 0.35,
-                                        seed = 1L,
+                                        local_algorithm  = "NLOPT_LN_BOBYQA",
+                                        starts = list(global = 1L, local = 1L, jitter_sd = 0.35, seed = 1L),
                                         finite_bounds = NULL,
+                                        refine_best_delta = TRUE,
                                         verbose = TRUE) {
 
-  process <- match.arg(process)
+  process  <- match.arg(process)
   strategy <- match.arg(strategy)
 
   if (process != "self_correcting") {
     stop("Only process='self_correcting' is currently implemented.", call. = FALSE)
   }
+
+  # ---- delta validation ----
+  if (!is.null(delta) && !is.numeric(delta)) {
+    stop("`delta` must be NULL or numeric.", call. = FALSE)
+  }
+  if (!is.null(delta) && (anyNA(delta) || any(!is.finite(delta)))) {
+    stop("`delta` must be finite and non-missing.", call. = FALSE)
+  }
+
+  delta_is_search <- !is.null(delta) && length(delta) > 1L
+  delta_is_single <- !is.null(delta) && length(delta) == 1L
 
   # ---- user-friendly helpers ----
   .vmsg <- function(..., .indent = 0L) {
@@ -159,7 +159,6 @@ estimate_process_parameters <- function(data,
     message(prefix, paste0(..., collapse = ""))
     invisible(NULL)
   }
-
   .fmt_sec <- function(sec) {
     sec <- as.numeric(sec)
     if (!is.finite(sec)) return("NA")
@@ -167,87 +166,79 @@ estimate_process_parameters <- function(data,
     if (sec < 3600) return(sprintf("%.1fmin", sec / 60))
     sprintf("%.2fh", sec / 3600)
   }
-
   .tic <- function() proc.time()[["elapsed"]]
   .toc <- function(t0) proc.time()[["elapsed"]] - t0
 
-  # ---- Derive default inits if user did not provide them ----
-  if (is.null(upper_bounds) || length(upper_bounds) != 3L ||
-      anyNA(upper_bounds) || any(!is.finite(upper_bounds))) {
-    stop("Provide `upper_bounds = c(b_t, b_x, b_y)` as finite numeric values.", call. = FALSE)
-  }
+  # ---- coerce + validate user objects ----
+  grids   <- as_ldmppr_grids(grids)
+  budgets <- as_ldmppr_budgets(budgets)
 
+  upper_bounds <- grids$upper_bounds
+
+  starts <- .normalize_epp_starts(starts)
+
+  .validate_epp_inputs(
+    data = data,
+    grids = grids,
+    budgets = budgets,
+    parameter_inits = parameter_inits,
+    delta = delta,
+    strategy = strategy,
+    global_algorithm = global_algorithm,
+    local_algorithm = local_algorithm,
+    starts = starts
+  )
+
+  # ---- derive default inits if needed ----
   if (is.null(parameter_inits)) {
-    delta_for_init <- delta
-    if (is.null(delta_for_init) && !is.null(delta_values)) delta_for_init <- 1L
-
+    delta_for_init <- if (delta_is_search) 1 else if (delta_is_single) delta else NULL
+    if (delta_is_search) {
+      .vmsg("Note: `delta` has multiple candidates; deriving default initialization using delta=1 for stability.", .indent = 1L)
+    }
     parameter_inits <- .default_parameter_inits_sc(
       data = data,
       upper_bounds = upper_bounds,
       delta = delta_for_init
     )
-
     .vmsg("Using default starting values (parameter_inits) since none were provided.")
     .vmsg("Initial values: ", paste(signif(parameter_inits, 4), collapse = ", "), .indent = 1L)
   }
 
-  .validate_common_inputs(x_grid, y_grid, t_grid, upper_bounds, parameter_inits)
-
-  n_starts <- as.integer(n_starts)
-  if (n_starts < 1L) stop("n_starts must be >= 1.", call. = FALSE)
-
-  global_n_starts <- as.integer(global_n_starts)
-  if (global_n_starts < 1L) stop("global_n_starts must be >= 1.", call. = FALSE)
-
-  # Will we actually use furrr?
-  will_parallelize <- isTRUE(parallel) && (
-    (!is.null(delta_values)) ||
-      (is.null(delta_values) && n_starts > 1L)
-  )
-
-  max_workers <- if (!is.null(delta_values)) length(delta_values) else if (n_starts > 1L) n_starts else NULL
-
-  # ---- precompute schedule + bounds so we can print an upfront "plan" ----
-  grid_schedule <- .make_grid_schedule(
-    x_grid = x_grid, y_grid = y_grid, t_grid = t_grid,
-    upper_bounds = upper_bounds,
-    grid_levels = grid_levels
-  )
-
+  # ---- bounds ----
   if (is.null(finite_bounds)) {
     finite_bounds <- .derive_finite_bounds(parameter_inits)
   } else {
     .validate_finite_bounds(finite_bounds)
   }
 
+  # ---- will we parallelize? ----
+  will_parallelize <- isTRUE(parallel) && (
+    delta_is_search || starts$local > 1L || starts$global > 1L
+  )
+  max_workers <- if (delta_is_search) length(delta) else max(starts$local, starts$global)
+
+  # ---- maybe set future plan ----
+  original_plan <- .maybe_set_future_plan(
+    set_future_plan = set_future_plan,
+    will_parallelize = will_parallelize,
+    num_cores = num_cores,
+    max_workers = max_workers,
+    verbose = FALSE
+  )
+  if (!is.null(original_plan)) on.exit(future::plan(original_plan), add = TRUE)
+
   # ---- progress summary upfront ----
   .vmsg("Estimating self-correcting process parameters")
-  .vmsg("Strategy: ", strategy, if (!is.null(delta_values)) " (delta search)" else "", .indent = 1L)
+  .vmsg("Strategy: ", strategy, if (delta_is_search) " (delta search)" else "", .indent = 1L)
 
-  if (!is.null(delta_values)) {
-    .vmsg("Delta candidates: ", length(delta_values), .indent = 1L)
-  } else {
-    .vmsg("Delta: ", if (!is.null(delta)) delta else "already in data (time provided)", .indent = 1L)
-  }
+  if (delta_is_search) .vmsg("Delta candidates: ", length(delta), .indent = 1L)
+  if (!delta_is_search) .vmsg("Delta: ", if (delta_is_single) delta else "already in data (time provided)", .indent = 1L)
 
-  .vmsg("Local optimizer: ", local_algorithm,
-        " (maxeval=", local_options[["maxeval"]] %||% NA, ")", .indent = 1L)
-
-  if (strategy %in% c("global_local", "multires_global_local")) {
-    .vmsg("Global optimizer: ", global_algorithm,
-          " (maxeval=", global_options[["maxeval"]] %||% NA, ")", .indent = 1L)
-  }
-
-  if (strategy == "multires_global_local") {
-    .vmsg("Grid refinement levels: ", length(grid_schedule), .indent = 1L)
-  } else {
-    .vmsg("Grid levels: 1", .indent = 1L)
-  }
-
-  .vmsg("Local starts per level: ", n_starts, .indent = 1L)
-  if (strategy %in% c("global_local", "multires_global_local")) {
-    .vmsg("Global starts (first level only): ", global_n_starts, .indent = 1L)
-  }
+  .vmsg("Grids: ", length(grids), " level(s)", .indent = 1L)
+  .vmsg("Local optimizer: ", local_algorithm, .indent = 1L)
+  if (strategy %in% c("global_local", "multires_global_local")) .vmsg("Global optimizer: ", global_algorithm, .indent = 1L)
+  .vmsg("Starts: global=", starts$global, ", local=", starts$local,
+        ", jitter_sd=", starts$jitter_sd, ", seed=", starts$seed, .indent = 1L)
 
   if (will_parallelize) {
     .vmsg("Parallel: on", .indent = 1L)
@@ -256,48 +247,39 @@ estimate_process_parameters <- function(data,
     .vmsg("Parallel: off", .indent = 1L)
   }
 
-  # ---- maybe set future plan ----
-  original_plan <- .maybe_set_future_plan(
-    set_future_plan = set_future_plan,
-    will_parallelize = will_parallelize,
-    num_cores = num_cores,
-    max_workers = max_workers,
-    verbose = FALSE  # suppress helper's own message; we already summarized
-  )
-  if (!is.null(original_plan)) on.exit(future::plan(original_plan), add = TRUE)
-
   t_all <- .tic()
 
   # -------------------------------------------------------------------
-  # MODE A: single fit (no delta search)
+  # MODE A: single fit
   # -------------------------------------------------------------------
-  if (is.null(delta_values)) {
+  if (!delta_is_search) {
 
     .vmsg("Step 1/2: Preparing data and objective function...")
     t_prep <- .tic()
 
-    data_mat  <- .build_sc_matrix(data, delta = delta)
+    data_mat <- .build_sc_matrix(data, delta = if (delta_is_single) delta else NULL)
     data_orig <- attr(data_mat, "ldmppr_original")
-    if (is.null(data_orig)) {
-      data_orig <- if (is.data.frame(data)) data else as.data.frame(data_mat)
-    }
+    if (is.null(data_orig)) data_orig <- if (is.data.frame(data)) data else as.data.frame(data_mat)
 
     .vmsg("Prepared ", nrow(data_mat), " points.", .indent = 1L)
     .vmsg("Done in ", .fmt_sec(.toc(t_prep)), ".", .indent = 1L)
 
     do_global_first <- (strategy %in% c("global_local", "multires_global_local"))
     do_multires     <- (strategy == "multires_global_local")
+    n_levels        <- length(grids$levels)
 
     current_params <- parameter_inits
     stage_store <- list()
 
     .vmsg("Step 2/2: Optimizing parameters...")
-    n_levels <- length(grid_schedule)
 
     for (lvl in seq_len(n_levels)) {
-      grids_lvl <- grid_schedule[[lvl]]
+      grids_lvl <- grids$levels[[lvl]]
       do_global <- do_global_first && (lvl == 1L)
-      do_multistart <- (n_starts > 1L)
+      do_multistart <- (starts$local > 1L)
+
+      local_opts <- if (lvl == 1L) budgets$local_budget_first_level else budgets$local_budget_refinement_levels
+      if (is.null(local_opts)) local_opts <- budgets$local_budget_first_level %||% list()
 
       nx <- length(grids_lvl$x); ny <- length(grids_lvl$y); nt <- length(grids_lvl$t)
       lvl_label <- if (do_multires) {
@@ -307,35 +289,30 @@ estimate_process_parameters <- function(data,
       }
 
       .vmsg(lvl_label)
-      if (do_global) {
-        .vmsg("Global search: ", global_n_starts, " start(s), then local refinement.", .indent = 1L)
-      } else {
-        .vmsg("Local refinement only.", .indent = 1L)
-      }
-      if (do_multistart) {
-        .vmsg("Local multi-start: ", n_starts, " start(s).", .indent = 1L)
-      }
+      if (do_global) .vmsg("Global search: ", starts$global, " restart(s), then local refinement.", .indent = 1L)
+      if (!do_global) .vmsg("Local refinement only.", .indent = 1L)
+      if (do_multistart) .vmsg("Local multi-start: ", starts$local, " start(s).", .indent = 1L)
 
       t_lvl <- .tic()
 
       lvl_fit <- .fit_one_level_sc(
-        level_grids = grids_lvl,
-        data_mat = data_mat,
-        start_params = current_params,
-        upper_bounds = upper_bounds,
+        level_grids      = grids_lvl,
+        data_mat         = data_mat,
+        start_params     = current_params,
+        upper_bounds     = upper_bounds,
         global_algorithm = global_algorithm,
-        local_algorithm = local_algorithm,
-        global_options = global_options,
-        local_options = local_options,
-        finite_bounds = finite_bounds,
-        do_global = do_global,
-        do_multistart = do_multistart,
-        n_starts = n_starts,
-        jitter_sd = jitter_sd,
-        seed = seed,
-        global_n_starts = global_n_starts,
-        worker_parallel = isTRUE(parallel) && (n_starts > 1L),
-        worker_verbose = FALSE
+        local_algorithm  = local_algorithm,
+        global_options   = budgets$global_options %||% list(),
+        local_options    = local_opts,
+        finite_bounds    = finite_bounds,
+        do_global        = do_global,
+        do_multistart    = do_multistart,
+        n_starts         = starts$local,
+        jitter_sd        = starts$jitter_sd,
+        seed             = starts$seed,
+        global_n_starts  = starts$global,
+        worker_parallel  = isTRUE(parallel) && (starts$local > 1L || starts$global > 1L),
+        worker_verbose   = FALSE
       )
 
       stage_store[[lvl]] <- lvl_fit
@@ -348,19 +325,34 @@ estimate_process_parameters <- function(data,
     }
 
     secs <- .toc(t_all)
+    final_level <- length(stage_store)
 
     final_grid <- list(
-      x_grid = grid_schedule[[length(stage_store)]]$x,
-      y_grid = grid_schedule[[length(stage_store)]]$y,
-      t_grid = grid_schedule[[length(stage_store)]]$t,
+      x_grid = grids$levels[[final_level]]$x,
+      y_grid = grids$levels[[final_level]]$y,
+      t_grid = grids$levels[[final_level]]$t,
       upper_bounds = upper_bounds
     )
 
+    # delta used is meaningful only if time was constructed from size
+    delta_used <- attr(data_mat, "ldmppr_delta")
+
+    # fallback: if we *know* we mapped from size using a single delta, record it
+    if (is.null(delta_used) || is.na(delta_used)) {
+      # detect “mapped-from-size” path
+      data_has_time <- is.data.frame(data) && all(c("time","x","y") %in% names(data))
+      if (!data_has_time && delta_is_single) {
+        delta_used <- as.numeric(delta)
+      } else {
+        delta_used <- NA_real_
+      }
+    }
+
     fit_obj <- new_ldmppr_fit(
       process = "self_correcting",
-      fit = stage_store[[length(stage_store)]]$best,
+      fit = stage_store[[final_level]]$best,
       fits = stage_store,
-      mapping = list(delta = if (!is.null(delta)) delta else NA_real_),
+      mapping = list(delta = delta_used),
       grid = final_grid,
       data_summary = list(n = nrow(data_mat)),
       data = data_mat,
@@ -378,36 +370,36 @@ estimate_process_parameters <- function(data,
   # MODE B: delta search
   # -------------------------------------------------------------------
   if (is.data.frame(data) && all(c("time", "x", "y") %in% names(data))) {
-    stop("`delta_values` is only valid when `data` does NOT contain time (i.e., has x,y,size).", call. = FALSE)
+    stop("Delta search is only valid when `data` does NOT contain time (i.e., has x,y,size).", call. = FALSE)
   }
   if (is.matrix(data)) {
     cn <- colnames(data)
     ok <- !is.null(cn) && all(c("x", "y", "size") %in% cn)
-    if (!ok) stop("For `delta_values`, matrix `data` must have colnames including 'x', 'y', 'size'.", call. = FALSE)
+    if (!ok) stop("For delta search with matrix input, `data` must have colnames including 'x', 'y', 'size'.", call. = FALSE)
   }
 
-  .vmsg("Step 1/3: Coarse search over delta values (", length(delta_values), " candidates)...")
+  .vmsg("Step 1/3: Coarse search over delta values (", length(delta), " candidates)...")
   t_coarse <- .tic()
 
-  coarse_grids <- grid_schedule[[1]]
+  coarse_grids <- grids$levels[[1]]
   do_global_coarse <- (strategy %in% c("global_local", "multires_global_local"))
 
   fit_delta_coarse <- function(d) {
     .fit_delta_coarse_sc(
-      delta = d,
-      data = data,
-      parameter_inits = parameter_inits,
-      coarse_grids = coarse_grids,
-      upper_bounds = upper_bounds,
+      delta            = d,
+      data             = data,
+      parameter_inits  = parameter_inits,
+      coarse_grids     = coarse_grids,
+      upper_bounds     = upper_bounds,
       global_algorithm = global_algorithm,
-      local_algorithm = local_algorithm,
-      global_options = global_options,
-      local_options = local_options,
-      finite_bounds = finite_bounds,
-      do_global_coarse = do_global_coarse,
-      global_n_starts = global_n_starts,
-      seed = seed,
-      jitter_sd = jitter_sd
+      local_algorithm  = local_algorithm,
+      global_options   = budgets$global_options %||% list(),
+      local_options    = budgets$local_budget_first_level %||% list(),
+      finite_bounds    = finite_bounds,
+      do_global_coarse = isTRUE(do_global_coarse),
+      global_n_starts  = starts$global,
+      seed             = starts$seed,
+      jitter_sd        = starts$jitter_sd
     )
   }
 
@@ -416,17 +408,17 @@ estimate_process_parameters <- function(data,
       stop("Parallel delta search requires packages 'future' and 'furrr'.", call. = FALSE)
     }
     coarse_results <- furrr::future_map(
-      as.list(delta_values),
+      as.list(delta),
       fit_delta_coarse,
       .options = furrr::furrr_options(seed = TRUE)
     )
   } else {
-    coarse_results <- lapply(delta_values, fit_delta_coarse)
+    coarse_results <- lapply(as.list(delta), fit_delta_coarse)
   }
 
   coarse_obj <- vapply(coarse_results, function(r) r$best$objective, numeric(1))
   best_idx <- which.min(coarse_obj)
-  best_delta <- delta_values[best_idx]
+  best_delta <- delta[best_idx]
 
   .vmsg("Coarse delta search done in ", .fmt_sec(.toc(t_coarse)), ".")
   .vmsg("Best delta: ", best_delta, " (objective=", signif(coarse_obj[best_idx], 8), ").", .indent = 1L)
@@ -440,37 +432,39 @@ estimate_process_parameters <- function(data,
   final_fit <- coarse_results[[best_idx]]$best
   final_params <- final_fit$solution
 
-  if (isTRUE(refine_best_delta) && length(grid_schedule) > 1L) {
-    .vmsg("Step 3/3: Refining best delta on finer grids (", length(grid_schedule) - 1L, " more level(s))...")
+  if (isTRUE(refine_best_delta) && length(grids$levels) > 1L) {
+    .vmsg("Step 3/3: Refining best delta on finer grids (", length(grids$levels) - 1L, " more level(s))...")
     t_ref <- .tic()
 
     refined_store <- list()
-    for (lvl in 2:length(grid_schedule)) {
-      grids_lvl <- grid_schedule[[lvl]]
-      nx <- length(grids_lvl$x); ny <- length(grids_lvl$y); nt <- length(grids_lvl$t)
+    for (lvl in 2:length(grids$levels)) {
+      grids_lvl <- grids$levels[[lvl]]
+      local_opts <- budgets$local_budget_refinement_levels %||% budgets$local_budget_first_level %||% list()
 
-      .vmsg("Refinement level ", lvl, " of ", length(grid_schedule),
+      nx <- length(grids_lvl$x); ny <- length(grids_lvl$y); nt <- length(grids_lvl$t)
+      .vmsg("Refinement level ", lvl, " of ", length(grids$levels),
             " (grid ", nx, "x", ny, "x", nt, ")", .indent = 1L)
 
       t_lvl <- .tic()
       lvl_fit <- .fit_one_level_sc(
-        level_grids = grids_lvl,
-        data_mat = mat_best,
-        start_params = final_params,
-        upper_bounds = upper_bounds,
+        level_grids      = grids_lvl,
+        data_mat         = mat_best,
+        start_params     = final_params,
+        upper_bounds     = upper_bounds,
         global_algorithm = global_algorithm,
-        local_algorithm = local_algorithm,
-        global_options = global_options,
-        local_options = local_options,
-        finite_bounds = finite_bounds,
-        do_global = FALSE,
-        do_multistart = (n_starts > 1L),
-        n_starts = n_starts,
-        jitter_sd = jitter_sd,
-        seed = seed,
-        worker_parallel = FALSE,
-        worker_verbose = FALSE
+        local_algorithm  = local_algorithm,
+        global_options   = budgets$global_options %||% list(),
+        local_options    = local_opts,
+        finite_bounds    = finite_bounds,
+        do_global        = FALSE,
+        do_multistart    = (starts$local > 1L),
+        n_starts         = starts$local,
+        jitter_sd        = starts$jitter_sd,
+        seed             = starts$seed,
+        worker_parallel  = FALSE,
+        worker_verbose   = FALSE
       )
+
       refined_store[[lvl]] <- lvl_fit
       final_fit <- lvl_fit$best
       final_params <- lvl_fit$best$solution
@@ -485,10 +479,11 @@ estimate_process_parameters <- function(data,
 
   secs <- .toc(t_all)
 
+  final_level <- length(grids$levels)
   final_grid <- list(
-    x_grid = grid_schedule[[length(grid_schedule)]]$x,
-    y_grid = grid_schedule[[length(grid_schedule)]]$y,
-    t_grid = grid_schedule[[length(grid_schedule)]]$t,
+    x_grid = grids$levels[[final_level]]$x,
+    y_grid = grids$levels[[final_level]]$y,
+    t_grid = grids$levels[[final_level]]$t,
     upper_bounds = upper_bounds
   )
 
@@ -498,10 +493,10 @@ estimate_process_parameters <- function(data,
     fits = list(coarse = coarse_results, refined_best = refined_store),
     mapping = list(
       delta = best_delta,
-      delta_values = delta_values,
+      delta_values = delta,
       chosen_index = best_idx,
       objectives = coarse_obj,
-      refined = isTRUE(refine_best_delta) && length(grid_schedule) > 1L
+      refined = isTRUE(refine_best_delta) && length(grids$levels) > 1L
     ),
     grid = final_grid,
     data_summary = list(n = nrow(mat_best)),

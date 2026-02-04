@@ -12,10 +12,10 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-set.seed(90210)
 ```
 
 ```{r setup}
+set.seed(90210)
 library(ldmppr)
 library(dplyr)
 ```
@@ -52,7 +52,7 @@ As of version `1.1.0`, the main workflow functions return **S3 objects** with st
 We start by estimating the parameters of a self-correcting spatio-temporal point process using the `estimate_process_parameters` function. This function makes use of user specified optimization algorithms in the `nloptr` function to perform estimation through log-likelihood optimization. The function can be run with three different optimization strategies `("local", "global_local", "multires_global_local")` that allow the user to control the approach. The `"local"` strategy performs a local optimization, where the `"global_local"` first runs a global optimization and then uses the solution as a starting point for a local optimization. Finally, the `"multires_global_local"` strategy performs similarly to the `"global_local"`, but iterates further at the local level by increasing the resolution of the spatio-temporal grid and repeating the local optimization with increasing degrees of polish. The function requires the observed locations and observed arrival times, which are generated from the observed sizes using a power law mapping function. These inputs are accepted as:
 
 - a matrix/data.frame with columns `(time, x, y)`, **or**
-- a matrix/data.frame with columns `(x, y, size)` plus a mapping hyperparameter `delta` (or a vector `delta_values` for a delta-search).
+- a matrix/data.frame with columns `(x, y, size)` plus a mapping hyperparameter `delta` (or a vector `delta` for a delta-search).
 
 The power law mapping function depends on the hyperparameter `delta`, which controls the shape of the mapping relationship between sizes and arrival times. The function also requires the grid values for the optimization process, the initial parameter values, the upper bounds for the parameters, and the optimization algorithm (either global and local, or just local depending on strategy) to use. The function returns the optimal parameter estimates for the self-correcting point process.
 
@@ -62,47 +62,47 @@ Below we show the common case where you start from `(x, y, size)` with `delta = 
 # Use the (x, y, size) form and let estimate_process_parameters() construct time via delta
 parameter_estimation_data <- small_example_data
 
-# Define the integration / grid values used by the likelihood approximation
-x_grid <- seq(0, 25, length.out = 20)
-y_grid <- seq(0, 25, length.out = 20)
-t_grid <- seq(0, 1,  length.out = 20)
+# Upper bounds for (t, x, y)
+ub <- c(1, 25, 25)
+
+# Define the integration / grid schedule used by the likelihood approximation
+grids <- ldmppr_grids(
+  upper_bounds = ub,
+  levels = list(c(20, 20, 20))
+)
+
+# Define optimizer budgets/options for the global + local stages
+budgets <- ldmppr_budgets(
+  global_options = list(maxeval = 150),
+  local_budget_first_level = list(maxeval = 300, xtol_rel = 1e-5),
+  local_budget_refinement_levels = list(maxeval = 300, xtol_rel = 1e-5)
+)
 
 # Parameter initialization values: (alpha1, beta1, gamma1, alpha2, beta2, alpha3, beta3, gamma3)
 parameter_inits <- c(1.5, 8.5, 0.015, 1.5, 3.2, 0.75, 3, 0.08)
 
-# Upper bounds for (t, x, y)
-upper_bounds <- c(1, 25, 25)
-
-
 fit_sc <- estimate_process_parameters(
   data = parameter_estimation_data,
-  process = "self_correcting",
-  x_grid = x_grid,
-  y_grid = y_grid,
-  t_grid = t_grid,
-  upper_bounds = upper_bounds,
+  grids = grids,
+  budgets = budgets,
   parameter_inits = parameter_inits,
   delta = 1,
   parallel = FALSE,
-  strategy = c("global_local"),
+  strategy = "global_local",
   global_algorithm = "NLOPT_GN_CRS2_LM",
   local_algorithm = "NLOPT_LN_BOBYQA",
-  global_options = list(maxeval = 150),
-  local_options = list(maxeval = 300, xtol_rel = 1e-5, maxtime = NULL),
-  verbose = FALSE
+  verbose = TRUE
 )
-
 # Print method for ldmppr_fit objects
-print(fit_sc)
+fit_sc
 
-# Extract parameters
 estimated_parameters <- coef(fit_sc)
 estimated_parameters
 ```
 
 **Notes**
 
-- If you want to search over possible mappings between size and time, provide `delta_values = c(...)` and set `parallel = TRUE` to run one optimizer per delta (optionally in parallel).
+- If you want to search over possible mappings between size and time, provide `delta = c(...)` and set `parallel = TRUE` to run one optimizer per delta (optionally in parallel).
 - For better accuracy you typically want denser grids than in this vignette example; the small grid here is chosen to keep runtime modest.
 
 ## Step 2: Train a mark model
