@@ -18,7 +18,7 @@
 #' @param save_model \code{TRUE} or \code{FALSE} indicating whether to save the generated model.
 #' @param save_path path for saving the generated model.
 #' @param parallel \code{TRUE} or \code{FALSE} indicating whether to use parallelization in model training.
-#' @param n_cores number of cores to use in parallel model training (if \code{parallel} is \code{TRUE}).
+#' @param num_cores number of cores to use in parallel model training (if \code{parallel} is \code{TRUE}).
 #' @param include_comp_inds \code{TRUE} or \code{FALSE} indicating whether to generate and use competition indices as covariates.
 #' @param competition_radius distance for competition radius if \code{include_comp_inds} is \code{TRUE}.
 #' @param edge_correction type of edge correction to apply (\code{"none"}, \code{"toroidal"}, or \code{"truncation"}).
@@ -75,7 +75,7 @@ train_mark_model <- function(data,
                              save_model = FALSE,
                              save_path = NULL,
                              parallel = TRUE,
-                             n_cores = NULL,
+                             num_cores = NULL,
                              include_comp_inds = FALSE,
                              competition_radius = 15,
                              edge_correction = "none",
@@ -117,8 +117,8 @@ train_mark_model <- function(data,
     stop("Provide a valid metric for selection_metric ('rmse', 'mae', 'rsq').", call. = FALSE)
   }
   if (!is.logical(parallel)) stop("Provide a logical value for parallel.", call. = FALSE)
-  if (isTRUE(parallel) && !is.null(n_cores)) {
-    if (!is.numeric(n_cores) || n_cores < 1) stop("Provide n_cores >= 1.", call. = FALSE)
+  if (isTRUE(parallel) && !is.null(num_cores)) {
+    if (!is.numeric(num_cores) || num_cores < 1) stop("Provide num_cores >= 1.", call. = FALSE)
   }
   if (!is.logical(include_comp_inds)) stop("Provide a logical value for include_comp_inds.", call. = FALSE)
   if (!is.logical(save_model)) stop("Provide a logical value for save_model.", call. = FALSE)
@@ -170,7 +170,7 @@ train_mark_model <- function(data,
   cl <- NULL
   n_workers <- 1L
   if (isTRUE(parallel)) {
-    n_workers <- if (!is.null(n_cores)) as.integer(n_cores) else max(1L, floor(parallel::detectCores() / 2))
+    n_workers <- if (!is.null(num_cores)) as.integer(num_cores) else max(1L, floor(parallel::detectCores() / 2))
     cl <- parallel::makePSOCKcluster(n_workers)
     doParallel::registerDoParallel(cl)
     on.exit({

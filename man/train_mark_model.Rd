@@ -14,7 +14,7 @@ train_mark_model(
   save_model = FALSE,
   save_path = NULL,
   parallel = TRUE,
-  n_cores = NULL,
+  num_cores = NULL,
   include_comp_inds = FALSE,
   competition_radius = 15,
   edge_correction = "none",
@@ -45,7 +45,7 @@ If \code{data} is an \code{ldmppr_fit} and time is missing, the function will in
 
 \item{parallel}{\code{TRUE} or \code{FALSE} indicating whether to use parallelization in model training.}
 
-\item{n_cores}{number of cores to use in parallel model training (if \code{parallel} is \code{TRUE}).}
+\item{num_cores}{number of cores to use in parallel model training (if \code{parallel} is \code{TRUE}).}
 
 \item{include_comp_inds}{\code{TRUE} or \code{FALSE} indicating whether to generate and use competition indices as covariates.}
 

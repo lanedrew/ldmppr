@@ -13,20 +13,19 @@
 #' schedule. If multiple grid levels are provided, the coarsest level may use a global
 #' optimizer followed by local refinement, and subsequent levels run local refinement only.
 #'
-#' @param data A data.frame or matrix. Must contain either columns \code{(time, x, y)}
+#' @param data a data.frame or matrix. Must contain either columns \code{(time, x, y)}
 #'   or \code{(x, y, size)}. If a matrix is provided without time, it must have
 #'   column names \code{c("x","y","size")}.
-#' @param process Character string specifying the process model. Currently supports
-#'   \code{"self_correcting"}.
-#' @param grids A \code{\link{ldmppr_grids}} object specifying the integration grid schedule
+#' @param process type of process used (currently supports \code{"self_correcting"}).
+#' @param grids a \code{\link{ldmppr_grids}} object specifying the integration grid schedule
 #'   (single-level or multi-resolution). The integration bounds are taken from
 #'   \code{grids$upper_bounds}.
-#' @param budgets A \code{\link{ldmppr_budgets}} object controlling optimizer options
+#' @param budgets a \code{\link{ldmppr_budgets}} object controlling optimizer options
 #'   for the global stage and local stages (first level vs refinement levels).
-#' @param parameter_inits Optional numeric vector of length 8 giving initialization values
+#' @param parameter_inits (optional) numeric vector of length 8 giving initialization values
 #'   for the model parameters. If \code{NULL}, defaults are derived from \code{data} and
 #'   \code{grids$upper_bounds}.
-#' @param delta Optional numeric scalar or vector. Used only when \code{data} does not contain
+#' @param delta (optional) numeric scalar or vector. Used only when \code{data} does not contain
 #'   \code{time} (i.e., data has \code{(x,y,size)}).
 #'   \itemize{
 #'     \item If \code{length(delta) == 1}, fits the model once using \code{power_law_mapping(size, delta)}.
@@ -36,36 +35,36 @@
 #'   }
 #'   If \code{data} already contains \code{time}, \code{delta} is ignored when \code{length(delta)==1}
 #'   and is an error when \code{length(delta)>1}.
-#' @param parallel Logical. If \code{TRUE}, uses furrr/future to parallelize either:
+#' @param parallel \code{TRUE} or \code{FALSE} specifying furrr/future to parallelize either:
 #'   (a) over candidate \code{delta} values (when \code{length(delta) > 1}), and/or
 #'   (b) over local multi-start initializations (when \code{starts$local > 1}), and/or
 #'   (c) over global restarts (when \code{starts$global > 1}).
-#' @param num_cores Integer number of workers to use when \code{set_future_plan = TRUE}.
-#' @param set_future_plan If \code{TRUE}, temporarily sets
+#' @param num_cores number of workers to use when \code{set_future_plan = TRUE}.
+#' @param set_future_plan \code{TRUE} or \code{FALSE}, temporarily sets
 #'   \code{future::plan(multisession, workers = num_cores)} and restores the original plan on exit.
-#' @param strategy Character string specifying the estimation strategy:
+#' @param strategy character string specifying the estimation strategy:
 #'  \itemize{
 #'    \item \code{"local"}: local optimization only (single-level or multi-level polish).
 #'    \item \code{"global_local"}: global optimization then local polish (single grid level).
 #'    \item \code{"multires_global_local"}: multi-resolution (coarsest uses global+local; refinements use local only).
 #'  }
-#' @param global_algorithm,local_algorithm Character strings specifying the NLopt algorithms to use for
+#' @param global_algorithm,local_algorithm NLopt algorithms to use for
 #'   the global and local optimization stages, respectively.
-#' @param starts A list controlling restart and jitter behavior:
+#' @param starts a list controlling restart and jitter behavior:
 #'   \itemize{
 #'     \item \code{global}: integer, number of global restarts at the first/coarsest level (default 1).
 #'     \item \code{local}: integer, number of local multi-starts per level (default 1).
 #'     \item \code{jitter_sd}: numeric SD for jittering (default 0.35).
 #'     \item \code{seed}: integer base seed (default 1).
 #'   }
-#' @param finite_bounds Optional list with components \code{lb} and \code{ub} giving finite lower and
+#' @param finite_bounds (optional) list with components \code{lb} and \code{ub} giving finite lower and
 #'   upper bounds for all 8 parameters. If \code{NULL}, bounds are derived from \code{parameter_inits}.
-#'   Global algorithms in NLopt require finite bounds.
-#' @param refine_best_delta Logical. If \code{TRUE} and \code{length(delta) > 1}, performs refinement
+#'   Global algorithms and select local algorithms in NLopt require finite bounds.
+#' @param refine_best_delta \code{TRUE} or \code{FALSE}. If \code{TRUE} and \code{length(delta) > 1}, performs refinement
 #'   of the best \code{delta} across additional grid levels (if available).
-#' @param verbose Logical. If \code{TRUE}, prints progress messages during fitting.
+#' @param verbose \code{TRUE} or \code{FALSE} indicating whether to show progress of model estimation.
 #'
-#' @return An object of class \code{"ldmppr_fit"} containing the best \code{nloptr} fit and
+#' @return an object of class \code{"ldmppr_fit"} containing the best \code{nloptr} fit and
 #'   (optionally) stored fits from global restarts and/or a delta search.
 #'
 #' @references
@@ -74,8 +73,10 @@
 #' \doi{10.1111/biom.12466}.
 #'
 #' @examples
+#' # Load example data
 #' data(small_example_data)
 #'
+#' # Define grids and budgets
 #' ub <- c(1, 25, 25)
 #' g  <- ldmppr_grids(upper_bounds = ub, levels = list(c(10,10,10)))
 #' b  <- ldmppr_budgets(
@@ -84,6 +85,7 @@
 #'   local_budget_refinement_levels = list(maxeval = 25, xtol_rel = 1e-2)
 #' )
 #'
+#' # Estimate parameters using a single delta value
 #' fit <- estimate_process_parameters(
 #'   data = small_example_data,
 #'   grids = g,
@@ -99,6 +101,7 @@
 #' logLik(fit)
 #'
 #' \donttest{
+#' # Estimate parameters using multiple delta values (delta search)
 #' g2 <- ldmppr_grids(upper_bounds = ub, levels = list(c(8,8,8), c(12,12,12)))
 #' fit_delta <- estimate_process_parameters(
 #'   data = small_example_data, # x,y,size
