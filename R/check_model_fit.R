@@ -201,6 +201,7 @@ check_model_fit <- function(reference_data = NULL,
   }
 
   # ---- parallel plan handling (multisession default) ----
+  # ---- parallel plan handling (multisession default) ----
   will_parallelize <- isTRUE(parallel) && n_sim > 1L
   if (isTRUE(set_future_plan) && isTRUE(will_parallelize)) {
     if (!requireNamespace("future", quietly = TRUE)) {
@@ -211,8 +212,12 @@ check_model_fit <- function(reference_data = NULL,
 
     num_cores <- max(1L, as.integer(num_cores))
 
-    # stdout=FALSE suppresses worker console noise (including S3 overwrite messages)
-    future::plan(future::multisession, workers = num_cores, stdout = FALSE)
+    # DO NOT pass stdout=... to plan() (disallowed in newer future/parallelly)
+    future::plan(future::multisession, workers = num_cores)
+
+    # Quiet worker stdout via global option instead (supported)
+    old_opts <- options(future.stdout = FALSE)
+    on.exit(options(old_opts), add = TRUE)
 
     if (isTRUE(verbose)) message("future plan set to multisession with workers = ", num_cores)
   }
