@@ -26,7 +26,7 @@ simulate_mpp(
 
 \item{process_fit}{either (1) a \code{ldmppr_fit} object returned by
 \code{\link{estimate_process_parameters}}, or (2) a numeric vector of
-length 8 giving self-correcting parameters:
+length 8 giving the self-correcting process parameters:
 \eqn{(\alpha_1,\beta_1,\gamma_1,\alpha_2,\beta_2,\alpha_3,\beta_3,\gamma_3)} (alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).}
 
 \item{t_min}{minimum value for time.}

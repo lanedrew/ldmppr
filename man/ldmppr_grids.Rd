@@ -7,24 +7,24 @@
 ldmppr_grids(upper_bounds, levels, labels = NULL, include_endpoints = TRUE)
 }
 \arguments{
-\item{upper_bounds}{Numeric length-3 vector \code{c(b_t, b_x, b_y)} giving the
+\item{upper_bounds}{a vector \code{c(b_t, b_x, b_y)} giving the
 maximum bounds for time and the spatial domain. Grids must lie within these.}
 
-\item{levels}{A list describing the grid schedule. Each entry can be either:
+\item{levels}{a list describing the grid schedule. Each entry can be either:
 \itemize{
-  \item A numeric length-3 vector \code{c(nx, ny, nt)} (number of points per dimension),
-  \item A list with elements \code{nx}, \code{ny}, \code{nt},
-  \item A list with explicit vectors \code{x}, \code{y}, \code{t}.
+  \item a numeric length-3 vector \code{c(nx, ny, nt)} (number of points per dimension),
+  \item a list with elements \code{nx}, \code{ny}, \code{nt},
+  \item a list with explicit vectors \code{x}, \code{y}, \code{t}.
 }}
 
-\item{labels}{Optional character vector of length equal to \code{levels}, used
+\item{labels}{(optional) character vector of length equal to \code{levels}, used
 only for printing.}
 
-\item{include_endpoints}{Logical; if \code{TRUE} (default) each generated grid uses
+\item{include_endpoints}{\code{TRUE} or \code{FALSE} indicating; if \code{TRUE} (default) each generated grid uses
 \code{seq(0, bound, length.out = n)} including endpoints.}
 }
 \value{
-An object of class \code{"ldmppr_grids"}.
+an object of class \code{"ldmppr_grids"}.
 }
 \description{
 \code{ldmppr_grids()} constructs a multi-resolution grid schedule used by

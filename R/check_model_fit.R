@@ -201,7 +201,6 @@ check_model_fit <- function(reference_data = NULL,
   }
 
   # ---- parallel plan handling (multisession default) ----
-  # ---- parallel plan handling (multisession default) ----
   will_parallelize <- isTRUE(parallel) && n_sim > 1L
   if (isTRUE(set_future_plan) && isTRUE(will_parallelize)) {
     if (!requireNamespace("future", quietly = TRUE)) {
@@ -399,7 +398,7 @@ check_model_fit <- function(reference_data = NULL,
     theo = sqrt(K_ref$theo / pi) - d,
     sim_m = sqrt(K_PP / pi) - d
   ))
-  r_envL <- GET::global_envelope_test(C_ref_L, type = "rank")
+  r_envL <- GET::global_envelope_test(C_ref_L, type = "erl")
 
   safe_crossing_idx <- function(mat) {
     idx <- apply(mat, 2, function(x) {
@@ -419,7 +418,7 @@ check_model_fit <- function(reference_data = NULL,
     theo = spatstat.explore::Fest(spatstat.geom::unmark(reference_data), r = d[1:F_val])$theo,
     sim_m = F_PP[1:F_val, , drop = FALSE]
   ))
-  r_envF <- GET::global_envelope_test(C_ref_F, type = "rank")
+  r_envF <- GET::global_envelope_test(C_ref_F, type = "erl")
 
   G_val <- safe_crossing_idx(G_PP)
   C_ref_G <- GET::create_curve_set(list(
@@ -428,7 +427,7 @@ check_model_fit <- function(reference_data = NULL,
     theo = spatstat.explore::Gest(spatstat.geom::unmark(reference_data), r = d[1:G_val])$theo,
     sim_m = G_PP[1:G_val, , drop = FALSE]
   ))
-  r_envG <- GET::global_envelope_test(C_ref_G, type = "rank")
+  r_envG <- GET::global_envelope_test(C_ref_G, type = "erl")
 
   J_ref <- spatstat.explore::Jest(spatstat.geom::unmark(reference_data), r = d)$rs
   J_val <- min(c(
@@ -450,7 +449,7 @@ check_model_fit <- function(reference_data = NULL,
     theo = spatstat.explore::Jest(spatstat.geom::unmark(reference_data), r = d[1:J_val])$theo - 1,
     sim_m = J_PP[1:J_val, , drop = FALSE] / J_scale
   ))
-  r_envJ <- GET::global_envelope_test(C_ref_J, type = "rank")
+  r_envJ <- GET::global_envelope_test(C_ref_J, type = "erl")
 
   C_ref_E <- GET::create_curve_set(list(
     r = d,
@@ -458,7 +457,7 @@ check_model_fit <- function(reference_data = NULL,
     theo = spatstat.explore::Emark(reference_data, correction = "isotropic", r = d)$theo,
     sim_m = E_PP
   ))
-  r_envE <- GET::global_envelope_test(C_ref_E, type = "rank")
+  r_envE <- GET::global_envelope_test(C_ref_E, type = "erl")
 
   C_ref_V <- GET::create_curve_set(list(
     r = d,
@@ -466,11 +465,11 @@ check_model_fit <- function(reference_data = NULL,
     theo = spatstat.explore::Vmark(reference_data, correction = "isotropic", r = d)$theo,
     sim_m = V_PP
   ))
-  r_envV <- GET::global_envelope_test(C_ref_V, type = "rank")
+  r_envV <- GET::global_envelope_test(C_ref_V, type = "erl")
 
   r_envComb <- GET::global_envelope_test(
     curve_sets = list(L = C_ref_L, F = C_ref_F, G = C_ref_G, J = C_ref_J, E = C_ref_E, V = C_ref_V),
-    type = "rank"
+    type = "erl"
   )
 
   envs <- list(L = r_envL, F = r_envF, G = r_envG, J = r_envJ, E = r_envE, V = r_envV)

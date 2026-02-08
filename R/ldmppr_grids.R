@@ -4,20 +4,20 @@
 #' \code{\link{estimate_process_parameters}}. The returned object is an S3 class
 #' with helper methods; see \code{\link{ldmppr_grids-class}}.
 #'
-#' @param upper_bounds Numeric length-3 vector \code{c(b_t, b_x, b_y)} giving the
+#' @param upper_bounds a vector \code{c(b_t, b_x, b_y)} giving the
 #'   maximum bounds for time and the spatial domain. Grids must lie within these.
-#' @param levels A list describing the grid schedule. Each entry can be either:
+#' @param levels a list describing the grid schedule. Each entry can be either:
 #'   \itemize{
-#'     \item A numeric length-3 vector \code{c(nx, ny, nt)} (number of points per dimension),
-#'     \item A list with elements \code{nx}, \code{ny}, \code{nt},
-#'     \item A list with explicit vectors \code{x}, \code{y}, \code{t}.
+#'     \item a numeric length-3 vector \code{c(nx, ny, nt)} (number of points per dimension),
+#'     \item a list with elements \code{nx}, \code{ny}, \code{nt},
+#'     \item a list with explicit vectors \code{x}, \code{y}, \code{t}.
 #'   }
-#' @param labels Optional character vector of length equal to \code{levels}, used
+#' @param labels (optional) character vector of length equal to \code{levels}, used
 #'   only for printing.
-#' @param include_endpoints Logical; if \code{TRUE} (default) each generated grid uses
+#' @param include_endpoints \code{TRUE} or \code{FALSE} indicating; if \code{TRUE} (default) each generated grid uses
 #'   \code{seq(0, bound, length.out = n)} including endpoints.
 #'
-#' @return An object of class \code{"ldmppr_grids"}.
+#' @return an object of class \code{"ldmppr_grids"}.
 #' @export
 #'
 #' @seealso \code{\link{ldmppr_grids-class}} for methods and details.

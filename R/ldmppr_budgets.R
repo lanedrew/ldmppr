@@ -4,18 +4,18 @@
 #' \code{\link{estimate_process_parameters}} for NLopt via \code{\link[nloptr:nloptr]{nloptr}}.
 #'
 #' The returned object is an S3 class. Use \code{summary()} and \code{as.data.frame()}
-#' methods (if you provide them) to inspect.
+#' methods to inspect.
 #'
-#' @param global_options Optional list of NLopt options used for the global stage
+#' @param global_options (optional) list of NLopt options used for the global stage
 #'   (only relevant when \code{strategy} uses a global optimizer).
 #'   Examples: \code{list(maxeval = 2000, maxtime = 10)}.
-#' @param local_budget_first_level Optional list of NLopt options used for the local stage
+#' @param local_budget_first_level (optional) list of NLopt options used for the local stage
 #'   at the first (coarsest) grid level.
-#' @param local_budget_refinement_levels Optional list of NLopt options used for local refinement
+#' @param local_budget_refinement_levels (optional) list of NLopt options used for local refinement
 #'   on subsequent (finer) grid levels in multi-resolution strategies. If \code{NULL}, the
 #'   estimator will fall back to \code{local_budget_first_level}.
 #'
-#' @return An object of class \code{"ldmppr_budgets"}.
+#' @return an object of class \code{"ldmppr_budgets"}.
 #' @export
 #'
 #' @seealso \code{\link{ldmppr_grids-class}} for methods and details.

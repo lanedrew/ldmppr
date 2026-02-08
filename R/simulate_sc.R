@@ -6,10 +6,10 @@
 #'
 #' @param t_min minimum value for time.
 #' @param t_max maximum value for time.
-#' @param sc_params Vector of parameter values corresponding to
+#' @param sc_params a vector of parameter values corresponding to
 #'   \eqn{(\alpha_1,\beta_1,\gamma_1,\alpha_2,\beta_2,\alpha_3,\beta_3,\gamma_3)}
 #'   (i.e., alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).
-#' @param anchor_point vector of (x,y) coordinates of point to condition on.
+#' @param anchor_point a vector of (x,y) coordinates of point to condition on.
 #' @param xy_bounds a vector of domain bounds (2 for x, 2 for y).
 #'
 #' @return a list containing the thinned and unthinned simulation realizations.

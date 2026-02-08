@@ -17,11 +17,11 @@ simulate_sc(
 
 \item{t_max}{maximum value for time.}
 
-\item{sc_params}{Vector of parameter values corresponding to
+\item{sc_params}{a vector of parameter values corresponding to
 \eqn{(\alpha_1,\beta_1,\gamma_1,\alpha_2,\beta_2,\alpha_3,\beta_3,\gamma_3)}
 (i.e., alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).}
 
-\item{anchor_point}{vector of (x,y) coordinates of point to condition on.}
+\item{anchor_point}{a vector of (x,y) coordinates of point to condition on.}
 
 \item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y).}
 }

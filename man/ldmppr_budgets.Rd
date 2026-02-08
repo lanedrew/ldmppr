@@ -11,19 +11,19 @@ ldmppr_budgets(
 )
 }
 \arguments{
-\item{global_options}{Optional list of NLopt options used for the global stage
+\item{global_options}{(optional) list of NLopt options used for the global stage
 (only relevant when \code{strategy} uses a global optimizer).
 Examples: \code{list(maxeval = 2000, maxtime = 10)}.}
 
-\item{local_budget_first_level}{Optional list of NLopt options used for the local stage
+\item{local_budget_first_level}{(optional) list of NLopt options used for the local stage
 at the first (coarsest) grid level.}
 
-\item{local_budget_refinement_levels}{Optional list of NLopt options used for local refinement
+\item{local_budget_refinement_levels}{(optional) list of NLopt options used for local refinement
 on subsequent (finer) grid levels in multi-resolution strategies. If \code{NULL}, the
 estimator will fall back to \code{local_budget_first_level}.}
 }
 \value{
-An object of class \code{"ldmppr_budgets"}.
+an object of class \code{"ldmppr_budgets"}.
 }
 \description{
 \code{ldmppr_budgets()} defines per-stage optimization options (budgets) used by
@@ -31,7 +31,7 @@ An object of class \code{"ldmppr_budgets"}.
 }
 \details{
 The returned object is an S3 class. Use \code{summary()} and \code{as.data.frame()}
-methods (if you provide them) to inspect.
+methods to inspect.
 }
 \examples{
 b <- ldmppr_budgets(
