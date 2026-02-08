@@ -20,31 +20,31 @@ ldmppr_budgets(
 
 - global_options:
 
-  Optional list of NLopt options used for the global stage (only
+  (optional) list of NLopt options used for the global stage (only
   relevant when `strategy` uses a global optimizer). Examples:
   `list(maxeval = 2000, maxtime = 10)`.
 
 - local_budget_first_level:
 
-  Optional list of NLopt options used for the local stage at the first
+  (optional) list of NLopt options used for the local stage at the first
   (coarsest) grid level.
 
 - local_budget_refinement_levels:
 
-  Optional list of NLopt options used for local refinement on subsequent
-  (finer) grid levels in multi-resolution strategies. If `NULL`, the
-  estimator will fall back to `local_budget_first_level`.
+  (optional) list of NLopt options used for local refinement on
+  subsequent (finer) grid levels in multi-resolution strategies. If
+  `NULL`, the estimator will fall back to `local_budget_first_level`.
 
 ## Value
 
-An object of class `"ldmppr_budgets"`.
+an object of class `"ldmppr_budgets"`.
 
 ## Details
 
 The returned object is an S3 class. Use
 [`summary()`](https://rdrr.io/r/base/summary.html) and
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) methods
-(if you provide them) to inspect.
+to inspect.
 
 ## See also
 

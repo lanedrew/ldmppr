@@ -33,7 +33,8 @@ simulate_mpp(
 
   either (1) a `ldmppr_fit` object returned by
   [`estimate_process_parameters`](https://lanedrew.github.io/ldmppr/reference/estimate_process_parameters.md),
-  or (2) a numeric vector of length 8 giving self-correcting parameters:
+  or (2) a numeric vector of length 8 giving the self-correcting process
+  parameters:
   \\(\alpha_1,\beta_1,\gamma_1,\alpha_2,\beta_2,\alpha_3,\beta_3,\gamma_3)\\
   (alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3, gamma_3).
 

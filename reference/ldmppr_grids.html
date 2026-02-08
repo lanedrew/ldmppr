@@ -57,30 +57,30 @@ with helper methods; see <code><a href="ldmppr_grids-class.html">ldmppr_grids-cl
 
 
 <dl><dt id="arg-upper-bounds">upper_bounds<a class="anchor" aria-label="anchor" href="#arg-upper-bounds"></a></dt>
-<dd><p>Numeric length-3 vector <code>c(b_t, b_x, b_y)</code> giving the
+<dd><p>a vector <code>c(b_t, b_x, b_y)</code> giving the
 maximum bounds for time and the spatial domain. Grids must lie within these.</p></dd>
 
 
 <dt id="arg-levels">levels<a class="anchor" aria-label="anchor" href="#arg-levels"></a></dt>
-<dd><p>A list describing the grid schedule. Each entry can be either:</p><ul><li><p>A numeric length-3 vector <code>c(nx, ny, nt)</code> (number of points per dimension),</p></li>
-<li><p>A list with elements <code>nx</code>, <code>ny</code>, <code>nt</code>,</p></li>
-<li><p>A list with explicit vectors <code>x</code>, <code>y</code>, <code>t</code>.</p></li>
+<dd><p>a list describing the grid schedule. Each entry can be either:</p><ul><li><p>a numeric length-3 vector <code>c(nx, ny, nt)</code> (number of points per dimension),</p></li>
+<li><p>a list with elements <code>nx</code>, <code>ny</code>, <code>nt</code>,</p></li>
+<li><p>a list with explicit vectors <code>x</code>, <code>y</code>, <code>t</code>.</p></li>
 </ul></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
-<dd><p>Optional character vector of length equal to <code>levels</code>, used
+<dd><p>(optional) character vector of length equal to <code>levels</code>, used
 only for printing.</p></dd>
 
 
 <dt id="arg-include-endpoints">include_endpoints<a class="anchor" aria-label="anchor" href="#arg-include-endpoints"></a></dt>
-<dd><p>Logical; if <code>TRUE</code> (default) each generated grid uses
+<dd><p><code>TRUE</code> or <code>FALSE</code> indicating; if <code>TRUE</code> (default) each generated grid uses
 <code>seq(0, bound, length.out = n)</code> including endpoints.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An object of class <code>"ldmppr_grids"</code>.</p>
+    <p>an object of class <code>"ldmppr_grids"</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

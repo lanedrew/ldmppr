@@ -15,33 +15,33 @@ ldmppr_grids(upper_bounds, levels, labels = NULL, include_endpoints = TRUE)
 
 - upper_bounds:
 
-  Numeric length-3 vector `c(b_t, b_x, b_y)` giving the maximum bounds
-  for time and the spatial domain. Grids must lie within these.
+  a vector `c(b_t, b_x, b_y)` giving the maximum bounds for time and the
+  spatial domain. Grids must lie within these.
 
 - levels:
 
-  A list describing the grid schedule. Each entry can be either:
+  a list describing the grid schedule. Each entry can be either:
 
-  - A numeric length-3 vector `c(nx, ny, nt)` (number of points per
+  - a numeric length-3 vector `c(nx, ny, nt)` (number of points per
     dimension),
 
-  - A list with elements `nx`, `ny`, `nt`,
+  - a list with elements `nx`, `ny`, `nt`,
 
-  - A list with explicit vectors `x`, `y`, `t`.
+  - a list with explicit vectors `x`, `y`, `t`.
 
 - labels:
 
-  Optional character vector of length equal to `levels`, used only for
+  (optional) character vector of length equal to `levels`, used only for
   printing.
 
 - include_endpoints:
 
-  Logical; if `TRUE` (default) each generated grid uses
-  `seq(0, bound, length.out = n)` including endpoints.
+  `TRUE` or `FALSE` indicating; if `TRUE` (default) each generated grid
+  uses `seq(0, bound, length.out = n)` including endpoints.
 
 ## Value
 
-An object of class `"ldmppr_grids"`.
+an object of class `"ldmppr_grids"`.
 
 ## See also
 

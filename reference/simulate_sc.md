@@ -27,14 +27,14 @@ simulate_sc(
 
 - sc_params:
 
-  Vector of parameter values corresponding to
+  a vector of parameter values corresponding to
   \\(\alpha_1,\beta_1,\gamma_1,\alpha_2,\beta_2,\alpha_3,\beta_3,\gamma_3)\\
   (i.e., alpha_1, beta_1, gamma_1, alpha_2, beta_2, alpha_3, beta_3,
   gamma_3).
 
 - anchor_point:
 
-  vector of (x,y) coordinates of point to condition on.
+  a vector of (x,y) coordinates of point to condition on.
 
 - xy_bounds:
 

@@ -179,10 +179,10 @@ mark_model <- train_mark_model(
 #> Step 5/6: Fitting model (with optional CV tuning)...
 #>   Tuning enabled: 3-fold CV with 2 candidate(s).
 #>   Total model fits: 6 (3 folds x 2 grid).
-#>   Done in 2.7s.
+#>   Done in 2.8s.
 #> Step 6/6: Finalizing output object...
 #>   Done in 0.0s.
-#> Training complete. Total time: 2.7s.
+#> Training complete. Total time: 2.9s.
 
 print(mark_model)
 #> <ldmppr_mark_model>
