@@ -391,7 +391,9 @@ check_model_fit <- function(reference_data = NULL,
     NULL
   }
 
-  # ---- envelopes ----
+  # ---- calculate envelopes ----
+
+  # ---- E envelopes ----
   C_ref_L <- GET::create_curve_set(list(
     r = d,
     obs = sqrt(K_ref$iso / pi) - d,
@@ -411,6 +413,7 @@ check_model_fit <- function(reference_data = NULL,
     max(idx)
   }
 
+  # ---- F envelopes ----
   F_val <- safe_crossing_idx(F_PP)
   C_ref_F <- GET::create_curve_set(list(
     r = d[1:F_val],
@@ -420,6 +423,7 @@ check_model_fit <- function(reference_data = NULL,
   ))
   r_envF <- GET::global_envelope_test(C_ref_F, type = "erl")
 
+  # ---- G envelopes ----
   G_val <- safe_crossing_idx(G_PP)
   C_ref_G <- GET::create_curve_set(list(
     r = d[1:G_val],
@@ -429,28 +433,34 @@ check_model_fit <- function(reference_data = NULL,
   ))
   r_envG <- GET::global_envelope_test(C_ref_G, type = "erl")
 
+  # ---- J envelopes ----
   J_ref <- spatstat.explore::Jest(spatstat.geom::unmark(reference_data), r = d)$rs
+
   J_val <- min(c(
     min(apply(F_PP, 2, function(x) sum(x < 1, na.rm = TRUE))),
     min(apply(G_PP, 2, function(x) sum(x < 1, na.rm = TRUE))),
     sum(!is.na(J_ref))
   ))
   J_val <- max(1L, J_val)
-  J_scale <- apply(J_PP[1:J_val, , drop = FALSE], 1, max, na.rm = TRUE)
-  J_scale[J_scale == 0 | is.na(J_scale)] <- 1
+
+  Jscale <- max(J_PP[1:J_val, , drop = FALSE], na.rm = TRUE)
+  if (!is.finite(Jscale) || Jscale <= 0) Jscale <- 1
 
   if (any(is.infinite(J_PP[1:J_val, ]) | is.na(J_PP[1:J_val, ]))) {
     warning("J_PP contains Inf or NA values in the range used for envelopes.")
   }
 
+  J_theo <- spatstat.explore::Jest(spatstat.geom::unmark(reference_data), r = d[1:J_val])$theo
+
   C_ref_J <- GET::create_curve_set(list(
     r = d[1:J_val],
-    obs = (J_ref[1:J_val] - 1) / J_scale,
-    theo = spatstat.explore::Jest(spatstat.geom::unmark(reference_data), r = d[1:J_val])$theo - 1,
-    sim_m = J_PP[1:J_val, , drop = FALSE] / J_scale
+    obs  = (J_ref[1:J_val] - 1) / Jscale,
+    theo = (J_theo - 1) / Jscale,
+    sim_m = (J_PP[1:J_val, , drop = FALSE]) / Jscale
   ))
   r_envJ <- GET::global_envelope_test(C_ref_J, type = "erl")
 
+  # ---- E envelopes ----
   C_ref_E <- GET::create_curve_set(list(
     r = d,
     obs = spatstat.explore::Emark(reference_data, correction = "isotropic", r = d)$iso,
@@ -459,6 +469,7 @@ check_model_fit <- function(reference_data = NULL,
   ))
   r_envE <- GET::global_envelope_test(C_ref_E, type = "erl")
 
+  # ---- V envelopes ----
   C_ref_V <- GET::create_curve_set(list(
     r = d,
     obs = spatstat.explore::Vmark(reference_data, correction = "isotropic", r = d)$iso,
