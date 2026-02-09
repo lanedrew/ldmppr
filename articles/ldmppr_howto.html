@@ -211,9 +211,9 @@ point process.</p>
 <span><span class="co">#&gt; Step 2/2: Optimizing parameters...</span></span>
 <span><span class="co">#&gt; Single level (grid 20x20x20)</span></span>
 <span><span class="co">#&gt;   Global search: 1 restart(s), then local refinement.</span></span>
-<span><span class="co">#&gt;   Completed in 0.4s.</span></span>
-<span><span class="co">#&gt;   Best objective: 174.58351</span></span>
-<span><span class="co">#&gt; Finished. Total time: 0.4s.</span></span>
+<span><span class="co">#&gt;   Completed in 0.2s.</span></span>
+<span><span class="co">#&gt;   Best objective: 183.72014</span></span>
+<span><span class="co">#&gt; Finished. Total time: 0.3s.</span></span>
 <span><span class="co"># Print method for ldmppr_fit objects</span></span>
 <span><span class="va">fit_sc</span></span>
 <span><span class="co">#&gt; &lt;ldmppr_fit&gt;</span></span>
@@ -221,13 +221,13 @@ point process.</p>
 <span><span class="co">#&gt;   engine:  nloptr</span></span>
 <span><span class="co">#&gt;   n_obs:   121</span></span>
 <span><span class="co">#&gt;   delta*:  1</span></span>
-<span><span class="co">#&gt;   objective (best): 174.5835</span></span>
-<span><span class="co">#&gt;  optimal parameters:  -1.153893 10.13079 0.02562104 1.762711 2.576579 0.793192 2.500101 0.1115519</span></span>
+<span><span class="co">#&gt;   objective (best): 183.7201</span></span>
+<span><span class="co">#&gt;  optimal parameters:  0.7512562 6.772725 0.008539044 0.7688866 5.475281 1.499751 1.242274 0.001217159</span></span>
 <span></span>
 <span><span class="va">estimated_parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit_sc</span><span class="op">)</span></span>
 <span><span class="va">estimated_parameters</span></span>
-<span><span class="co">#&gt; [1] -1.15389260 10.13079399  0.02562104  1.76271138  2.57657919  0.79319202</span></span>
-<span><span class="co">#&gt; [7]  2.50010138  0.11155188</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 0.751256168 6.772724780 0.008539044 0.768886630 5.475280822 1.499750691</span></span>
+<span><span class="co">#&gt; [7] 1.242274340 0.001217159</span></span></code></pre></div>
 <p><strong>Notes</strong></p>
 <ul>
 <li>If you want to search over possible mappings between size and time,
@@ -308,10 +308,10 @@ parameter tuning grid for the model.</p>
 <span><span class="co">#&gt; Step 5/6: Fitting model (with optional CV tuning)...</span></span>
 <span><span class="co">#&gt;   Tuning enabled: 5-fold CV with 20 candidate(s).</span></span>
 <span><span class="co">#&gt;   Total model fits: 100 (5 folds x 20 grid).</span></span>
-<span><span class="co">#&gt;   Done in 24.4s.</span></span>
+<span><span class="co">#&gt;   Done in 27.7s.</span></span>
 <span><span class="co">#&gt; Step 6/6: Finalizing output object...</span></span>
 <span><span class="co">#&gt;   Done in 0.0s.</span></span>
-<span><span class="co">#&gt; Training complete. Total time: 24.5s.</span></span>
+<span><span class="co">#&gt; Training complete. Total time: 27.8s.</span></span>
 <span></span>
 <span><span class="co"># Print method for ldmppr_mark_model objects</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">mark_model</span><span class="op">)</span></span>
@@ -432,11 +432,11 @@ the fitted model.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">simulated</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        time         x         y    marks</span></span>
 <span><span class="co">#&gt; 1 0.0000000 10.000000 14.000000 900.3945</span></span>
-<span><span class="co">#&gt; 2 0.4430049 21.577247 23.111446 541.6990</span></span>
-<span><span class="co">#&gt; 3 0.5039294 16.632781 22.061460 647.5046</span></span>
-<span><span class="co">#&gt; 4 0.5408029  8.470302 22.657083 587.2133</span></span>
-<span><span class="co">#&gt; 5 0.5605597 13.255630 11.320682 749.7777</span></span>
-<span><span class="co">#&gt; 6 0.5733087 15.930922  8.571894 558.3950</span></span></code></pre></div>
+<span><span class="co">#&gt; 2 0.3100199 12.664459  3.411668 549.7050</span></span>
+<span><span class="co">#&gt; 3 0.3389414 16.653434  9.550132 597.9911</span></span>
+<span><span class="co">#&gt; 4 0.4077576 24.922092 15.226132 730.5878</span></span>
+<span><span class="co">#&gt; 5 0.4198252  3.126338 15.654761 655.3698</span></span>
+<span><span class="co">#&gt; 6 0.4427206  9.022405 11.044612 613.2568</span></span></code></pre></div>
 <hr>
 </div>
 </div>

@@ -215,13 +215,13 @@ fit <- estimate_process_parameters(
 #>   Global search: 2 restart(s), then local refinement.
 #>   Local multi-start: 2 start(s).
 #>   Completed in 0.1s.
-#>   Best objective: 249.26365
+#>   Best objective: 214.69035
 #> Finished. Total time: 0.1s.
 coef(fit)
-#> [1]  2.736563727  3.660326425  0.009964163 14.068340109  0.000000000
-#> [6]  0.281248963  0.200192247  0.564723969
+#> [1] 0.411049550 6.677597517 0.008525942 4.054852315 1.362062458 0.000000000
+#> [7] 0.000000000 0.003039611
 logLik(fit)
-#> 'log Lik.' -249.2637 (df=8)
+#> 'log Lik.' -214.6903 (df=8)
 
 # \donttest{
 # Estimate parameters using multiple delta values (delta search)

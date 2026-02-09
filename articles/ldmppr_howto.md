@@ -146,9 +146,9 @@ fit_sc <- estimate_process_parameters(
 #> Step 2/2: Optimizing parameters...
 #> Single level (grid 20x20x20)
 #>   Global search: 1 restart(s), then local refinement.
-#>   Completed in 0.4s.
-#>   Best objective: 174.58351
-#> Finished. Total time: 0.4s.
+#>   Completed in 0.2s.
+#>   Best objective: 183.72014
+#> Finished. Total time: 0.3s.
 # Print method for ldmppr_fit objects
 fit_sc
 #> <ldmppr_fit>
@@ -156,13 +156,13 @@ fit_sc
 #>   engine:  nloptr
 #>   n_obs:   121
 #>   delta*:  1
-#>   objective (best): 174.5835
-#>  optimal parameters:  -1.153893 10.13079 0.02562104 1.762711 2.576579 0.793192 2.500101 0.1115519
+#>   objective (best): 183.7201
+#>  optimal parameters:  0.7512562 6.772725 0.008539044 0.7688866 5.475281 1.499751 1.242274 0.001217159
 
 estimated_parameters <- coef(fit_sc)
 estimated_parameters
-#> [1] -1.15389260 10.13079399  0.02562104  1.76271138  2.57657919  0.79319202
-#> [7]  2.50010138  0.11155188
+#> [1] 0.751256168 6.772724780 0.008539044 0.768886630 5.475280822 1.499750691
+#> [7] 1.242274340 0.001217159
 ```
 
 **Notes**
@@ -242,10 +242,10 @@ mark_model <- train_mark_model(
 #> Step 5/6: Fitting model (with optional CV tuning)...
 #>   Tuning enabled: 5-fold CV with 20 candidate(s).
 #>   Total model fits: 100 (5 folds x 20 grid).
-#>   Done in 24.4s.
+#>   Done in 27.7s.
 #> Step 6/6: Finalizing output object...
 #>   Done in 0.0s.
-#> Training complete. Total time: 24.5s.
+#> Training complete. Total time: 27.8s.
 
 # Print method for ldmppr_mark_model objects
 print(mark_model)
@@ -375,11 +375,11 @@ plot(simulated)
 head(as.data.frame(simulated))
 #>        time         x         y    marks
 #> 1 0.0000000 10.000000 14.000000 900.3945
-#> 2 0.4430049 21.577247 23.111446 541.6990
-#> 3 0.5039294 16.632781 22.061460 647.5046
-#> 4 0.5408029  8.470302 22.657083 587.2133
-#> 5 0.5605597 13.255630 11.320682 749.7777
-#> 6 0.5733087 15.930922  8.571894 558.3950
+#> 2 0.3100199 12.664459  3.411668 549.7050
+#> 3 0.3389414 16.653434  9.550132 597.9911
+#> 4 0.4077576 24.922092 15.226132 730.5878
+#> 5 0.4198252  3.126338 15.654761 655.3698
+#> 6 0.4427206  9.022405 11.044612 613.2568
 ```
 
 ------------------------------------------------------------------------
