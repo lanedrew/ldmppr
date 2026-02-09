@@ -4,14 +4,14 @@
 \alias{spat_interaction}
 \title{calculates spatial interaction}
 \usage{
-spat_interaction(Hist, newp, params)
+spat_interaction(hist, newp, params)
 }
 \arguments{
-\item{Hist}{a matrix of points.}
+\item{hist}{a matrix of points (x,y), n x 2.}
 
-\item{newp}{a new point vector.}
+\item{newp}{a new point vector (x,y), length 2.}
 
-\item{params}{a vector of parameters.}
+\item{params}{a vector of parameters (alpha2, beta2).}
 }
 \value{
 calculated probability of new point.

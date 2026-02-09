@@ -261,6 +261,16 @@ estimate_process_parameters <- function(data,
     t_prep <- .tic()
 
     data_mat <- .build_sc_matrix(data, delta = if (delta_is_single) delta else NULL)
+
+    # ---- safety: enforce sorted times (C++ likelihood assumes sorted) ----
+    if (nrow(data_mat) > 1L) {
+      tt <- data_mat[, 1]
+      if (is.unsorted(tt, strictly = FALSE)) {
+        o <- order(tt)
+        data_mat <- data_mat[o, , drop = FALSE]
+      }
+    }
+
     data_orig <- attr(data_mat, "ldmppr_original")
     if (is.null(data_orig)) data_orig <- if (is.data.frame(data)) data else as.data.frame(data_mat)
 
@@ -428,6 +438,16 @@ estimate_process_parameters <- function(data,
 
   .vmsg("Step 2/3: Building data under best delta and selecting best coarse fit...")
   mat_best  <- .build_sc_matrix(data, delta = best_delta)
+
+  # ---- safety: enforce sorted times (C++ likelihood assumes sorted) ----
+  if (nrow(mat_best) > 1L) {
+    tt <- mat_best[, 1]
+    if (is.unsorted(tt, strictly = FALSE)) {
+      o <- order(tt)
+      mat_best <- mat_best[o, , drop = FALSE]
+    }
+  }
+
   orig_best <- attr(mat_best, "ldmppr_original")
   if (is.null(orig_best)) orig_best <- if (is.data.frame(data)) data else as.data.frame(mat_best)
 

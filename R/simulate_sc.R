@@ -36,6 +36,7 @@ simulate_sc <- function(t_min = 0,
                         sc_params = NULL,
                         anchor_point = NULL,
                         xy_bounds = NULL) {
+
   # Checks
   if (is.null(t_min) || t_min < 0 || t_min >= t_max) {
     stop("Provide t_min >= 0 and < t_max.", call. = FALSE)
@@ -59,21 +60,42 @@ simulate_sc <- function(t_min = 0,
     stop("Invalid xy_bounds ordering.", call. = FALSE)
   }
 
-  # Simulate times and locations
+  # ---- Simulate times ----
   sim_times <- stats::na.omit(sim_temporal_sc(t_min, t_max, sc_params[1:3]))
+  sim_times <- as.numeric(sim_times)
 
-  if (length(sim_times) >= 1) sim_times[1] <- 0
+  # If no times, return empty realizations with correct columns
+  if (length(sim_times) == 0) {
+    empty <- data.frame(time = numeric(0), x = numeric(0), y = numeric(0))
+    return(list(unthinned = empty, thinned = empty))
+  }
 
+  # Match your previous convention: force first time to 0
+  sim_times[1] <- 0
+
+  # ---- Simulate locations ----
   sim_locs <- sim_spatial_sc(anchor_point, sc_params[4:5], length(sim_times), xy_bounds)
-  txy_sim <- base::cbind(sim_times, sim_locs)
 
-  # Thinning
-  thin_vals <- stats::runif(base::nrow(txy_sim), 0, 1) < interaction_st(txy_sim, sc_params[6:8])
-  txy_sim_thin <- txy_sim[thin_vals, , drop = FALSE]
+  # Ensure matrix with 2 columns
+  sim_locs <- as.matrix(sim_locs)
+  if (ncol(sim_locs) != 2) {
+    stop("sim_spatial_sc() did not return a 2-column matrix.", call. = FALSE)
+  }
 
-  # Compile results
-  sim_df <- base::data.frame(time = txy_sim[, 1], x = txy_sim[, 2], y = txy_sim[, 3])
-  sim_thin_df <- base::data.frame(time = txy_sim_thin[, 1], x = txy_sim_thin[, 2], y = txy_sim_thin[, 3])
+  txy_sim <- cbind(sim_times, sim_locs)
+  colnames(txy_sim) <- c("time", "x", "y")
 
-  base::list(unthinned = sim_df, thinned = sim_thin_df)
+  # ---- Thinning ----
+  keep <- stats::runif(nrow(txy_sim), 0, 1) < interaction_st_fast(txy_sim, sc_params[6:8])
+
+  txy_sim_thin <- txy_sim[keep, , drop = FALSE]
+
+  sim_df      <- as.data.frame(txy_sim)
+  sim_thin_df <- as.data.frame(txy_sim_thin)
+
+  # Always return data.frames with the same columns
+  sim_df      <- sim_df[, c("time", "x", "y"), drop = FALSE]
+  sim_thin_df <- sim_thin_df[, c("time", "x", "y"), drop = FALSE]
+
+  list(unthinned = sim_df, thinned = sim_thin_df)
 }

@@ -2,6 +2,7 @@
 #include <vector>
 #include <limits>
 #include <cmath>
+#include <unordered_map>
 using namespace Rcpp;
 
 //' calculates euclidean distance
@@ -547,13 +548,12 @@ double full_sc_lhood(const NumericVector& xgrid,
 // [[Rcpp::export]]
 double full_sc_lhood_fast(const NumericVector& xgrid,
                           const NumericVector& ygrid,
-                          const NumericVector& tgrid,   // integration grid (M)
-                          const NumericVector& tobs,    // observed times (n)
-                          const NumericMatrix& data,    // (t,x,y), sorted by t
+                          const NumericVector& tgrid,   // integration grid (M), sorted
+                          const NumericVector& tobs,    // observed times (nObs), sorted
+                          const NumericMatrix& data,    // (t,x,y), sorted by t and aligned with tobs
                           const NumericVector& params,  // (a1,b1,g1,a2,b2,a3,b3,g3)
                           const NumericVector& bounds)  // (bt,bx,by)
 {
-  // unpack params
   const double alpha1 = params[0];
   const double beta1  = params[1];
   const double gamma1 = params[2];
@@ -563,51 +563,38 @@ double full_sc_lhood_fast(const NumericVector& xgrid,
   const double beta3  = params[6];
   const double gamma3 = params[7];
 
-  const int n = data.nrow();
-  const int K = xgrid.size();
-  const int L = ygrid.size();
-  const int M = tgrid.size();
+  const int nx = xgrid.size();
+  const int ny = ygrid.size();
+  const int M  = tgrid.size();
   const int nObs = tobs.size();
-  const int G = K * L;
+  const int n = data.nrow();
 
-  if (n < 2) return 0.0;
-  if (G <= 0 || M <= 0 || nObs <= 0) stop("Empty grid or tobs/tgrid.");
-
-  // require sorted by time (your current code assumes this via break-on-time logic)
-  for (int i = 1; i < n; ++i) {
-    if (data(i, 0) < data(i - 1, 0)) stop("data must be sorted by time (nondecreasing).");
+  if (n < 2 || nObs < 2 || M < 1 || nx < 1 || ny < 1) {
+    return -std::numeric_limits<double>::infinity();
   }
-  for (int i = 1; i < M; ++i) {
-    if (tgrid[i] < tgrid[i - 1]) stop("tgrid must be sorted (nondecreasing).");
-  }
-  for (int i = 1; i < nObs; ++i) {
-    if (tobs[i] < tobs[i - 1]) stop("tobs must be sorted (nondecreasing).");
-  }
+  if (n != nObs) stop("full_sc_lhood_fast: data.nrow() must equal length(tobs).");
 
   const double bt = bounds[0];
   const double bx = bounds[1];
   const double by = bounds[2];
   const double area = bx * by;
+  const int G = nx * ny;
 
-  // ------------------------------------------------------------
-  // Fast part 1-1 (temporal log term): handle ties like strict "< t"
-  // ------------------------------------------------------------
+  // ---- Part 1_1 (tie-handling matches old) ----
   double part_1_1 = 0.0;
   int first_idx = 0;
   for (int i = 1; i < n; ++i) {
-    if (data(i, 0) > data(i - 1, 0)) first_idx = i; // new time block
+    if (data(i, 0) > data(i - 1, 0)) first_idx = i;
     part_1_1 += alpha1 + beta1 * data(i, 0) - gamma1 * static_cast<double>(first_idx);
   }
 
-  // ------------------------------------------------------------
-  // Fast part 1-2: sum log(phi(||x_i-x_j||)) for j<i
-  // Uses log form to avoid sqrt/pow/log in most cases.
-  // ------------------------------------------------------------
+  // ---- Part 1_2 (matches old) ----
   double part_1_2 = 0.0;
-  if (alpha2 > 0.0 && beta2 != 0.0) {
-    const double a2_2 = alpha2 * alpha2;
-    const double log_a2 = std::log(alpha2);
+  const bool use_phi = (alpha2 > 0.0 && beta2 != 0.0);
+  const double a2_2 = use_phi ? (alpha2 * alpha2) : 0.0;
+  const double log_a2 = use_phi ? std::log(alpha2) : 0.0;
 
+  if (use_phi) {
     for (int i = 1; i < n; ++i) {
       const double xi = data(i, 1), yi = data(i, 2);
       for (int j = 0; j < i; ++j) {
@@ -615,25 +602,18 @@ double full_sc_lhood_fast(const NumericVector& xgrid,
         const double dy = yi - data(j, 2);
         const double r2 = dx*dx + dy*dy;
         if (r2 <= a2_2) {
-          if (r2 == 0.0) {
-            // log(0^beta2) => -Inf for beta2>0 (rare unless duplicate points)
-            return -std::numeric_limits<double>::infinity();
-          }
+          if (r2 == 0.0) return -std::numeric_limits<double>::infinity();
           part_1_2 += beta2 * (0.5 * std::log(r2) - log_a2);
         }
       }
     }
   }
-  // else alpha2<=0 or beta2==0 => phi ≡ 1 so part_1_2 = 0
 
-  // ------------------------------------------------------------
-  // Fast part 1-4: -alpha3 * sum_{i>j} 1[dist<=beta3 & lag>=gamma3]
-  // ------------------------------------------------------------
+  // ---- Part 1_4 (matches old) ----
   double part_1_4 = 0.0;
   if (alpha3 != 0.0 && beta3 >= 0.0 && gamma3 >= 0.0) {
     const double b3_2 = beta3 * beta3;
     double g_sum = 0.0;
-
     for (int i = 1; i < n; ++i) {
       const double ti = data(i, 0), xi = data(i, 1), yi = data(i, 2);
       for (int j = 0; j < i; ++j) {
@@ -649,159 +629,139 @@ double full_sc_lhood_fast(const NumericVector& xgrid,
     part_1_4 = -alpha3 * g_sum;
   }
 
-  // ------------------------------------------------------------
-  // Precompute grid flattening and event arrays
-  // ------------------------------------------------------------
-  std::vector<double> gx(G), gy(G);
-  {
-    int g = 0;
-    for (int k = 0; k < K; ++k) {
-      for (int l = 0; l < L; ++l) {
-        gx[g] = xgrid[k];
-        gy[g] = ygrid[l];
-        ++g;
-      }
-    }
-  }
+  // ---- Sweep for part_1_3 and part_2 (ratio-of-sums) ----
+  std::vector<double> log_prod(static_cast<size_t>(G), 0.0);
+  std::vector<int>    count(static_cast<size_t>(G), 0);
 
-  std::vector<double> te(n), xe(n), ye(n);
-  for (int i = 0; i < n; ++i) {
-    te[i] = data(i, 0);
-    xe[i] = data(i, 1);
-    ye[i] = data(i, 2);
-  }
-
-  // event-major storage for incremental updates
-  const size_t GN = static_cast<size_t>(G) * static_cast<size_t>(n);
-  std::vector<double> d2(GN);
-  std::vector<double> log_r(GN);
-
-  for (int j = 0; j < n; ++j) {
-    const double xj = xe[j], yj = ye[j];
-    const size_t base = static_cast<size_t>(j) * static_cast<size_t>(G);
-    for (int g = 0; g < G; ++g) {
-      const double dx = gx[g] - xj;
-      const double dy = gy[g] - yj;
-      const double r2 = dx*dx + dy*dy;
-      d2[base + g] = r2;
-      log_r[base + g] = (r2 > 0.0) ? (0.5 * std::log(r2))
-        : (-std::numeric_limits<double>::infinity());
-    }
-  }
-
-  // ------------------------------------------------------------
-  // Unified sweep to compute:
-  //   part_1_3 = sum_{i=2..n} log C_theta2(t_i)
-  //   part_2   = (bt/M) * sum_{m=1..M} lambda(t_m) * E_h[ g(t_m, X) ]
-  //
-  // Original part_2 integrates:
-  //   sum_{k,l} (prod/C) * g * (area/G) = (sum prod*g) / (sum prod)
-  // so we never need C inside part_2. (This is the ratio-of-sums.)
-  // Your current slow form does (prod/C) explicitly :contentReference[oaicite:4]{index=4}.
-  // ------------------------------------------------------------
-
-  struct Eval {
-    double t;
-    int type;   // 0 = tobs logC (part_1_3), 1 = tgrid integral (part_2)
-    int idx;
-  };
-
-  std::vector<Eval> evals;
-  evals.reserve((nObs > 1 ? (nObs - 1) : 0) + M);
-
-  // tobs: skip the first like your existing part_1_3_full :contentReference[oaicite:5]{index=5}
-  for (int i = 1; i < nObs; ++i) evals.push_back({tobs[i], 0, i});
-
-  // tgrid: include all integration points
-  for (int m = 0; m < M; ++m) evals.push_back({tgrid[m], 1, m});
-
-  std::sort(evals.begin(), evals.end(),
-            [](const Eval& a, const Eval& b) {
-              if (a.t < b.t) return true;
-              if (a.t > b.t) return false;
-              return a.type < b.type;
-            });
-
-  std::vector<double> log_prod(G, 0.0);
-  std::vector<int>    count(G, 0);
-
-  int hist_idx = 0; // events with te < t
-  int lag_idx  = 0; // events with te <= t - gamma3
+  int hist_idx = 0;
+  int lag_idx  = 0;
 
   const double b3_2 = beta3 * beta3;
-
-  // phi constants
-  const bool use_phi = (alpha2 > 0.0 && beta2 != 0.0);
-  const double a2_2 = use_phi ? (alpha2 * alpha2) : 0.0;
-  const double log_a2 = use_phi ? std::log(alpha2) : 0.0;
 
   double part_1_3 = 0.0;
   double integral_sum = 0.0;
 
-  size_t p = 0;
-  while (p < evals.size()) {
-    const double t = evals[p].t;
+  int ig = 0;
+  int io = 1;
 
-    // update history for prod: include events with te < t
-    while (hist_idx < n && te[hist_idx] < t) {
-      if (use_phi) {
-        const size_t base = static_cast<size_t>(hist_idx) * static_cast<size_t>(G);
-        for (int g = 0; g < G; ++g) {
-          const double r2 = d2[base + g];
-          if (r2 <= a2_2) {
-            log_prod[g] += beta2 * (log_r[base + g] - log_a2);
+  // cache current (logC, ratio) and only recompute if state changed
+  bool state_changed = true;
+  double cached_logC = 0.0;
+  double cached_ratio = 0.0;
+
+  auto include_event_into_log_prod = [&](int e) {
+    const double xe = data(e, 1);
+    const double ye = data(e, 2);
+
+    int g = 0;
+    for (int ix = 0; ix < nx; ++ix) {
+      const double dx = xgrid[ix] - xe;
+      const double dx2 = dx * dx;
+      for (int iy = 0; iy < ny; ++iy, ++g) {
+        const double dy = ygrid[iy] - ye;
+        const double r2 = dx2 + dy * dy;
+
+        if (use_phi && r2 <= a2_2) {
+          // IMPORTANT: match old behavior — hard fail if r2 == 0 inside cutoff
+          if (r2 == 0.0) {
+            return false; // signal -Inf likelihood
           }
+          log_prod[static_cast<size_t>(g)] += beta2 * (0.5 * std::log(r2) - log_a2);
         }
       }
-      ++hist_idx;
     }
+    return true;
+  };
 
-    // update lagged set for theta3 counts: include events with te <= t - gamma3
-    const double cutoff = t - gamma3;
-    while (lag_idx < n && te[lag_idx] <= cutoff) {
-      const size_t base = static_cast<size_t>(lag_idx) * static_cast<size_t>(G);
-      for (int g = 0; g < G; ++g) {
-        if (d2[base + g] <= b3_2) count[g] += 1;
+  auto lag_event_into_count = [&](int e) {
+    const double xe = data(e, 1);
+    const double ye = data(e, 2);
+
+    int g = 0;
+    for (int ix = 0; ix < nx; ++ix) {
+      const double dx = xgrid[ix] - xe;
+      const double dx2 = dx * dx;
+      for (int iy = 0; iy < ny; ++iy, ++g) {
+        const double dy = ygrid[iy] - ye;
+        const double r2 = dx2 + dy * dy;
+        if (r2 <= b3_2) count[static_cast<size_t>(g)] += 1;
       }
-      ++lag_idx;
     }
+  };
 
-    // Compute logC(t) and ratio(t) once for this time t
+  auto recompute_logC_and_ratio = [&]() {
     double max_den = -std::numeric_limits<double>::infinity();
     double max_num = -std::numeric_limits<double>::infinity();
 
     for (int g = 0; g < G; ++g) {
-      const double lp = log_prod[g];
+      const double lp = log_prod[static_cast<size_t>(g)];
       if (lp > max_den) max_den = lp;
-      const double ln = lp - alpha3 * static_cast<double>(count[g]);
+      const double ln = lp - alpha3 * static_cast<double>(count[static_cast<size_t>(g)]);
       if (ln > max_num) max_num = ln;
     }
 
     double den = 0.0;
     double num = 0.0;
     for (int g = 0; g < G; ++g) {
-      den += std::exp(log_prod[g] - max_den);
-      num += std::exp((log_prod[g] - alpha3 * static_cast<double>(count[g])) - max_num);
+      den += std::exp(log_prod[static_cast<size_t>(g)] - max_den);
+      num += std::exp((log_prod[static_cast<size_t>(g)] - alpha3 * static_cast<double>(count[static_cast<size_t>(g)])) - max_num);
+    }
+
+    if (den <= 0.0) {
+      // sum prod is 0 => logC=-Inf, ratio=0
+      cached_logC = -std::numeric_limits<double>::infinity();
+      cached_ratio = 0.0;
+      return;
     }
 
     const double log_sum_prod = max_den + std::log(den);
-    const double logC = log_sum_prod + std::log(area) - std::log(static_cast<double>(G));
+    cached_logC = log_sum_prod + std::log(area) - std::log(static_cast<double>(G));
 
-    double ratio = 0.0;
-    if (den > 0.0 && num > 0.0) {
-      ratio = std::exp(max_num - max_den) * (num / den);
+    if (num > 0.0) {
+      cached_ratio = std::exp(max_num - max_den) * (num / den);
+    } else {
+      cached_ratio = 0.0;
+    }
+  };
+
+  while (ig < M || io < nObs) {
+    const double next_g = (ig < M)    ? tgrid[ig] : R_PosInf;
+    const double next_o = (io < nObs) ? tobs[io]  : R_PosInf;
+    const double t = (next_g < next_o) ? next_g : next_o;
+
+    // include events with te < t
+    while (hist_idx < n && data(hist_idx, 0) < t) {
+      if (!include_event_into_log_prod(hist_idx)) {
+        return -std::numeric_limits<double>::infinity();
+      }
+      ++hist_idx;
+      state_changed = true;
     }
 
-    // apply all evals at this same t
-    while (p < evals.size() && evals[p].t == t) {
-      if (evals[p].type == 0) {
-        part_1_3 += logC;
-      } else {
-        // N(t) = #{te < t} = hist_idx
-        const double temporal = std::exp(alpha1 + beta1 * t - gamma1 * static_cast<double>(hist_idx));
-        integral_sum += temporal * ratio;
-      }
-      ++p;
+    // lagged events with te <= t - gamma3
+    const double cutoff = t - gamma3;
+    while (lag_idx < n && data(lag_idx, 0) <= cutoff) {
+      lag_event_into_count(lag_idx);
+      ++lag_idx;
+      state_changed = true;
+    }
+
+    if (state_changed) {
+      recompute_logC_and_ratio();
+      state_changed = false;
+    }
+
+    // obs evals at time t
+    while (io < nObs && tobs[io] == t) {
+      part_1_3 += cached_logC;
+      ++io;
+    }
+
+    // grid evals at time t
+    while (ig < M && tgrid[ig] == t) {
+      const double temporal = std::exp(alpha1 + beta1 * t - gamma1 * static_cast<double>(hist_idx));
+      integral_sum += temporal * cached_ratio;
+      ++ig;
     }
   }
 
@@ -814,63 +774,154 @@ double full_sc_lhood_fast(const NumericVector& xgrid,
 
 //' calculates spatial interaction
 //'
-//' @param Hist a matrix of points.
-//' @param newp a new point vector.
-//' @param params a vector of parameters.
+//' @param hist a matrix of points (x,y), n x 2.
+//' @param newp a new point vector (x,y), length 2.
+//' @param params a vector of parameters (alpha2, beta2).
 //'
 //' @returns calculated probability of new point.
 //' @keywords internal
 // [[Rcpp::export]]
-double spat_interaction(const NumericMatrix& Hist,
-                        const NumericVector& newp,
-                        const NumericVector& params) {
-  double alpha2 = params[0];
-  double beta2  = params[1];
-  double result = 1;
-  int I = Hist.nrow();
-  for(int j = 0; j < I; ++j){
-    double r = sqrt(pow(newp[0] - Hist(j, 0), 2)
-                  + pow(newp[1] - Hist(j, 1), 2));
-    result *= ((r <= alpha2) * std::pow( (r / alpha2), beta2) + (r > alpha2));
+double spat_interaction(const Rcpp::NumericMatrix& hist,
+                        const Rcpp::NumericVector& newp,
+                        const Rcpp::NumericVector& params) {
+
+  const double alpha2 = params[0];
+  const double beta2  = params[1];
+
+  if (alpha2 <= 0.0 || beta2 == 0.0) return 1.0;
+
+  const int I = hist.nrow();
+  const double a2_2 = alpha2 * alpha2;
+  const double expo = 0.5 * beta2;
+
+  const double x = newp[0];
+  const double y = newp[1];
+
+  double result = 1.0;
+
+  for (int j = 0; j < I; ++j) {
+    const double dx = x - hist(j, 0);
+    const double dy = y - hist(j, 1);
+    const double r2 = dx*dx + dy*dy;
+
+    if (r2 <= a2_2) {
+      result *= std::pow(r2 / a2_2, expo);
+      if (result <= 0.0) break;
+    }
   }
-  return(result);
+
+  return result;
 }
 
 
-//' calculates spatio-temporal interaction
+//' Fast spatio-temporal interaction for the self-correcting model
 //'
-//' @param data a matrix of times and locations.
-//' @param params a vector of parameters.
+//' Computes $g_i = exp(-alpha3 * sum_\{j<i\} 1[ ||x_i-x_j|| <= beta3 AND (t_i - t_j) >= gamma3 ])$
+//' for i = 1..n, with g_0 = exp(0) = 1.
 //'
-//' @returns a vector of interaction probabilities for every point.
+//'
+//' @param data NumericMatrix with columns (time, x, y). Assumed sorted by time ascending.
+//' @param params NumericVector length 3: (alpha3, beta3, gamma3)
+//' @return NumericVector length n of exp(-alpha3 * counts)
 //' @keywords internal
 // [[Rcpp::export]]
-NumericVector interaction_st(const NumericMatrix& data,
-                             const NumericVector& params) {
-  double alpha4 = params[0];
-  double beta4  = params[1];
-  double gamma4 = params[2];
-  int n = data.nrow();
-  NumericVector g_result(n);
-  g_result[0] = 0;
-  double sumval;
-  double r;
-  double lag;
-  double indic;
-  for (int i = 1; i < n; ++i)
-  {
-    sumval = 0;
-    for(int j = 0; j < i; ++j)
-    {
-      r = sqrt(pow(data(i, 1) - data(j, 1) , 2) + pow(data(i, 2) - data(j, 2) , 2));
-      lag = data(i, 0) - data(j, 0);
-      indic = (r <= beta4) * (lag >= gamma4);
-      sumval += indic;
-    }
-    g_result[i] = sumval;
-  }
-  return exp(-alpha4 * g_result);
+Rcpp::NumericVector interaction_st_fast(const Rcpp::NumericMatrix& data,
+                                        const Rcpp::NumericVector& params) {
+  const int n = data.nrow();
+  Rcpp::NumericVector out(n);
+  if (n == 0) return out;
 
+  const double alpha3 = params[0];
+  const double beta3  = params[1];
+  const double gamma3 = params[2];
+
+  out[0] = 1.0;
+  if (n == 1) return out;
+
+  if (beta3 <= 0.0) {
+    for (int i = 1; i < n; ++i) out[i] = 1.0;
+    return out;
+  }
+
+  const double b2 = beta3 * beta3;
+
+  // ---- small-n path: lag pointer + direct scan (usually faster up to a few hundred) ----
+  if (n <= 300) {
+    int lag_end = 0;
+    for (int i = 1; i < n; ++i) {
+      const double ti = data(i, 0);
+      const double xi = data(i, 1);
+      const double yi = data(i, 2);
+
+      const double cutoff = ti - gamma3;
+      while (lag_end < i && data(lag_end, 0) <= cutoff) ++lag_end;
+
+      double count = 0.0;
+      for (int j = 0; j < lag_end; ++j) {
+        const double dx = xi - data(j, 1);
+        const double dy = yi - data(j, 2);
+        const double r2 = dx*dx + dy*dy;
+        if (r2 <= b2) count += 1.0;
+      }
+      out[i] = std::exp(-alpha3 * count);
+    }
+    return out;
+  }
+
+  // ---- large-n path: hashed grid ----
+  const double cell = beta3;
+
+  auto key_of = [](int cx, int cy) -> long long {
+    return (static_cast<long long>(cx) << 32) ^ static_cast<unsigned long long>(cy);
+  };
+
+  std::unordered_map<long long, std::vector<int>> cells;
+  cells.reserve(static_cast<size_t>(n) * 2);
+
+  int lag_ptr = 0;
+
+  for (int i = 1; i < n; ++i) {
+    const double ti = data(i, 0);
+    const double xi = data(i, 1);
+    const double yi = data(i, 2);
+
+    const double cutoff = ti - gamma3;
+    while (lag_ptr < i && data(lag_ptr, 0) <= cutoff) {
+      const double xj = data(lag_ptr, 1);
+      const double yj = data(lag_ptr, 2);
+      const int cx = static_cast<int>(std::floor(xj / cell));
+      const int cy = static_cast<int>(std::floor(yj / cell));
+      cells[key_of(cx, cy)].push_back(lag_ptr);
+      ++lag_ptr;
+    }
+
+    if (lag_ptr == 0) {
+      out[i] = 1.0;
+      continue;
+    }
+
+    const int cxi = static_cast<int>(std::floor(xi / cell));
+    const int cyi = static_cast<int>(std::floor(yi / cell));
+
+    double count = 0.0;
+    for (int dx = -1; dx <= 1; ++dx) {
+      for (int dy = -1; dy <= 1; ++dy) {
+        const auto it = cells.find(key_of(cxi + dx, cyi + dy));
+        if (it == cells.end()) continue;
+        const std::vector<int>& idxs = it->second;
+        for (int idx : idxs) {
+          const double dxp = xi - data(idx, 1);
+          const double dyp = yi - data(idx, 2);
+          const double r2  = dxp*dxp + dyp*dyp;
+          if (r2 <= b2) count += 1.0;
+        }
+      }
+    }
+
+    out[i] = std::exp(-alpha3 * count);
+  }
+
+  return out;
 }
 
 
@@ -898,7 +949,6 @@ double temporal_sc(const NumericVector& params,
 }
 
 
-
 //' Simulate the temporal component of the self-correcting model
 //'
 //' @param Tmin minimum time value.
@@ -908,79 +958,120 @@ double temporal_sc(const NumericVector& params,
 //' @return a vector of thinned and unthinned temporal samples.
 //' @keywords internal
 // [[Rcpp::export]]
-NumericVector sim_temporal_sc(double Tmin = 0,
-                              double Tmax = 1,
-                              const NumericVector& params = NumericVector::create(0, 0, 0)) {
-  double alpha1 = params[0];
-  double beta1  = params[1];
+Rcpp::NumericVector sim_temporal_sc(double Tmin = 0,
+                                    double Tmax = 1,
+                                    const Rcpp::NumericVector& params = Rcpp::NumericVector::create(0, 0, 0)) {
+  const double alpha1 = params[0];
+  const double beta1  = params[1];
+  const double gamma1 = params[2];
 
-  double Lmax = exp(alpha1 + beta1 * Tmax);
-  double N_max = Lmax * Tmax;
+  // Upper bound for intensity (simple, safe bound)
+  const double Lmax = std::exp(alpha1 + beta1 * Tmax);
+  const double N_max = Lmax * (Tmax - Tmin);
 
-  // Generate a sample size from a Poisson distribution
-  int sample_size = R::rpois(N_max);
+  const int sample_size = R::rpois(N_max);
+  if (sample_size <= 0) return Rcpp::NumericVector(0);
 
-  // Generate uniformly distributed samples
-  NumericVector sample = Rcpp::runif(sample_size, Tmin, Tmax);
-
-  // Sort the sample in place
+  Rcpp::NumericVector sample = Rcpp::runif(sample_size, Tmin, Tmax);
   std::sort(sample.begin(), sample.end());
 
-  // Initialize history (hist) as an empty std::vector
+  Rcpp::NumericVector U = Rcpp::runif(sample_size, 0, 1);
+  Rcpp::NumericVector t_sim(sample_size);
+
+  // store accepted times (monotone increasing)
   std::vector<double> hist;
-  hist.push_back(0.0);  // Add an initial value
+  hist.reserve(static_cast<size_t>(sample_size) + 1);
+  hist.push_back(Tmin); // sentinel so N(t) = hist.size()-1
 
-  // Generate a uniformly distributed vector U for acceptance-rejection
-  NumericVector U = Rcpp::runif(sample_size, 0, 1);
-
-  // Create output vector t_sim and lambda_star
-  NumericVector t_sim(sample_size);
-  NumericVector lambda_star(sample_size);
-
-  // Main loop
   for (int i = 0; i < sample_size; ++i) {
-    lambda_star[i] = temporal_sc(params, sample[i], NumericVector(wrap(hist)));
+    const double t = sample[i];
 
-    // Acceptance-Rejection condition
-    if (U[i] < (lambda_star[i] / Lmax)) {
-      t_sim[i] = sample[i];
-      hist.push_back(sample[i]);  // Update history
+    // N(t) = number of accepted times strictly less than t
+    const double N_t = static_cast<double>(hist.size() - 1);
+
+    const double lambda_t = std::exp(alpha1 + beta1 * t - gamma1 * N_t);
+
+    if (U[i] < (lambda_t / Lmax)) {
+      t_sim[i] = t;
+      hist.push_back(t);
     } else {
-      t_sim[i] = NA_REAL;  // Mark rejected samples as NA
+      t_sim[i] = NA_REAL;
     }
   }
 
-  return t_sim;  // Return the final simulated times
+  return t_sim;
 }
 
 
-//' Simulate the spatial component of the self-correcting model
+//' Simulate the spatial component of the self-correcting model (faster)
 //'
-//' @param M_n a vector of (x,y)-coordinates for largest point.
+//' @param M_n a vector of (x,y)-coordinates for anchor/first point.
 //' @param params a vector of parameters (alpha_2, beta_2).
 //' @param nsim_t number of points to simulate.
-//' @param xy_bounds vector of lower and upper bounds for the domain (2 for x, 2 for y).
+//' @param xy_bounds vector: (ax, bx, ay, by).
 //'
-//' @return a matrix of point locations in the (x,y)-plane.
+//' @return a matrix nsim_t x 2 of point locations (x,y).
 //' @keywords internal
-//[[Rcpp::export]]
-NumericMatrix sim_spatial_sc(const NumericVector& M_n,
-                             const NumericVector& params,
-                             int nsim_t,
-                             const NumericVector& xy_bounds){
-  arma::mat Loc(1,2);
-  Loc(0,0) = M_n(0);
-  Loc(0,1) = M_n(1);
-  int lengLoc = 1;
-  while(lengLoc < nsim_t){
-    arma::rowvec new_point(2);
-    new_point(0) = R::runif(xy_bounds[0], xy_bounds[1]);
-    new_point(1) = R::runif(xy_bounds[2], xy_bounds[3]);
+// [[Rcpp::export]]
+Rcpp::NumericMatrix sim_spatial_sc(const Rcpp::NumericVector& M_n,
+                                   const Rcpp::NumericVector& params,
+                                   int nsim_t,
+                                   const Rcpp::NumericVector& xy_bounds) {
 
-    if( R::runif(0, 1) <= spat_interaction(Rcpp::NumericMatrix(Rcpp::wrap(Loc)), Rcpp::NumericVector(Rcpp::wrap(new_point)), params) ){
-      Loc = arma::join_cols(Loc, new_point);
-      lengLoc += 1;
+  // Always return a matrix with 2 cols (even if 0 rows) to avoid downstream subscript issues.
+  Rcpp::NumericMatrix Loc(std::max(nsim_t, 0), 2);
+  if (nsim_t <= 0) return Loc;
+
+  const double ax = xy_bounds[0], bx = xy_bounds[1];
+  const double ay = xy_bounds[2], by = xy_bounds[3];
+
+  const double alpha2 = params[0];
+  const double beta2  = params[1];
+
+  // First point fixed at M_n
+  Loc(0, 0) = M_n[0];
+  Loc(0, 1) = M_n[1];
+
+  int filled = 1;
+
+  // If alpha2 <= 0 or beta2 == 0, interaction is identically 1 under your formula,
+  // so everything is accepted: just draw iid uniform points.
+  if (alpha2 <= 0.0 || beta2 == 0.0) {
+    while (filled < nsim_t) {
+      Loc(filled, 0) = R::runif(ax, bx);
+      Loc(filled, 1) = R::runif(ay, by);
+      ++filled;
+    }
+    return Loc;
+  }
+
+  const double a2_2 = alpha2 * alpha2;
+  const double expo = 0.5 * beta2;
+
+  while (filled < nsim_t) {
+    const double x = R::runif(ax, bx);
+    const double y = R::runif(ay, by);
+
+    double prob = 1.0;
+
+    // product over existing points
+    for (int j = 0; j < filled; ++j) {
+      const double dx = x - Loc(j, 0);
+      const double dy = y - Loc(j, 1);
+      const double r2 = dx*dx + dy*dy;
+
+      if (r2 <= a2_2) {
+        prob *= std::pow(r2 / a2_2, expo);
+        if (prob == 0.0) break;
+      }
+    }
+
+    if (R::runif(0.0, 1.0) <= prob) {
+      Loc(filled, 0) = x;
+      Loc(filled, 1) = y;
+      ++filled;
     }
   }
-  return(Rcpp::NumericMatrix(Rcpp::wrap(Loc)));
+
+  return Loc;
 }

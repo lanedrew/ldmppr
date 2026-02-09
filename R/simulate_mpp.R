@@ -130,34 +130,37 @@ simulate_mpp <- function(process = c("self_correcting"),
   # Accept new or legacy mark model formats
   mark_model <- as_mark_model(mark_model)
 
-  # Scale the rasters if necessary
+  # Scale rasters if necessary
   if (!isTRUE(scaled_rasters)) {
     raster_list <- scale_rasters(raster_list)
     scaled_rasters <- TRUE
   }
 
-  # ---- Simulate times and locations ----
-  # NOTE: these are your existing internal helpers
-  sim_times <- stats::na.omit(sim_temporal_sc(t_min, t_max, sc_params[1:3]))
-  sim_locs  <- sim_spatial_sc(anchor_point, sc_params[4:5], length(sim_times), xy_bounds)
+  # ---- Simulate (delegate to simulate_sc so thinning uses interaction_st_fast, and empty cases are safe) ----
+  sim_obj <- simulate_sc(
+    t_min = t_min,
+    t_max = t_max,
+    sc_params = sc_params,
+    anchor_point = anchor_point,
+    xy_bounds = xy_bounds
+  )
 
-  if (length(sim_times) >= 1) sim_times[1] <- 0
-  txy_sim <- cbind(sim_times, sim_locs)
-
-  # ---- Thinning ----
-  thin_keep <- stats::runif(nrow(txy_sim), 0, 1) < interaction_st(txy_sim, sc_params[6:8])
-  txy_sim_thin <- txy_sim[thin_keep, , drop = FALSE]
-
-  sim_df <- data.frame(time = txy_sim[, 1], x = txy_sim[, 2], y = txy_sim[, 3])
-  sim_thin_df <- data.frame(time = txy_sim_thin[, 1], x = txy_sim_thin[, 2], y = txy_sim_thin[, 3])
+  sim_df      <- sim_obj$unthinned
+  sim_thin_df <- sim_obj$thinned
 
   used_df <- if (isTRUE(thinning)) sim_thin_df else sim_df
 
   bounds <- list(t_min = t_min, t_max = t_max, xy_bounds = xy_bounds)
 
-  if (nrow(used_df) == 0) {
+  # ---- If empty, return empty sim object (still valid ldmppr_sim) ----
+  if (is.null(used_df) || nrow(used_df) == 0) {
     realization <- data.frame(time = numeric(0), x = numeric(0), y = numeric(0), marks = numeric(0))
-    sim_mpp <- generate_mpp(locations = matrix(numeric(0), ncol = 2), marks = numeric(0), xy_bounds = xy_bounds)
+
+    sim_mpp <- generate_mpp(
+      locations = matrix(numeric(0), ncol = 2),
+      marks = numeric(0),
+      xy_bounds = xy_bounds
+    )
 
     return(new_ldmppr_sim(
       process = "self_correcting",
@@ -194,9 +197,15 @@ simulate_mpp <- function(process = c("self_correcting"),
     as.numeric(marks)
   }
 
-  realization <- data.frame(time = used_df$time, x = used_df$x, y = used_df$y, marks = marks_vec)
+  realization <- data.frame(
+    time = used_df$time,
+    x = used_df$x,
+    y = used_df$y,
+    marks = marks_vec
+  )
+
   sim_mpp <- generate_mpp(
-    locations = realization[, c("x", "y")],
+    locations = realization[, c("x", "y"), drop = FALSE],
     marks = realization$marks,
     xy_bounds = xy_bounds
   )

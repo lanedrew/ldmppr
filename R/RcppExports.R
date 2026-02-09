@@ -200,25 +200,28 @@ full_sc_lhood_fast <- function(xgrid, ygrid, tgrid, tobs, data, params, bounds) 
 
 #' calculates spatial interaction
 #'
-#' @param Hist a matrix of points.
-#' @param newp a new point vector.
-#' @param params a vector of parameters.
+#' @param hist a matrix of points (x,y), n x 2.
+#' @param newp a new point vector (x,y), length 2.
+#' @param params a vector of parameters (alpha2, beta2).
 #'
 #' @returns calculated probability of new point.
 #' @keywords internal
-spat_interaction <- function(Hist, newp, params) {
-    .Call('_ldmppr_spat_interaction', PACKAGE = 'ldmppr', Hist, newp, params)
+spat_interaction <- function(hist, newp, params) {
+    .Call('_ldmppr_spat_interaction', PACKAGE = 'ldmppr', hist, newp, params)
 }
 
-#' calculates spatio-temporal interaction
+#' Fast spatio-temporal interaction for the self-correcting model
 #'
-#' @param data a matrix of times and locations.
-#' @param params a vector of parameters.
+#' Computes $g_i = exp(-alpha3 * sum_\{j<i\} 1[ ||x_i-x_j|| <= beta3 AND (t_i - t_j) >= gamma3 ])$
+#' for i = 1..n, with g_0 = exp(0) = 1.
 #'
-#' @returns a vector of interaction probabilities for every point.
+#'
+#' @param data NumericMatrix with columns (time, x, y). Assumed sorted by time ascending.
+#' @param params NumericVector length 3: (alpha3, beta3, gamma3)
+#' @return NumericVector length n of exp(-alpha3 * counts)
 #' @keywords internal
-interaction_st <- function(data, params) {
-    .Call('_ldmppr_interaction_st', PACKAGE = 'ldmppr', data, params)
+interaction_st_fast <- function(data, params) {
+    .Call('_ldmppr_interaction_st_fast', PACKAGE = 'ldmppr', data, params)
 }
 
 #' calculates temporal likelihood
@@ -245,14 +248,14 @@ sim_temporal_sc <- function(Tmin = 0, Tmax = 1, params = as.numeric( c(0, 0, 0))
     .Call('_ldmppr_sim_temporal_sc', PACKAGE = 'ldmppr', Tmin, Tmax, params)
 }
 
-#' Simulate the spatial component of the self-correcting model
+#' Simulate the spatial component of the self-correcting model (faster)
 #'
-#' @param M_n a vector of (x,y)-coordinates for largest point.
+#' @param M_n a vector of (x,y)-coordinates for anchor/first point.
 #' @param params a vector of parameters (alpha_2, beta_2).
 #' @param nsim_t number of points to simulate.
-#' @param xy_bounds vector of lower and upper bounds for the domain (2 for x, 2 for y).
+#' @param xy_bounds vector: (ax, bx, ay, by).
 #'
-#' @return a matrix of point locations in the (x,y)-plane.
+#' @return a matrix nsim_t x 2 of point locations (x,y).
 #' @keywords internal
 sim_spatial_sc <- function(M_n, params, nsim_t, xy_bounds) {
     .Call('_ldmppr_sim_spatial_sc', PACKAGE = 'ldmppr', M_n, params, nsim_t, xy_bounds)

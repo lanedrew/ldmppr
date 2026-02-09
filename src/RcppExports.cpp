@@ -224,27 +224,27 @@ BEGIN_RCPP
 END_RCPP
 }
 // spat_interaction
-double spat_interaction(const NumericMatrix& Hist, const NumericVector& newp, const NumericVector& params);
-RcppExport SEXP _ldmppr_spat_interaction(SEXP HistSEXP, SEXP newpSEXP, SEXP paramsSEXP) {
+double spat_interaction(const Rcpp::NumericMatrix& hist, const Rcpp::NumericVector& newp, const Rcpp::NumericVector& params);
+RcppExport SEXP _ldmppr_spat_interaction(SEXP histSEXP, SEXP newpSEXP, SEXP paramsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericMatrix& >::type Hist(HistSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type newp(newpSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(spat_interaction(Hist, newp, params));
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type hist(histSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type newp(newpSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type params(paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(spat_interaction(hist, newp, params));
     return rcpp_result_gen;
 END_RCPP
 }
-// interaction_st
-NumericVector interaction_st(const NumericMatrix& data, const NumericVector& params);
-RcppExport SEXP _ldmppr_interaction_st(SEXP dataSEXP, SEXP paramsSEXP) {
+// interaction_st_fast
+Rcpp::NumericVector interaction_st_fast(const Rcpp::NumericMatrix& data, const Rcpp::NumericVector& params);
+RcppExport SEXP _ldmppr_interaction_st_fast(SEXP dataSEXP, SEXP paramsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericMatrix& >::type data(dataSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(interaction_st(data, params));
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type params(paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(interaction_st_fast(data, params));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -262,28 +262,28 @@ BEGIN_RCPP
 END_RCPP
 }
 // sim_temporal_sc
-NumericVector sim_temporal_sc(double Tmin, double Tmax, const NumericVector& params);
+Rcpp::NumericVector sim_temporal_sc(double Tmin, double Tmax, const Rcpp::NumericVector& params);
 RcppExport SEXP _ldmppr_sim_temporal_sc(SEXP TminSEXP, SEXP TmaxSEXP, SEXP paramsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< double >::type Tmin(TminSEXP);
     Rcpp::traits::input_parameter< double >::type Tmax(TmaxSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type params(paramsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type params(paramsSEXP);
     rcpp_result_gen = Rcpp::wrap(sim_temporal_sc(Tmin, Tmax, params));
     return rcpp_result_gen;
 END_RCPP
 }
 // sim_spatial_sc
-NumericMatrix sim_spatial_sc(const NumericVector& M_n, const NumericVector& params, int nsim_t, const NumericVector& xy_bounds);
+Rcpp::NumericMatrix sim_spatial_sc(const Rcpp::NumericVector& M_n, const Rcpp::NumericVector& params, int nsim_t, const Rcpp::NumericVector& xy_bounds);
 RcppExport SEXP _ldmppr_sim_spatial_sc(SEXP M_nSEXP, SEXP paramsSEXP, SEXP nsim_tSEXP, SEXP xy_boundsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericVector& >::type M_n(M_nSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type params(paramsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type M_n(M_nSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type params(paramsSEXP);
     Rcpp::traits::input_parameter< int >::type nsim_t(nsim_tSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type xy_bounds(xy_boundsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type xy_bounds(xy_boundsSEXP);
     rcpp_result_gen = Rcpp::wrap(sim_spatial_sc(M_n, params, nsim_t, xy_bounds));
     return rcpp_result_gen;
 END_RCPP
@@ -306,7 +306,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ldmppr_full_sc_lhood", (DL_FUNC) &_ldmppr_full_sc_lhood, 7},
     {"_ldmppr_full_sc_lhood_fast", (DL_FUNC) &_ldmppr_full_sc_lhood_fast, 7},
     {"_ldmppr_spat_interaction", (DL_FUNC) &_ldmppr_spat_interaction, 3},
-    {"_ldmppr_interaction_st", (DL_FUNC) &_ldmppr_interaction_st, 2},
+    {"_ldmppr_interaction_st_fast", (DL_FUNC) &_ldmppr_interaction_st_fast, 2},
     {"_ldmppr_temporal_sc", (DL_FUNC) &_ldmppr_temporal_sc, 3},
     {"_ldmppr_sim_temporal_sc", (DL_FUNC) &_ldmppr_sim_temporal_sc, 3},
     {"_ldmppr_sim_spatial_sc", (DL_FUNC) &_ldmppr_sim_spatial_sc, 4},
