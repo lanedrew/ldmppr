@@ -146,9 +146,9 @@ fit_sc <- estimate_process_parameters(
 #> Step 2/2: Optimizing parameters...
 #> Single level (grid 20x20x20)
 #>   Global search: 1 restart(s), then local refinement.
-#>   Completed in 0.5s.
-#>   Best objective: 159.13144
-#> Finished. Total time: 0.5s.
+#>   Completed in 0.4s.
+#>   Best objective: 174.58351
+#> Finished. Total time: 0.4s.
 # Print method for ldmppr_fit objects
 fit_sc
 #> <ldmppr_fit>
@@ -156,13 +156,13 @@ fit_sc
 #>   engine:  nloptr
 #>   n_obs:   121
 #>   delta*:  1
-#>   objective (best): 159.1314
-#>  optimal parameters:  -8.089751 19.15774 0.04337158 2.777946 1.799758 7.936563 0.277289 1.362324
+#>   objective (best): 174.5835
+#>  optimal parameters:  -1.153893 10.13079 0.02562104 1.762711 2.576579 0.793192 2.500101 0.1115519
 
 estimated_parameters <- coef(fit_sc)
 estimated_parameters
-#> [1] -8.08975124 19.15774311  0.04337158  2.77794597  1.79975832  7.93656264
-#> [7]  0.27728900  1.36232391
+#> [1] -1.15389260 10.13079399  0.02562104  1.76271138  2.57657919  0.79319202
+#> [7]  2.50010138  0.11155188
 ```
 
 **Notes**
@@ -242,10 +242,10 @@ mark_model <- train_mark_model(
 #> Step 5/6: Fitting model (with optional CV tuning)...
 #>   Tuning enabled: 5-fold CV with 20 candidate(s).
 #>   Total model fits: 100 (5 folds x 20 grid).
-#>   Done in 30.0s.
+#>   Done in 24.4s.
 #> Step 6/6: Finalizing output object...
 #>   Done in 0.0s.
-#> Training complete. Total time: 30.1s.
+#> Training complete. Total time: 24.5s.
 
 # Print method for ldmppr_mark_model objects
 print(mark_model)
@@ -373,13 +373,13 @@ plot(simulated)
 
 # Data-frame view of the simulated realization
 head(as.data.frame(simulated))
-#>        time          x        y    marks
-#> 1 0.0000000 10.0000000 14.00000 900.3945
-#> 2 0.5994879  0.5562044 22.53616 600.5068
-#> 3 0.6285258 18.1223811 24.10783 375.4156
-#> 4 0.6325905 24.9457739 11.94679 405.0089
-#> 5 0.6415368  7.6883396 22.57570 403.9800
-#> 6 0.6438568 20.9878408 14.70485 349.6282
+#>        time         x         y    marks
+#> 1 0.0000000 10.000000 14.000000 900.3945
+#> 2 0.4430049 21.577247 23.111446 541.6990
+#> 3 0.5039294 16.632781 22.061460 647.5046
+#> 4 0.5408029  8.470302 22.657083 587.2133
+#> 5 0.5605597 13.255630 11.320682 749.7777
+#> 6 0.5733087 15.930922  8.571894 558.3950
 ```
 
 ------------------------------------------------------------------------

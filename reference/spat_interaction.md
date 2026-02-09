@@ -5,22 +5,22 @@ calculates spatial interaction
 ## Usage
 
 ``` r
-spat_interaction(Hist, newp, params)
+spat_interaction(hist, newp, params)
 ```
 
 ## Arguments
 
-- Hist:
+- hist:
 
-  a matrix of points.
+  a matrix of points (x,y), n x 2.
 
 - newp:
 
-  a new point vector.
+  a new point vector (x,y), length 2.
 
 - params:
 
-  a vector of parameters.
+  a vector of parameters (alpha2, beta2).
 
 ## Value
 
