@@ -10,8 +10,8 @@
 #' @param anchor_point (optional) vector of (x,y) coordinates of the point to condition on.
 #'   If \code{NULL}, inferred from the reference data (largest mark if available) or from
 #'   \code{process_fit$data_original} (largest size).
-#' @param raster_list a list of raster objects used for predicting marks.
-#' @param scaled_rasters \code{TRUE} or \code{FALSE} indicating whether the rasters have already been scaled.
+#' @param raster_list (optional) a list of raster objects used for predicting marks. If \code{NULL}, will attempt to infer from the \code{ldmppr_mark_model} if possible.
+#' @param scaled_rasters (optional) \code{TRUE} or \code{FALSE} indicating whether the rasters have already been scaled. If \code{NULL}, will attempt to infer from the \code{ldmppr_mark_model} if possible.
 #' @param mark_model a mark model object. May be a \code{ldmppr_mark_model} or a legacy model.
 #' @param xy_bounds (optional) vector of bounds as \code{c(a_x, b_x, a_y, b_y)}. If \code{NULL}, will be
 #'   inferred from \code{reference_data}'s window when \code{reference_data} is provided,
@@ -117,8 +117,12 @@ simulate_mpp <- function(process = c("self_correcting"),
     stop("Provide anchor_point = c(x,y), or pass an ldmppr_fit that contains data_original/data to infer it.", call. = FALSE)
   }
 
-  if (is.null(raster_list) || !is.list(raster_list)) stop("Provide a list of rasters for raster_list.", call. = FALSE)
-  if (!is.logical(scaled_rasters)) stop("Provide a logical value for scaled_rasters.", call. = FALSE)
+  if (!is.null(raster_list) && !is.list(raster_list)) {
+    stop("Provide `raster_list` as a list of rasters (or leave NULL to infer from `mark_model`).", call. = FALSE)
+  }
+  if (!is.logical(scaled_rasters) || length(scaled_rasters) != 1L) {
+    stop("Provide a single logical value for `scaled_rasters`.", call. = FALSE)
+  }
 
   if (!edge_correction %in% c("none", "toroidal")) stop("Provide correction = 'none' or 'toroidal'.", call. = FALSE)
   if (!is.logical(thinning)) stop("Provide a logical value for thinning.", call. = FALSE)
@@ -130,7 +134,31 @@ simulate_mpp <- function(process = c("self_correcting"),
   # Accept new or legacy mark model formats
   mark_model <- as_mark_model(mark_model)
 
-  # Scale rasters if necessary
+  # ---- infer rasters / scaled flag from mark_model if not provided ----
+  if (is.null(raster_list)) {
+    mm_rasters <- NULL
+    if (is.list(mark_model) && !is.null(mark_model$rasters)) mm_rasters <- mark_model$rasters
+
+    if (!is.null(mm_rasters)) {
+      raster_list <- mm_rasters
+      # if user didn't explicitly say rasters were scaled, inherit the mark_model flag when available
+      mm_scaled <- NULL
+      if (is.list(mark_model) && !is.null(mark_model$info) && !is.null(mark_model$info$scaled_rasters)) {
+        mm_scaled <- mark_model$info$scaled_rasters
+      }
+      if (isTRUE(mm_scaled)) scaled_rasters <- TRUE
+    }
+  }
+
+  # final validation
+  if (is.null(raster_list) || !is.list(raster_list)) {
+    stop(
+      "Provide `raster_list` as a list of rasters, or supply a `ldmppr_mark_model` that contains `rasters`.",
+      call. = FALSE
+    )
+  }
+
+  # ---- scale rasters if necessary ----
   if (!isTRUE(scaled_rasters)) {
     raster_list <- scale_rasters(raster_list)
     scaled_rasters <- TRUE

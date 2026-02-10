@@ -25,8 +25,7 @@ check_model_fit(
   seed = 0,
   parallel = FALSE,
   num_cores = max(1L, parallel::detectCores() - 1L),
-  set_future_plan = FALSE,
-  mark_delta = NULL
+  set_future_plan = FALSE
 )
 }
 \arguments{
@@ -48,9 +47,9 @@ or a numeric vector of length 8 giving the process parameters.}
 If \code{NULL}, inferred from the reference data (largest mark if available) or from
 \code{ldmppr_fit}.}
 
-\item{raster_list}{a list of raster objects used for predicting marks.}
+\item{raster_list}{(optional) a list of raster objects used for predicting marks. If \code{NULL}, will attempt to infer from the \code{ldmppr_mark_model} if possible.}
 
-\item{scaled_rasters}{\code{TRUE} or \code{FALSE} indicating whether the rasters have already been scaled.}
+\item{scaled_rasters}{(optional) \code{TRUE} or \code{FALSE} indicating whether the rasters have already been scaled. If \code{NULL}, will attempt to infer from the \code{ldmppr_mark_model} if possible.}
 
 \item{mark_model}{a mark model object. May be a \code{ldmppr_mark_model} or a legacy model.}
 
@@ -81,8 +80,6 @@ When \code{TRUE}, progress is reported via \pkg{progressr} (if available) and is
 
 \item{set_future_plan}{\code{TRUE} or \code{FALSE}. If \code{TRUE} and \code{parallel=TRUE}, set a local \pkg{future}
 plan internally (default behavior uses \code{multisession}).}
-
-\item{mark_delta}{(optional) numeric value to rescale the time covariate used by the mark model.}
 }
 \value{
 an object of class \code{"ldmppr_model_check"}.

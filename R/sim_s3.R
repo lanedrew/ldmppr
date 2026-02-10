@@ -33,7 +33,7 @@ NULL
 #' @param ... additional arguments (not used).
 #' @export
 print.ldmppr_sim <- function(x, ...) {
-  cat("<ldmppr_sim>\n")
+  cat("ldmppr sim: \n")
   cat("  process: ", x$process, "\n", sep = "")
   cat("  n:       ", nrow(x$realization), "\n", sep = "")
   cat("  thinning:", x$thinning, "\n", sep = "")

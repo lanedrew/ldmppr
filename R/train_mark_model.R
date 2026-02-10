@@ -417,6 +417,7 @@ train_mark_model <- function(data,
     recipe = preprocessing_recipe,
     outcome = "size",
     feature_names = feature_names,
+    rasters = raster_list,
     info = list(
       model_type = model_type,
       edge_correction = edge_correction,
@@ -424,7 +425,8 @@ train_mark_model <- function(data,
       competition_radius = competition_radius,
       selection_metric = selection_metric,
       cv_folds = cv_folds,
-      tuning_grid_size = tuning_grid_size
+      tuning_grid_size = tuning_grid_size,
+      scaled_rasters = scaled_rasters
     )
   )
 

@@ -17,6 +17,7 @@ ldmppr_mark_model(
   recipe = NULL,
   outcome = "size",
   feature_names = NULL,
+  rasters = NULL,
   info = list()
 )
 
@@ -42,6 +43,8 @@ load_mark_model(path)
 \item{outcome}{outcome column name (default \code{"size"}).}
 
 \item{feature_names}{(optional) vector of predictor names required at prediction time.}
+
+\item{rasters}{(optional) list of rasters used for prediction (e.g. for spatial covariates).}
 
 \item{info}{(optional) list of metadata.}
 

@@ -31,6 +31,8 @@
 \alias{as_ldmppr_grids}
 \alias{.validate_ldmppr_grids}
 \alias{.ldmppr_make_grid_schedule}
+\alias{infer_rasters_from_mark_model}
+\alias{infer_scaled_flag_from_mark_model}
 \title{Internal helpers (not part of the public API)}
 \usage{
 new_ldmppr_model_check(
@@ -64,6 +66,7 @@ new_ldmppr_mark_model(
   recipe = NULL,
   outcome = "size",
   feature_names = NULL,
+  rasters = NULL,
   info = list()
 )
 
@@ -139,6 +142,10 @@ as_ldmppr_grids(x, ...)
   labels = NULL,
   include_endpoints = TRUE
 )
+
+infer_rasters_from_mark_model(mm)
+
+infer_scaled_flag_from_mark_model(mm)
 }
 \description{
 These functions are used internally by ldmppr and are not intended to be

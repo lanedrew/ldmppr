@@ -19,8 +19,8 @@
 #' @param anchor_point (optional) vector of (x,y) coordinates of the point to condition on.
 #'   If \code{NULL}, inferred from the reference data (largest mark if available) or from
 #'   \code{ldmppr_fit}.
-#' @param raster_list a list of raster objects used for predicting marks.
-#' @param scaled_rasters \code{TRUE} or \code{FALSE} indicating whether the rasters have already been scaled.
+#' @param raster_list (optional) a list of raster objects used for predicting marks. If \code{NULL}, will attempt to infer from the \code{ldmppr_mark_model} if possible.
+#' @param scaled_rasters (optional) \code{TRUE} or \code{FALSE} indicating whether the rasters have already been scaled. If \code{NULL}, will attempt to infer from the \code{ldmppr_mark_model} if possible.
 #' @param mark_model a mark model object. May be a \code{ldmppr_mark_model} or a legacy model.
 #' @param xy_bounds (optional) vector of bounds as \code{c(a_x, b_x, a_y, b_y)}. If \code{NULL}, will be
 #'   inferred from \code{reference_data}'s window when \code{reference_data} is provided,
@@ -38,7 +38,6 @@
 #' @param num_cores number of workers to use when \code{parallel=TRUE}. Defaults to one fewer than the number of detected cores.
 #' @param set_future_plan \code{TRUE} or \code{FALSE}. If \code{TRUE} and \code{parallel=TRUE}, set a local \pkg{future}
 #'   plan internally (default behavior uses \code{multisession}).
-#' @param mark_delta (optional) numeric value to rescale the time covariate used by the mark model.
 #'
 #' @return an object of class \code{"ldmppr_model_check"}.
 #'
@@ -129,8 +128,7 @@ check_model_fit <- function(reference_data = NULL,
                             seed = 0,
                             parallel = FALSE,
                             num_cores = max(1L, parallel::detectCores() - 1L),
-                            set_future_plan = FALSE,
-                            mark_delta = NULL) {
+                            set_future_plan = FALSE) {
 
   process <- match.arg(process)
 
@@ -147,16 +145,32 @@ check_model_fit <- function(reference_data = NULL,
   }
   if (!is.numeric(n_sim) || n_sim < 1) stop("Provide a positive integer for `n_sim`.", call. = FALSE)
   if (is.na(seed) || seed < 0 || seed != as.integer(seed)) stop("Provide a non-negative integer for `seed`.", call. = FALSE)
-  if (is.null(raster_list) || !is.list(raster_list)) stop("Provide a list of rasters for `raster_list`.", call. = FALSE)
+  if (!is.null(raster_list) && !is.list(raster_list)) {
+    stop("If provided, `raster_list` must be a list of rasters.", call. = FALSE)
+  }
   if (!is.logical(scaled_rasters)) stop("`scaled_rasters` must be TRUE/FALSE.", call. = FALSE)
   if (is.null(mark_model)) stop("Provide a `mark_model` (ldmppr_mark_model or legacy) for predicting marks.", call. = FALSE)
   if (!is.logical(parallel)) stop("`parallel` must be TRUE/FALSE.", call. = FALSE)
-  if (!is.null(mark_delta) && (is.na(mark_delta) || !is.numeric(mark_delta) || length(mark_delta) != 1L)) {
-    stop("`mark_delta` must be NULL or a single numeric value.", call. = FALSE)
-  }
 
   # ---- resolve mark model ----
   mark_model <- as_mark_model(mark_model)
+
+  inferred_rasters <- FALSE
+  if (is.null(raster_list)) {
+    raster_list <- infer_rasters_from_mark_model(mark_model)
+    inferred_rasters <- !is.null(raster_list)
+
+    # If we inferred rasters and the mark_model knows whether they're scaled, use it
+    if (inferred_rasters) {
+      mm_scaled <- infer_scaled_flag_from_mark_model(mark_model)
+      if (!is.null(mm_scaled)) scaled_rasters <- mm_scaled
+    }
+  }
+
+  # still missing -> error (we truly need rasters to predict marks)
+  if (is.null(raster_list) || !is.list(raster_list)) {
+    stop("Provide `raster_list` or pass a `mark_model` that contains stored rasters.", call. = FALSE)
+  }
 
   # ---- seed ----
   set.seed(seed)
@@ -198,6 +212,7 @@ check_model_fit <- function(reference_data = NULL,
   # ---- scale rasters if necessary ----
   if (!isTRUE(scaled_rasters)) {
     raster_list <- scale_rasters(raster_list)
+    scaled_rasters <- TRUE
   }
 
   # ---- parallel plan handling (multisession default) ----
@@ -272,10 +287,6 @@ check_model_fit <- function(reference_data = NULL,
                   J = rep(NA_real_, d_length), E = rep(NA_real_, d_length), V = rep(NA_real_, d_length)))
     }
 
-    # Optional: rescale the time covariate used by the mark model for congruence
-    if (!is.null(mark_delta) && ("time" %in% names(sim_df))) {
-      sim_df$time <- power_law_mapping(sim_df$time, mark_delta)
-    }
 
     pred_marks <- predict_marks(
       sim_realization = sim_df,
@@ -498,11 +509,11 @@ check_model_fit <- function(reference_data = NULL,
     parallel = parallel,
     num_cores = as.integer(num_cores),
     set_future_plan = set_future_plan,
-    mark_delta = mark_delta,
     inferred = list(
       reference_data = is.null(match.call()$reference_data),
       xy_bounds = is.null(match.call()$xy_bounds),
-      anchor_point = is.null(match.call()$anchor_point)
+      anchor_point = is.null(match.call()$anchor_point),
+      raster_list = is.null(match.call()$raster_list)
     )
   )
 

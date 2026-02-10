@@ -37,9 +37,9 @@ length 8 giving the self-correcting process parameters:
 If \code{NULL}, inferred from the reference data (largest mark if available) or from
 \code{process_fit$data_original} (largest size).}
 
-\item{raster_list}{a list of raster objects used for predicting marks.}
+\item{raster_list}{(optional) a list of raster objects used for predicting marks. If \code{NULL}, will attempt to infer from the \code{ldmppr_mark_model} if possible.}
 
-\item{scaled_rasters}{\code{TRUE} or \code{FALSE} indicating whether the rasters have already been scaled.}
+\item{scaled_rasters}{(optional) \code{TRUE} or \code{FALSE} indicating whether the rasters have already been scaled. If \code{NULL}, will attempt to infer from the \code{ldmppr_mark_model} if possible.}
 
 \item{mark_model}{a mark model object. May be a \code{ldmppr_mark_model} or a legacy model.}
 

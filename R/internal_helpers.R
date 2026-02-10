@@ -77,6 +77,7 @@ new_ldmppr_mark_model <- function(engine,
                                   recipe = NULL,
                                   outcome = "size",
                                   feature_names = NULL,
+                                  rasters = NULL,
                                   info = list()) {
   structure(
     list(
@@ -86,6 +87,7 @@ new_ldmppr_mark_model <- function(engine,
       recipe = recipe,            # prepped recipe
       outcome = outcome,          # outcome column name
       feature_names = feature_names,
+      rasters = rasters,          # optional list of rasters used for prediction
       info = info,
       cache = new.env(parent = emptyenv())
     ),
@@ -759,4 +761,38 @@ as_ldmppr_grids <- function(x, ...) {
     labels = labels %||% rep("", length(lev_out)),
     include_endpoints = isTRUE(include_endpoints)
   )
+}
+
+
+## ------------------------ infer rasters helpers ------------------------
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+infer_rasters_from_mark_model <- function(mm) {
+  if (is.null(mm)) return(NULL)
+
+  # common locations people store rasters
+  candidates <- list(
+    mm$rasters
+  )
+
+  for (cand in candidates) {
+    if (is.list(cand) && length(cand) > 0) return(cand)
+  }
+
+  NULL
+}
+
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+infer_scaled_flag_from_mark_model <- function(mm) {
+  if (is.null(mm)) return(NULL)
+  candidates <- list(
+    mm$info$scaled_rasters
+  )
+  for (cand in candidates) {
+    if (is.logical(cand) && length(cand) == 1L && !is.na(cand)) return(cand)
+  }
+  NULL
 }

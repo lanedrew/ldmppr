@@ -34,7 +34,7 @@ NULL
 #'
 #' @export
 print.ldmppr_fit <- function(x, ...) {
-  cat("<ldmppr_fit>\n")
+  cat("ldmppr fit: \n")
   cat("  process: ", x$process, "\n", sep = "")
   cat("  engine:  ", x$engine, "\n", sep = "")
   if (!is.null(x$data_summary$n)) cat("  n_obs:   ", x$data_summary$n, "\n", sep = "")
@@ -98,7 +98,7 @@ summary.ldmppr_fit <- function(object, ...) {
 #' @param ... additional arguments (not used).
 #' @export
 print.summary.ldmppr_fit <- function(x, ...) {
-  cat("<summary: ldmppr_fit>\n")
+  cat("summary: ldmppr fit \n")
   cat("  process:  ", x$process, "\n", sep = "")
   cat("  engine:   ", x$engine, "\n", sep = "")
   cat("  status:   ", x$status, "\n", sep = "")

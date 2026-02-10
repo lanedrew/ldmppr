@@ -32,7 +32,7 @@ NULL
 #'
 #' @export
 print.ldmppr_model_check <- function(x, ...) {
-  cat("<ldmppr_model_check>\n")
+  cat("ldmppr model check: \n")
   if (!is.null(x$settings$n_sim)) cat("  n_sim: ", x$settings$n_sim, "\n", sep = "")
   if (!is.null(x$settings$thinning)) cat("  thinning: ", x$settings$thinning, "\n", sep = "")
   if (!is.null(x$settings$correction)) cat("  correction: ", x$settings$correction, "\n", sep = "")
@@ -69,7 +69,7 @@ summary.ldmppr_model_check <- function(object, ...) {
 #'
 #' @export
 print.summary.ldmppr_model_check <- function(x, ...) {
-  cat("<summary: ldmppr_model_check>\n")
+  cat("summary: ldmppr model check \n")
   cat("  combined p-value: ", x$p_combined, " for alpha = ", x$alpha, "\n", sep = "")
   cat("  individual p-values:\n")
   print(x$p_individual)

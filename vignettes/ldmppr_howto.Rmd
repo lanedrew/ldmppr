@@ -68,14 +68,24 @@ ub <- c(1, 25, 25)
 # Define the integration / grid schedule used by the likelihood approximation
 grids <- ldmppr_grids(
   upper_bounds = ub,
-  levels = list(c(20, 20, 20))
+  levels = list(
+    c(20, 20, 20)
+    )
 )
 
 # Define optimizer budgets/options for the global + local stages
 budgets <- ldmppr_budgets(
-  global_options = list(maxeval = 150),
-  local_budget_first_level = list(maxeval = 300, xtol_rel = 1e-5),
-  local_budget_refinement_levels = list(maxeval = 300, xtol_rel = 1e-5)
+  global_options = list(
+    maxeval = 150
+    ),
+  local_budget_first_level = list(
+    maxeval = 300,
+    xtol_rel = 1e-5
+    ),
+  local_budget_refinement_levels = list(
+    maxeval = 300,
+    xtol_rel = 1e-5
+    )
 )
 
 # Parameter initialization values: (alpha1, beta1, gamma1, alpha2, beta2, alpha3, beta3, gamma3)
@@ -173,8 +183,6 @@ model_check <- check_model_fit(
   t_max = 1,
   process = "self_correcting",
   process_fit = fit_sc,
-  raster_list = scaled_rasters,
-  scaled_rasters = TRUE,
   mark_model = mark_model,
   include_comp_inds = FALSE,
   thinning = TRUE,
@@ -205,8 +213,6 @@ simulated <- simulate_mpp(
   process_fit = fit_sc,
   t_min = 0,
   t_max = 1,
-  raster_list = scaled_rasters,
-  scaled_rasters = TRUE,
   mark_model = mark_model,
   include_comp_inds = TRUE,
   competition_radius = 10,

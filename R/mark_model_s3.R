@@ -30,6 +30,7 @@ NULL
 #' @param recipe a prepped recipes object used for preprocessing new data.
 #' @param outcome outcome column name (default \code{"size"}).
 #' @param feature_names (optional) vector of predictor names required at prediction time.
+#' @param rasters (optional) list of rasters used for prediction (e.g. for spatial covariates).
 #' @param info (optional) list of metadata.
 #'
 #' @describeIn ldmppr_mark_model Create a mark model container.
@@ -40,6 +41,7 @@ ldmppr_mark_model <- function(engine,
                               recipe = NULL,
                               outcome = "size",
                               feature_names = NULL,
+                              rasters = NULL,
                               info = list()) {
   stopifnot(is.character(engine), length(engine) == 1)
 
@@ -54,7 +56,7 @@ ldmppr_mark_model <- function(engine,
     stop("For engine='ranger', provide `fit_engine` (ranger fit).")
   }
 
-  new_ldmppr_mark_model(engine, fit_engine, xgb_raw, recipe, outcome, feature_names, info)
+  new_ldmppr_mark_model(engine, fit_engine, xgb_raw, recipe, outcome, feature_names, rasters, info)
 }
 
 
@@ -64,10 +66,13 @@ ldmppr_mark_model <- function(engine,
 #'
 #' @export
 print.ldmppr_mark_model <- function(x, ...) {
-  cat("<ldmppr_mark_model>\n")
+  cat("ldmppr mark model:\n")
   cat("  engine: ", x$engine, "\n", sep = "")
   cat("  has fit_engine: ", !is.null(x$fit_engine), "\n", sep = "")
   cat("  has xgb_raw: ", !is.null(x$xgb_raw), "\n", sep = "")
+  if(!is.null(x$rasters)) cat("  n_rasters: ", length(x$rasters), "\n", sep = "")
+  if(!is.null(x$rasters)) cat("  raster names: ", vapply(x$rasters, names, character(1)), "\n", sep = "")
+  if (!is.null(x$rasters) && !is.null(x$info$rasters_scaled)) cat("  rasters scaled: ", x$info$rasters_scaled, "\n")
   if (!is.null(x$feature_names)) cat("  n_features: ", length(x$feature_names), "\n", sep = "")
   invisible(x)
 }
