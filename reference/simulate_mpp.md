@@ -54,12 +54,15 @@ simulate_mpp(
 
 - raster_list:
 
-  a list of raster objects used for predicting marks.
+  (optional) a list of raster objects used for predicting marks. If
+  `NULL`, will attempt to infer from the `ldmppr_mark_model` if
+  possible.
 
 - scaled_rasters:
 
-  `TRUE` or `FALSE` indicating whether the rasters have already been
-  scaled.
+  (optional) `TRUE` or `FALSE` indicating whether the rasters have
+  already been scaled. If `NULL`, will attempt to infer from the
+  `ldmppr_mark_model` if possible.
 
 - mark_model:
 

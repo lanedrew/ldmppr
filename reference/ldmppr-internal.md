@@ -37,6 +37,7 @@ new_ldmppr_mark_model(
   recipe = NULL,
   outcome = "size",
   feature_names = NULL,
+  rasters = NULL,
   info = list()
 )
 
@@ -112,4 +113,8 @@ as_ldmppr_grids(x, ...)
   labels = NULL,
   include_endpoints = TRUE
 )
+
+infer_rasters_from_mark_model(mm)
+
+infer_scaled_flag_from_mark_model(mm)
 ```

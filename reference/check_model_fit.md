@@ -32,8 +32,7 @@ check_model_fit(
   seed = 0,
   parallel = FALSE,
   num_cores = max(1L, parallel::detectCores() - 1L),
-  set_future_plan = FALSE,
-  mark_delta = NULL
+  set_future_plan = FALSE
 )
 ```
 
@@ -71,12 +70,15 @@ check_model_fit(
 
 - raster_list:
 
-  a list of raster objects used for predicting marks.
+  (optional) a list of raster objects used for predicting marks. If
+  `NULL`, will attempt to infer from the `ldmppr_mark_model` if
+  possible.
 
 - scaled_rasters:
 
-  `TRUE` or `FALSE` indicating whether the rasters have already been
-  scaled.
+  (optional) `TRUE` or `FALSE` indicating whether the rasters have
+  already been scaled. If `NULL`, will attempt to infer from the
+  `ldmppr_mark_model` if possible.
 
 - mark_model:
 
@@ -139,11 +141,6 @@ check_model_fit(
 
   `TRUE` or `FALSE`. If `TRUE` and `parallel=TRUE`, set a local future
   plan internally (default behavior uses `multisession`).
-
-- mark_delta:
-
-  (optional) numeric value to rescale the time covariate used by the
-  mark model.
 
 ## Value
 

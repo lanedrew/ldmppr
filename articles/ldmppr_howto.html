@@ -172,14 +172,24 @@ point process.</p>
 <span><span class="co"># Define the integration / grid schedule used by the likelihood approximation</span></span>
 <span><span class="va">grids</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ldmppr_grids.html">ldmppr_grids</a></span><span class="op">(</span></span>
 <span>  upper_bounds <span class="op">=</span> <span class="va">ub</span>,</span>
-<span>  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">20</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
+<span>  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">20</span>, <span class="fl">20</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Define optimizer budgets/options for the global + local stages</span></span>
 <span><span class="va">budgets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ldmppr_budgets.html">ldmppr_budgets</a></span><span class="op">(</span></span>
-<span>  global_options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>maxeval <span class="op">=</span> <span class="fl">150</span><span class="op">)</span>,</span>
-<span>  local_budget_first_level <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>maxeval <span class="op">=</span> <span class="fl">300</span>, xtol_rel <span class="op">=</span> <span class="fl">1e-5</span><span class="op">)</span>,</span>
-<span>  local_budget_refinement_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>maxeval <span class="op">=</span> <span class="fl">300</span>, xtol_rel <span class="op">=</span> <span class="fl">1e-5</span><span class="op">)</span></span>
+<span>  global_options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    maxeval <span class="op">=</span> <span class="fl">150</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>  local_budget_first_level <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    maxeval <span class="op">=</span> <span class="fl">300</span>,</span>
+<span>    xtol_rel <span class="op">=</span> <span class="fl">1e-5</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>  local_budget_refinement_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    maxeval <span class="op">=</span> <span class="fl">300</span>,</span>
+<span>    xtol_rel <span class="op">=</span> <span class="fl">1e-5</span></span>
+<span>    <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Parameter initialization values: (alpha1, beta1, gamma1, alpha2, beta2, alpha3, beta3, gamma3)</span></span>
@@ -211,23 +221,23 @@ point process.</p>
 <span><span class="co">#&gt; Step 2/2: Optimizing parameters...</span></span>
 <span><span class="co">#&gt; Single level (grid 20x20x20)</span></span>
 <span><span class="co">#&gt;   Global search: 1 restart(s), then local refinement.</span></span>
-<span><span class="co">#&gt;   Completed in 0.2s.</span></span>
-<span><span class="co">#&gt;   Best objective: 183.72014</span></span>
+<span><span class="co">#&gt;   Completed in 0.3s.</span></span>
+<span><span class="co">#&gt;   Best objective: 176.49434</span></span>
 <span><span class="co">#&gt; Finished. Total time: 0.3s.</span></span>
 <span><span class="co"># Print method for ldmppr_fit objects</span></span>
 <span><span class="va">fit_sc</span></span>
-<span><span class="co">#&gt; &lt;ldmppr_fit&gt;</span></span>
+<span><span class="co">#&gt; ldmppr fit: </span></span>
 <span><span class="co">#&gt;   process: self_correcting</span></span>
 <span><span class="co">#&gt;   engine:  nloptr</span></span>
 <span><span class="co">#&gt;   n_obs:   121</span></span>
 <span><span class="co">#&gt;   delta*:  1</span></span>
-<span><span class="co">#&gt;   objective (best): 183.7201</span></span>
-<span><span class="co">#&gt;  optimal parameters:  0.7512562 6.772725 0.008539044 0.7688866 5.475281 1.499751 1.242274 0.001217159</span></span>
+<span><span class="co">#&gt;   objective (best): 176.4943</span></span>
+<span><span class="co">#&gt;  optimal parameters:  2.09849 4.953709 7.407446e-07 1.626127 3.883541 0.6801538 2.242364 0</span></span>
 <span></span>
 <span><span class="va">estimated_parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit_sc</span><span class="op">)</span></span>
 <span><span class="va">estimated_parameters</span></span>
-<span><span class="co">#&gt; [1] 0.751256168 6.772724780 0.008539044 0.768886630 5.475280822 1.499750691</span></span>
-<span><span class="co">#&gt; [7] 1.242274340 0.001217159</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 2.098490e+00 4.953709e+00 7.407446e-07 1.626127e+00 3.883541e+00</span></span>
+<span><span class="co">#&gt; [6] 6.801538e-01 2.242364e+00 0.000000e+00</span></span></code></pre></div>
 <p><strong>Notes</strong></p>
 <ul>
 <li>If you want to search over possible mappings between size and time,
@@ -308,17 +318,19 @@ parameter tuning grid for the model.</p>
 <span><span class="co">#&gt; Step 5/6: Fitting model (with optional CV tuning)...</span></span>
 <span><span class="co">#&gt;   Tuning enabled: 5-fold CV with 20 candidate(s).</span></span>
 <span><span class="co">#&gt;   Total model fits: 100 (5 folds x 20 grid).</span></span>
-<span><span class="co">#&gt;   Done in 27.7s.</span></span>
+<span><span class="co">#&gt;   Done in 25.3s.</span></span>
 <span><span class="co">#&gt; Step 6/6: Finalizing output object...</span></span>
 <span><span class="co">#&gt;   Done in 0.0s.</span></span>
-<span><span class="co">#&gt; Training complete. Total time: 27.8s.</span></span>
+<span><span class="co">#&gt; Training complete. Total time: 25.3s.</span></span>
 <span></span>
 <span><span class="co"># Print method for ldmppr_mark_model objects</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">mark_model</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;ldmppr_mark_model&gt;</span></span>
+<span><span class="co">#&gt; ldmppr mark model:</span></span>
 <span><span class="co">#&gt;   engine: xgboost</span></span>
 <span><span class="co">#&gt;   has fit_engine: TRUE</span></span>
 <span><span class="co">#&gt;   has xgb_raw: FALSE</span></span>
+<span><span class="co">#&gt;   n_rasters: 4</span></span>
+<span><span class="co">#&gt;   raster names: Snodgrass_aspect_southness_1mSnodgrass_DEM_1mSnodgrass_slope_1mSnodgrass_wetness_index_1m</span></span>
 <span><span class="co">#&gt;   n_features: 7</span></span>
 <span></span>
 <span><span class="co"># Summary method for ldmppr_mark_model objects</span></span>
@@ -330,7 +342,8 @@ parameter tuning grid for the model.</p>
 <span><span class="co">#&gt; recipe          12   recipe      list       </span></span>
 <span><span class="co">#&gt; outcome          1   -none-      character  </span></span>
 <span><span class="co">#&gt; feature_names    7   -none-      character  </span></span>
-<span><span class="co">#&gt; info             7   -none-      list       </span></span>
+<span><span class="co">#&gt; rasters          4   -none-      list       </span></span>
+<span><span class="co">#&gt; info             8   -none-      list       </span></span>
 <span><span class="co">#&gt; cache            0   -none-      environment</span></span></code></pre></div>
 <p>If the user wants to save the trained mark model (and reload it at a
 later time), the package provides the <code>save_mark_model</code> and
@@ -375,8 +388,6 @@ envelope test).</p>
 <span>  t_max <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  process <span class="op">=</span> <span class="st">"self_correcting"</span>,</span>
 <span>  process_fit <span class="op">=</span> <span class="va">fit_sc</span>,</span>
-<span>  raster_list <span class="op">=</span> <span class="va">scaled_rasters</span>,</span>
-<span>  scaled_rasters <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  mark_model <span class="op">=</span> <span class="va">mark_model</span>,</span>
 <span>  include_comp_inds <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  thinning <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -413,8 +424,6 @@ the fitted model.</p>
 <span>  process_fit <span class="op">=</span> <span class="va">fit_sc</span>,</span>
 <span>  t_min <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  t_max <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  raster_list <span class="op">=</span> <span class="va">scaled_rasters</span>,</span>
-<span>  scaled_rasters <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  mark_model <span class="op">=</span> <span class="va">mark_model</span>,</span>
 <span>  include_comp_inds <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  competition_radius <span class="op">=</span> <span class="fl">10</span>,</span>
@@ -430,13 +439,13 @@ the fitted model.</p>
 <code class="sourceCode R"><span></span>
 <span><span class="co"># Data-frame view of the simulated realization</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">simulated</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;        time         x         y    marks</span></span>
-<span><span class="co">#&gt; 1 0.0000000 10.000000 14.000000 900.3945</span></span>
-<span><span class="co">#&gt; 2 0.3100199 12.664459  3.411668 549.7050</span></span>
-<span><span class="co">#&gt; 3 0.3389414 16.653434  9.550132 597.9911</span></span>
-<span><span class="co">#&gt; 4 0.4077576 24.922092 15.226132 730.5878</span></span>
-<span><span class="co">#&gt; 5 0.4198252  3.126338 15.654761 655.3698</span></span>
-<span><span class="co">#&gt; 6 0.4427206  9.022405 11.044612 613.2568</span></span></code></pre></div>
+<span><span class="co">#&gt;        time          x         y    marks</span></span>
+<span><span class="co">#&gt; 1 0.0000000 10.0000000 14.000000 900.3945</span></span>
+<span><span class="co">#&gt; 2 0.1140356 10.7763927 16.557179 566.9804</span></span>
+<span><span class="co">#&gt; 3 0.1664013 22.0830495 12.213898 599.9713</span></span>
+<span><span class="co">#&gt; 4 0.1958571  0.4174274 19.246111 729.4594</span></span>
+<span><span class="co">#&gt; 5 0.2260247 24.4303317  8.796367 740.9364</span></span>
+<span><span class="co">#&gt; 6 0.2434549 17.8309537  4.295915 531.1793</span></span></code></pre></div>
 <hr>
 </div>
 </div>

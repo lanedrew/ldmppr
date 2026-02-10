@@ -107,14 +107,24 @@ ub <- c(1, 25, 25)
 # Define the integration / grid schedule used by the likelihood approximation
 grids <- ldmppr_grids(
   upper_bounds = ub,
-  levels = list(c(20, 20, 20))
+  levels = list(
+    c(20, 20, 20)
+    )
 )
 
 # Define optimizer budgets/options for the global + local stages
 budgets <- ldmppr_budgets(
-  global_options = list(maxeval = 150),
-  local_budget_first_level = list(maxeval = 300, xtol_rel = 1e-5),
-  local_budget_refinement_levels = list(maxeval = 300, xtol_rel = 1e-5)
+  global_options = list(
+    maxeval = 150
+    ),
+  local_budget_first_level = list(
+    maxeval = 300,
+    xtol_rel = 1e-5
+    ),
+  local_budget_refinement_levels = list(
+    maxeval = 300,
+    xtol_rel = 1e-5
+    )
 )
 
 # Parameter initialization values: (alpha1, beta1, gamma1, alpha2, beta2, alpha3, beta3, gamma3)
@@ -146,23 +156,23 @@ fit_sc <- estimate_process_parameters(
 #> Step 2/2: Optimizing parameters...
 #> Single level (grid 20x20x20)
 #>   Global search: 1 restart(s), then local refinement.
-#>   Completed in 0.2s.
-#>   Best objective: 183.72014
+#>   Completed in 0.3s.
+#>   Best objective: 176.49434
 #> Finished. Total time: 0.3s.
 # Print method for ldmppr_fit objects
 fit_sc
-#> <ldmppr_fit>
+#> ldmppr fit: 
 #>   process: self_correcting
 #>   engine:  nloptr
 #>   n_obs:   121
 #>   delta*:  1
-#>   objective (best): 183.7201
-#>  optimal parameters:  0.7512562 6.772725 0.008539044 0.7688866 5.475281 1.499751 1.242274 0.001217159
+#>   objective (best): 176.4943
+#>  optimal parameters:  2.09849 4.953709 7.407446e-07 1.626127 3.883541 0.6801538 2.242364 0
 
 estimated_parameters <- coef(fit_sc)
 estimated_parameters
-#> [1] 0.751256168 6.772724780 0.008539044 0.768886630 5.475280822 1.499750691
-#> [7] 1.242274340 0.001217159
+#> [1] 2.098490e+00 4.953709e+00 7.407446e-07 1.626127e+00 3.883541e+00
+#> [6] 6.801538e-01 2.242364e+00 0.000000e+00
 ```
 
 **Notes**
@@ -242,17 +252,19 @@ mark_model <- train_mark_model(
 #> Step 5/6: Fitting model (with optional CV tuning)...
 #>   Tuning enabled: 5-fold CV with 20 candidate(s).
 #>   Total model fits: 100 (5 folds x 20 grid).
-#>   Done in 27.7s.
+#>   Done in 25.3s.
 #> Step 6/6: Finalizing output object...
 #>   Done in 0.0s.
-#> Training complete. Total time: 27.8s.
+#> Training complete. Total time: 25.3s.
 
 # Print method for ldmppr_mark_model objects
 print(mark_model)
-#> <ldmppr_mark_model>
+#> ldmppr mark model:
 #>   engine: xgboost
 #>   has fit_engine: TRUE
 #>   has xgb_raw: FALSE
+#>   n_rasters: 4
+#>   raster names: Snodgrass_aspect_southness_1mSnodgrass_DEM_1mSnodgrass_slope_1mSnodgrass_wetness_index_1m
 #>   n_features: 7
 
 # Summary method for ldmppr_mark_model objects
@@ -264,7 +276,8 @@ summary(mark_model)
 #> recipe          12   recipe      list       
 #> outcome          1   -none-      character  
 #> feature_names    7   -none-      character  
-#> info             7   -none-      list       
+#> rasters          4   -none-      list       
+#> info             8   -none-      list       
 #> cache            0   -none-      environment
 ```
 
@@ -310,8 +323,6 @@ model_check <- check_model_fit(
   t_max = 1,
   process = "self_correcting",
   process_fit = fit_sc,
-  raster_list = scaled_rasters,
-  scaled_rasters = TRUE,
   mark_model = mark_model,
   include_comp_inds = FALSE,
   thinning = TRUE,
@@ -353,8 +364,6 @@ simulated <- simulate_mpp(
   process_fit = fit_sc,
   t_min = 0,
   t_max = 1,
-  raster_list = scaled_rasters,
-  scaled_rasters = TRUE,
   mark_model = mark_model,
   include_comp_inds = TRUE,
   competition_radius = 10,
@@ -373,13 +382,13 @@ plot(simulated)
 
 # Data-frame view of the simulated realization
 head(as.data.frame(simulated))
-#>        time         x         y    marks
-#> 1 0.0000000 10.000000 14.000000 900.3945
-#> 2 0.3100199 12.664459  3.411668 549.7050
-#> 3 0.3389414 16.653434  9.550132 597.9911
-#> 4 0.4077576 24.922092 15.226132 730.5878
-#> 5 0.4198252  3.126338 15.654761 655.3698
-#> 6 0.4427206  9.022405 11.044612 613.2568
+#>        time          x         y    marks
+#> 1 0.0000000 10.0000000 14.000000 900.3945
+#> 2 0.1140356 10.7763927 16.557179 566.9804
+#> 3 0.1664013 22.0830495 12.213898 599.9713
+#> 4 0.1958571  0.4174274 19.246111 729.4594
+#> 5 0.2260247 24.4303317  8.796367 740.9364
+#> 6 0.2434549 17.8309537  4.295915 531.1793
 ```
 
 ------------------------------------------------------------------------

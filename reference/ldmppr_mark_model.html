@@ -59,6 +59,7 @@ saved/loaded with <code>save_mark_model</code> and <code>load_mark_model</code>.
 <span>  recipe <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"size"</span>,</span>
 <span>  feature_names <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  rasters <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  info <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -102,6 +103,10 @@ saved/loaded with <code>save_mark_model</code> and <code>load_mark_model</code>.
 
 <dt id="arg-feature-names">feature_names<a class="anchor" aria-label="anchor" href="#arg-feature-names"></a></dt>
 <dd><p>(optional) vector of predictor names required at prediction time.</p></dd>
+
+
+<dt id="arg-rasters">rasters<a class="anchor" aria-label="anchor" href="#arg-rasters"></a></dt>
+<dd><p>(optional) list of rasters used for prediction (e.g. for spatial covariates).</p></dd>
 
 
 <dt id="arg-info">info<a class="anchor" aria-label="anchor" href="#arg-info"></a></dt>

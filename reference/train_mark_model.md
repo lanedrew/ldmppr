@@ -179,15 +179,17 @@ mark_model <- train_mark_model(
 #> Step 5/6: Fitting model (with optional CV tuning)...
 #>   Tuning enabled: 3-fold CV with 2 candidate(s).
 #>   Total model fits: 6 (3 folds x 2 grid).
-#>   Done in 2.8s.
+#>   Done in 2.5s.
 #> Step 6/6: Finalizing output object...
 #>   Done in 0.0s.
-#> Training complete. Total time: 2.8s.
+#> Training complete. Total time: 2.5s.
 
 print(mark_model)
-#> <ldmppr_mark_model>
+#> ldmppr mark model:
 #>   engine: xgboost
 #>   has fit_engine: TRUE
 #>   has xgb_raw: FALSE
+#>   n_rasters: 4
+#>   raster names: Snodgrass_DEM_1mSnodgrass_aspect_southness_1mSnodgrass_slope_1mSnodgrass_wetness_index_1m
 #>   n_features: 7
 ```

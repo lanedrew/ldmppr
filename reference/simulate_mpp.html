@@ -91,11 +91,11 @@ If <code>NULL</code>, inferred from the reference data (largest mark if availabl
 
 
 <dt id="arg-raster-list">raster_list<a class="anchor" aria-label="anchor" href="#arg-raster-list"></a></dt>
-<dd><p>a list of raster objects used for predicting marks.</p></dd>
+<dd><p>(optional) a list of raster objects used for predicting marks. If <code>NULL</code>, will attempt to infer from the <code>ldmppr_mark_model</code> if possible.</p></dd>
 
 
 <dt id="arg-scaled-rasters">scaled_rasters<a class="anchor" aria-label="anchor" href="#arg-scaled-rasters"></a></dt>
-<dd><p><code>TRUE</code> or <code>FALSE</code> indicating whether the rasters have already been scaled.</p></dd>
+<dd><p>(optional) <code>TRUE</code> or <code>FALSE</code> indicating whether the rasters have already been scaled. If <code>NULL</code>, will attempt to infer from the <code>ldmppr_mark_model</code> if possible.</p></dd>
 
 
 <dt id="arg-mark-model">mark_model<a class="anchor" aria-label="anchor" href="#arg-mark-model"></a></dt>

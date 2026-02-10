@@ -76,8 +76,7 @@ or derived internally from a <code>ldmppr_fit</code> object.</p>
 <span>  seed <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  parallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  num_cores <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1L</span><span class="op">)</span>,</span>
-<span>  set_future_plan <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  mark_delta <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  set_future_plan <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -116,11 +115,11 @@ If <code>NULL</code>, inferred from the reference data (largest mark if availabl
 
 
 <dt id="arg-raster-list">raster_list<a class="anchor" aria-label="anchor" href="#arg-raster-list"></a></dt>
-<dd><p>a list of raster objects used for predicting marks.</p></dd>
+<dd><p>(optional) a list of raster objects used for predicting marks. If <code>NULL</code>, will attempt to infer from the <code>ldmppr_mark_model</code> if possible.</p></dd>
 
 
 <dt id="arg-scaled-rasters">scaled_rasters<a class="anchor" aria-label="anchor" href="#arg-scaled-rasters"></a></dt>
-<dd><p><code>TRUE</code> or <code>FALSE</code> indicating whether the rasters have already been scaled.</p></dd>
+<dd><p>(optional) <code>TRUE</code> or <code>FALSE</code> indicating whether the rasters have already been scaled. If <code>NULL</code>, will attempt to infer from the <code>ldmppr_mark_model</code> if possible.</p></dd>
 
 
 <dt id="arg-mark-model">mark_model<a class="anchor" aria-label="anchor" href="#arg-mark-model"></a></dt>
@@ -177,10 +176,6 @@ When <code>TRUE</code>, progress is reported via <span class="pkg">progressr</sp
 <dt id="arg-set-future-plan">set_future_plan<a class="anchor" aria-label="anchor" href="#arg-set-future-plan"></a></dt>
 <dd><p><code>TRUE</code> or <code>FALSE</code>. If <code>TRUE</code> and <code>parallel=TRUE</code>, set a local <span class="pkg">future</span>
 plan internally (default behavior uses <code>multisession</code>).</p></dd>
-
-
-<dt id="arg-mark-delta">mark_delta<a class="anchor" aria-label="anchor" href="#arg-mark-delta"></a></dt>
-<dd><p>(optional) numeric value to rescale the time covariate used by the mark model.</p></dd>
 
 </dl></div>
     <div class="section level2">

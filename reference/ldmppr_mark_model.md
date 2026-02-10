@@ -16,6 +16,7 @@ ldmppr_mark_model(
   recipe = NULL,
   outcome = "size",
   feature_names = NULL,
+  rasters = NULL,
   info = list()
 )
 
@@ -58,6 +59,11 @@ load_mark_model(path)
 - feature_names:
 
   (optional) vector of predictor names required at prediction time.
+
+- rasters:
+
+  (optional) list of rasters used for prediction (e.g. for spatial
+  covariates).
 
 - info:
 
