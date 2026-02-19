@@ -32,7 +32,10 @@ check_model_fit(
   seed = 0,
   parallel = FALSE,
   num_cores = max(1L, parallel::detectCores() - 1L),
-  set_future_plan = FALSE
+  set_future_plan = FALSE,
+  mark_mode = c("mark_model", "time_to_size"),
+  fg_correction = c("km", "rs"),
+  max_attempts = NULL
 )
 ```
 
@@ -70,19 +73,19 @@ check_model_fit(
 
 - raster_list:
 
-  (optional) a list of raster objects used for predicting marks. If
-  `NULL`, will attempt to infer from the `ldmppr_mark_model` if
-  possible.
+  (optional) list of raster objects used for mark prediction. Required
+  when `mark_mode='mark_model'` unless rasters are stored in
+  `mark_model`.
 
 - scaled_rasters:
 
-  (optional) `TRUE` or `FALSE` indicating whether the rasters have
-  already been scaled. If `NULL`, will attempt to infer from the
-  `ldmppr_mark_model` if possible.
+  `TRUE` or `FALSE` indicating whether rasters are already scaled.
+  Ignored when `mark_mode='time_to_size'`.
 
 - mark_model:
 
-  a mark model object. May be a `ldmppr_mark_model` or a legacy model.
+  a mark model object used when `mark_mode='mark_model'`. May be an
+  `ldmppr_mark_model`, `model_fit`, or `workflow`.
 
 - xy_bounds:
 
@@ -106,7 +109,7 @@ check_model_fit(
 
 - competition_radius:
 
-  distance for competition radius if `include_comp_inds = TRUE`.
+  positive numeric distance used when `include_comp_inds = TRUE`.
 
 - n_sim:
 
@@ -129,18 +132,34 @@ check_model_fit(
 
 - parallel:
 
-  `TRUE` or `FALSE`. If `TRUE`, simulations are run in parallel via
-  furrr/future.
+  `TRUE` or `FALSE`. If `TRUE`, simulations run in parallel via
+  furrr/future. For small simulation sizes, parallel overhead may
+  outweigh speed gains.
 
 - num_cores:
 
   number of workers to use when `parallel=TRUE`. Defaults to one fewer
-  than the number of detected cores.
+  than detected cores.
 
 - set_future_plan:
 
-  `TRUE` or `FALSE`. If `TRUE` and `parallel=TRUE`, set a local future
-  plan internally (default behavior uses `multisession`).
+  `TRUE` or `FALSE`. If `TRUE` and `parallel=TRUE`, set a temporary
+  future plan internally and restore the previous plan on exit.
+
+- mark_mode:
+
+  mark generation mode: `"mark_model"` uses
+  [`predict()`](https://rdrr.io/r/stats/predict.html) on a mark model,
+  while `"time_to_size"` maps simulated times back to sizes via `delta`.
+
+- fg_correction:
+
+  correction used for F/G/J summaries (`"km"` or `"rs"`).
+
+- max_attempts:
+
+  maximum number of simulation attempts when rejection occurs due to
+  non-finite summaries.
 
 ## Value
 
@@ -207,7 +226,7 @@ estimated_parameters <- c(
   1.82729512, 0.65330061, 0.86666748, 0.04681878
 )
 
-# NOTE: examples are run by CRAN with --run-donttest; keep parallel=FALSE here.
+# Keep parallel=FALSE in examples to avoid setup overhead.
 example_model_fit <- check_model_fit(
   reference_data = reference_data,
   t_min = 0,
@@ -228,6 +247,20 @@ example_model_fit <- check_model_fit(
   seed = 90210,
   parallel = FALSE
 )
+#> [ldmppr::check_model_fit]
+#> Checking model fit
+#>   mark_mode=mark_model, n_sim=100, parallel=FALSE
+#>   include_comp_inds=TRUE, edge_correction=none
+#> Step 1/4: Preparing simulation setup
+#> Using FGJ r-grid from reference: 1:198 (max r=2.405), correction=km
+#>   Done in 0.1s.
+#> Step 2/4: Generating accepted simulations
+#>   Done in 7.9s.
+#> Step 3/4: Computing envelope tests
+#>   Done in 0.6s.
+#> Step 4/4: Finalizing output object
+#>   Done in 8.6s.
+#> Model check complete.
 
 plot(example_model_fit, which = 'combined')
 #> Warning: `aes_string()` was deprecated in ggplot2 3.0.0.

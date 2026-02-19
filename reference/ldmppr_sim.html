@@ -53,6 +53,12 @@ reproduce or inspect the simulation.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'ldmppr_sim'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'summary.ldmppr_sim'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'ldmppr_sim'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'ldmppr_sim'</span></span>
@@ -89,6 +95,9 @@ reproduce or inspect the simulation.</p>
     <p>For methods:</p><dl><dt><code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code></dt>
 <dd><p>prints a summary of the simulation.</p></dd>
 
+  <dt><code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code></dt>
+<dd><p>returns a <code>summary.ldmppr_sim</code> object.</p></dd>
+
   <dt><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code></dt>
 <dd><p>returns a ggplot visualization of the marked point pattern.</p></dd>
 
@@ -114,6 +123,7 @@ reproduce or inspect the simulation.</p>
     <h2 id="methods-by-generic-">Methods (by generic)<a class="anchor" aria-label="anchor" href="#methods-by-generic-"></a></h2>
 
 <ul><li><p><code>print(ldmppr_sim)</code>: Print a brief summary of the simulation.</p></li>
+<li><p><code>summary(ldmppr_sim)</code>: Summarize a simulated realization.</p></li>
 <li><p><code>as.data.frame(ldmppr_sim)</code>: Coerce to a data.frame of the simulated realization.</p></li>
 <li><p><code>nobs(ldmppr_sim)</code>: Number of simulated points.</p></li>
 <li><p><code>plot(ldmppr_sim)</code>: Plot the simulated marked point pattern.</p></li>
@@ -121,7 +131,8 @@ reproduce or inspect the simulation.</p>
     <div class="section level2">
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
 
-<ul><li><p><code>mpp.ldmppr_sim()</code>: Extract the underlying marked point pattern object.</p></li>
+<ul><li><p><code>print(summary.ldmppr_sim)</code>: Print a summary produced by <code>summary.ldmppr_sim</code>.</p></li>
+<li><p><code>mpp.ldmppr_sim()</code>: Extract the underlying marked point pattern object.</p></li>
 </ul></div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

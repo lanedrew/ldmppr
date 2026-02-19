@@ -70,7 +70,13 @@ e.g. from a delta search) along with metadata used to reproduce the fit.</p>
 <span><span class="fu">as_nloptr</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'ldmppr_fit'</span></span>
-<span><span class="fu">as_nloptr</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">as_nloptr</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'ldmppr_fit'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/nobs.html" class="external-link">nobs</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'ldmppr_fit'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -125,6 +131,8 @@ e.g. from a delta search) along with metadata used to reproduce the fit.</p>
 <li><p><code>summary(ldmppr_fit)</code>: Summarize a fitted model.</p></li>
 <li><p><code>plot(ldmppr_fit)</code>: Plot diagnostics for a fitted model.</p></li>
 <li><p><code>as_nloptr(ldmppr_fit)</code>: Extract the underlying <code>nloptr</code> result.</p></li>
+<li><p><code>nobs(ldmppr_fit)</code>: Number of observations used in the fitted model.</p></li>
+<li><p><code>as.data.frame(ldmppr_fit)</code>: Coerce fit summary to a one-row data frame.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>

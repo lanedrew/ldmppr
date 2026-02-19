@@ -21,7 +21,7 @@ train_mark_model(
   delta = NULL,
   save_model = FALSE,
   save_path = NULL,
-  parallel = TRUE,
+  parallel = FALSE,
   num_cores = NULL,
   include_comp_inds = FALSE,
   competition_radius = 15,
@@ -41,11 +41,11 @@ train_mark_model(
 
 - raster_list:
 
-  a list of raster objects.
+  list of raster objects used for mark-model training.
 
 - scaled_rasters:
 
-  `TRUE` or `FALSE` indicating whether the rasters have been scaled.
+  `TRUE` or `FALSE` indicating whether rasters are already scaled.
 
 - model_type:
 
@@ -73,13 +73,13 @@ train_mark_model(
 
 - parallel:
 
-  `TRUE` or `FALSE` indicating whether to use parallelization in model
-  training.
+  `TRUE` or `FALSE`. If `TRUE`, tuning is parallelized over resamples.
+  For small datasets, parallel overhead may outweigh speed gains.
 
 - num_cores:
 
-  number of cores to use in parallel model training (if `parallel` is
-  `TRUE`).
+  number of workers to use when `parallel=TRUE`. Ignored when
+  `parallel=FALSE`.
 
 - include_comp_inds:
 
@@ -88,7 +88,7 @@ train_mark_model(
 
 - competition_radius:
 
-  distance for competition radius if `include_comp_inds` is `TRUE`.
+  positive numeric distance used when `include_comp_inds = TRUE`.
 
 - edge_correction:
 
@@ -154,6 +154,7 @@ mark_model <- train_mark_model(
   tuning_grid_size = 2,
   verbose = TRUE
 )
+#> [ldmppr::train_mark_model]
 #> Training mark model
 #>   Model type: xgboost
 #>   Selection metric: rmse
@@ -166,7 +167,7 @@ mark_model <- train_mark_model(
 #>   Done in 0.0s.
 #> Step 2/6: Configuring parallel backend...
 #>   Parallel: off
-#>   Model engine threads: 3
+#>   Model engine threads: 1
 #>   Done in 0.0s.
 #> Step 3/6: Extracting raster covariates...
 #>   Using pre-scaled rasters (scaled_rasters = TRUE).
@@ -177,19 +178,21 @@ mark_model <- train_mark_model(
 #>   Final feature columns (incl x,y,time): 7
 #>   Done in 0.0s.
 #> Step 5/6: Fitting model (with optional CV tuning)...
-#>   Tuning enabled: 3-fold CV with 2 candidate(s).
-#>   Total model fits: 6 (3 folds x 2 grid).
-#>   Done in 2.5s.
+#>   foreach backend: doSEQ | workers=1
+#>   Done in 2.4s.
 #> Step 6/6: Finalizing output object...
-#>   Done in 0.0s.
+#>   Residual bootstrap stored (source=oos, transform=sqrt, bins=6, min/bin=8).
+#>   Done in 0.1s.
 #> Training complete. Total time: 2.5s.
 
 print(mark_model)
-#> ldmppr mark model:
-#>   engine: xgboost
-#>   has fit_engine: TRUE
-#>   has xgb_raw: FALSE
-#>   n_rasters: 4
-#>   raster names: Snodgrass_DEM_1mSnodgrass_aspect_southness_1mSnodgrass_slope_1mSnodgrass_wetness_index_1m
-#>   n_features: 7
+#> ldmppr Mark Model
+#>   engine:           xgboost
+#>   has_fit_engine:   TRUE
+#>   has_xgb_raw:      FALSE
+#>   n_features:       7
+#>   n_rasters:        4
+#>   raster_names:     Snodgrass_DEM_1m, Snodgrass_aspect_southness_1m, Snodgrass_slope_1m, Snodgrass_wetness_index_1m
+#>   scaled_rasters:   TRUE
+#>   comp_indices:     FALSE
 ```

@@ -62,6 +62,8 @@ full log-likelihood using <code><a href="https://astamm.github.io/nloptr/referen
 <span>  starts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>global <span class="op">=</span> <span class="fl">1L</span>, local <span class="op">=</span> <span class="fl">1L</span>, jitter_sd <span class="op">=</span> <span class="fl">0.35</span>, seed <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span>,</span>
 <span>  finite_bounds <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  refine_best_delta <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  rescore_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>enabled <span class="op">=</span> <span class="cn">TRUE</span>, top <span class="op">=</span> <span class="fl">5L</span>, objective_tol <span class="op">=</span> <span class="fl">1e-06</span>, param_tol <span class="op">=</span></span>
+<span>    <span class="fl">0.1</span>, avoid_bound_solutions <span class="op">=</span> <span class="cn">TRUE</span>, bound_eps <span class="op">=</span> <span class="fl">1e-08</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -111,16 +113,19 @@ and is an error when <code>length(delta)&gt;1</code>.</p></dd>
 <dd><p><code>TRUE</code> or <code>FALSE</code> specifying furrr/future to parallelize either:
 (a) over candidate <code>delta</code> values (when <code>length(delta) &gt; 1</code>), and/or
 (b) over local multi-start initializations (when <code>starts$local &gt; 1</code>), and/or
-(c) over global restarts (when <code>starts$global &gt; 1</code>).</p></dd>
+(c) over global restarts (when <code>starts$global &gt; 1</code>).
+For small problems, parallel overhead may outweigh speed gains.</p></dd>
 
 
 <dt id="arg-num-cores">num_cores<a class="anchor" aria-label="anchor" href="#arg-num-cores"></a></dt>
-<dd><p>number of workers to use when <code>set_future_plan = TRUE</code>.</p></dd>
+<dd><p>number of workers to use when <code>parallel=TRUE</code> and
+<code>set_future_plan=TRUE</code>.</p></dd>
 
 
 <dt id="arg-set-future-plan">set_future_plan<a class="anchor" aria-label="anchor" href="#arg-set-future-plan"></a></dt>
-<dd><p><code>TRUE</code> or <code>FALSE</code>, temporarily sets
-<code>future::plan(multisession, workers = num_cores)</code> and restores the original plan on exit.</p></dd>
+<dd><p><code>TRUE</code> or <code>FALSE</code>. If <code>TRUE</code> and
+<code>parallel=TRUE</code>, set a temporary <span class="pkg">future</span> plan internally and
+restore the previous plan on exit.</p></dd>
 
 
 <dt id="arg-strategy">strategy<a class="anchor" aria-label="anchor" href="#arg-strategy"></a></dt>
@@ -152,6 +157,18 @@ Global algorithms and select local algorithms in NLopt require finite bounds.</p
 <dt id="arg-refine-best-delta">refine_best_delta<a class="anchor" aria-label="anchor" href="#arg-refine-best-delta"></a></dt>
 <dd><p><code>TRUE</code> or <code>FALSE</code>. If <code>TRUE</code> and <code>length(delta) &gt; 1</code>, performs refinement
 of the best <code>delta</code> across additional grid levels (if available).</p></dd>
+
+
+<dt id="arg-rescore-control">rescore_control<a class="anchor" aria-label="anchor" href="#arg-rescore-control"></a></dt>
+<dd><p>controls candidate rescoring and bound-handling behavior in
+  multi-resolution fitting. Can be either:</p>
+<p></p><ul><li><p>a single logical value (toggle rescoring on/off while keeping defaults), or</p></li>
+<li><p>a named list with any of:
+      <code>enabled</code>, <code>top</code>, <code>objective_tol</code>, <code>param_tol</code>,
+      <code>avoid_bound_solutions</code>, <code>bound_eps</code>.</p></li>
+</ul><p>Defaults are:
+  <code>list(enabled = TRUE, top = 5L, objective_tol = 1e-6, param_tol = 0.10,</code>
+  <code>avoid_bound_solutions = TRUE, bound_eps = 1e-8)</code>.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -208,14 +225,16 @@ for marked point processes, with a view to forest stand data. <em>Biometrics</em
 <span class="r-in"><span>  starts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>global <span class="op">=</span> <span class="fl">2</span>, local <span class="op">=</span> <span class="fl">2</span>, jitter_sd <span class="op">=</span> <span class="fl">0.25</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> [ldmppr::estimate_process_parameters]</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Using default starting values (parameter_inits) since none were provided.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Initial values: 7.185, 0.01, 0.03963, 2.369, 2, 0.5, 2.369, 0.05</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Initial values: 3.125, 4.805, 0.03963, 2.369, 2, 0.5, 2.369, 0.1</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Estimating self-correcting process parameters</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Strategy: global_local</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Delta: 1</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Grids: 1 level(s)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Local optimizer: NLOPT_LN_BOBYQA</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Global optimizer: NLOPT_GN_CRS2_LM</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Rescore control: enabled=TRUE, top=5, objective_tol=1e-06, param_tol=0.1</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Starts: global=2, local=2, jitter_sd=0.25, seed=1</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Parallel: off</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Step 1/2: Preparing data and objective function...</span>
@@ -225,14 +244,14 @@ for marked point processes, with a view to forest stand data. <em>Biometrics</em
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Single level (grid 10x10x10)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Global search: 2 restart(s), then local refinement.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Local multi-start: 2 start(s).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Completed in 0.1s.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Best objective: 223.98064</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Finished. Total time: 0.1s.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Completed in 0.2s.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Best objective: 188.04405</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Finished. Total time: 0.2s.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  0.660472398  6.291173241  0.009606337 16.278852354  0.000000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [6]  4.496232222 12.534987011  1.283571769</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2.290657e+00 4.130412e+00 5.970705e-05 2.795717e+00 2.053278e+00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [6] 4.086056e-01 2.695652e+00 1.139847e-01</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 'log Lik.' -223.9806 (df=8)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 'log Lik.' -188.0441 (df=8)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Estimate parameters using multiple delta values (delta search)</span></span></span>

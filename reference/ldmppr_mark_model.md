@@ -24,7 +24,25 @@ ldmppr_mark_model(
 print(x, ...)
 
 # S3 method for class 'ldmppr_mark_model'
-predict(object, new_data, ...)
+summary(object, ...)
+
+# S3 method for class 'summary.ldmppr_mark_model'
+print(x, ...)
+
+# S3 method for class 'ldmppr_mark_model'
+predict(
+  object,
+  new_data = NULL,
+  sim_realization = NULL,
+  raster_list = NULL,
+  scaled_rasters = FALSE,
+  xy_bounds = NULL,
+  include_comp_inds = FALSE,
+  competition_radius = 15,
+  edge_correction = "none",
+  seed = NULL,
+  ...
+)
 
 save_mark_model(object, path, ...)
 
@@ -71,7 +89,7 @@ load_mark_model(path)
 
 - x:
 
-  a `ldmppr_mark_model` object.
+  an object of class `summary.ldmppr_mark_model`.
 
 - ...:
 
@@ -83,7 +101,43 @@ load_mark_model(path)
 
 - new_data:
 
-  a data frame of predictors (and possibly outcome columns).
+  a data frame of predictors (and possibly outcome columns). Ignored
+  when `sim_realization` is supplied.
+
+- sim_realization:
+
+  optional simulation realization containing `x`, `y`, and `time`. When
+  supplied, predictors are built from rasters and optional competition
+  indices.
+
+- raster_list:
+
+  optional list of rasters used when `sim_realization` is supplied. If
+  omitted, uses rasters stored in `object` when available.
+
+- scaled_rasters:
+
+  `TRUE` or `FALSE`; whether supplied rasters are pre-scaled.
+
+- xy_bounds:
+
+  domain bounds `c(a_x, b_x, a_y, b_y)` used for competition indices.
+
+- include_comp_inds:
+
+  `TRUE` or `FALSE`; include competition-index features.
+
+- competition_radius:
+
+  positive numeric distance used when `include_comp_inds = TRUE`.
+
+- edge_correction:
+
+  edge correction for competition indices (`"none"` or `"toroidal"`).
+
+- seed:
+
+  optional nonnegative integer seed.
 
 - path:
 
@@ -111,6 +165,8 @@ payload to make saving/loading robust across R sessions.
 
 - `print(ldmppr_mark_model)`: Print a brief summary of the mark model.
 
+- `summary(ldmppr_mark_model)`: Summarize a mark model.
+
 - `predict(ldmppr_mark_model)`: Predict marks for new data.
 
 - `save_mark_model(ldmppr_mark_model)`: Save method for
@@ -119,6 +175,9 @@ payload to make saving/loading robust across R sessions.
 ## Functions
 
 - `ldmppr_mark_model()`: Create a mark model container.
+
+- `print(summary.ldmppr_mark_model)`: Print a summary produced by
+  `summary.ldmppr_mark_model`.
 
 - `save_mark_model()`: Save a mark model to disk.
 

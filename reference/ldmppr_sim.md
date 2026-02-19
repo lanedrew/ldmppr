@@ -13,6 +13,12 @@ simulation.
 print(x, ...)
 
 # S3 method for class 'ldmppr_sim'
+summary(object, ...)
+
+# S3 method for class 'summary.ldmppr_sim'
+print(x, ...)
+
+# S3 method for class 'ldmppr_sim'
 as.data.frame(x, ...)
 
 # S3 method for class 'ldmppr_sim'
@@ -50,6 +56,10 @@ For methods:
 
   prints a summary of the simulation.
 
+- [`summary()`](https://rdrr.io/r/base/summary.html):
+
+  returns a `summary.ldmppr_sim` object.
+
 - [`plot()`](https://rdrr.io/r/graphics/plot.default.html):
 
   returns a ggplot visualization of the marked point pattern.
@@ -82,6 +92,8 @@ An `ldmppr_sim` is a list with at least:
 
 - `print(ldmppr_sim)`: Print a brief summary of the simulation.
 
+- `summary(ldmppr_sim)`: Summarize a simulated realization.
+
 - `as.data.frame(ldmppr_sim)`: Coerce to a data.frame of the simulated
   realization.
 
@@ -90,6 +102,9 @@ An `ldmppr_sim` is a list with at least:
 - `plot(ldmppr_sim)`: Plot the simulated marked point pattern.
 
 ## Functions
+
+- `print(summary.ldmppr_sim)`: Print a summary produced by
+  `summary.ldmppr_sim`.
 
 - `mpp.ldmppr_sim()`: Extract the underlying marked point pattern
   object.

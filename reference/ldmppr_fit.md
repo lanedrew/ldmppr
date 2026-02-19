@@ -31,6 +31,12 @@ as_nloptr(x, ...)
 
 # S3 method for class 'ldmppr_fit'
 as_nloptr(x, ...)
+
+# S3 method for class 'ldmppr_fit'
+nobs(object, ...)
+
+# S3 method for class 'ldmppr_fit'
+as.data.frame(x, ...)
 ```
 
 ## Arguments
@@ -94,6 +100,11 @@ A `ldmppr_fit` is a list with (at minimum):
 - `plot(ldmppr_fit)`: Plot diagnostics for a fitted model.
 
 - `as_nloptr(ldmppr_fit)`: Extract the underlying `nloptr` result.
+
+- `nobs(ldmppr_fit)`: Number of observations used in the fitted model.
+
+- `as.data.frame(ldmppr_fit)`: Coerce fit summary to a one-row data
+  frame.
 
 ## Functions
 

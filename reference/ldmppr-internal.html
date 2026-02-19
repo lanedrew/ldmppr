@@ -35,7 +35,7 @@ called directly by users."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Internal helpers (not part of the public API)</h1>
-      <small class="dont-index">Source: <a href="https://github.com/lanedrew/ldmppr/blob/master/R/internal_helpers.R" class="external-link"><code>R/internal_helpers.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/lanedrew/ldmppr/blob/master/R/internal_helpers.R" class="external-link"><code>R/internal_helpers.R</code></a>, <a href="https://github.com/lanedrew/ldmppr/blob/master/R/predict_marks.R" class="external-link"><code>R/predict_marks.R</code></a></small>
       <div class="d-none name"><code>ldmppr-internal.Rd</code></div>
     </div>
 
@@ -86,6 +86,7 @@ called directly by users.</p>
 <span>  <span class="va">fit</span>,</span>
 <span>  fits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mapping <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  settings <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  grid <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  data_summary <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  data <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -156,7 +157,35 @@ called directly by users.</p>
 <span></span>
 <span><span class="fu">infer_rasters_from_mark_model</span><span class="op">(</span><span class="va">mm</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">infer_scaled_flag_from_mark_model</span><span class="op">(</span><span class="va">mm</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">infer_scaled_flag_from_mark_model</span><span class="op">(</span><span class="va">mm</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">.apply_resid_bootstrap</span><span class="op">(</span><span class="va">mu</span>, <span class="va">rb</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">.inv_transform</span><span class="op">(</span><span class="va">z</span>, <span class="va">transform</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">.inv_powerlaw_time_to_size</span><span class="op">(</span><span class="va">t</span>, <span class="va">smin</span>, <span class="va">smax</span>, <span class="va">delta</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">.build_mark_predictors</span><span class="op">(</span></span>
+<span>  <span class="va">sim_realization</span>,</span>
+<span>  <span class="va">raster_list</span>,</span>
+<span>  <span class="va">scaled_rasters</span>,</span>
+<span>  <span class="va">xy_bounds</span>,</span>
+<span>  <span class="va">include_comp_inds</span>,</span>
+<span>  <span class="va">competition_radius</span>,</span>
+<span>  <span class="va">edge_correction</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">.predict_marks_legacy</span><span class="op">(</span></span>
+<span>  <span class="va">sim_realization</span>,</span>
+<span>  <span class="va">raster_list</span>,</span>
+<span>  <span class="va">scaled_rasters</span>,</span>
+<span>  <span class="va">mark_model</span>,</span>
+<span>  <span class="va">xy_bounds</span>,</span>
+<span>  <span class="va">include_comp_inds</span>,</span>
+<span>  <span class="va">competition_radius</span>,</span>
+<span>  <span class="va">edge_correction</span>,</span>
+<span>  seed <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
 

@@ -67,7 +67,25 @@ saved/loaded with <code>save_mark_model</code> and <code>load_mark_model</code>.
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'ldmppr_mark_model'</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">new_data</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'summary.ldmppr_mark_model'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'ldmppr_mark_model'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span></span>
+<span>  <span class="va">object</span>,</span>
+<span>  new_data <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sim_realization <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  raster_list <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  scaled_rasters <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  xy_bounds <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  include_comp_inds <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  competition_radius <span class="op">=</span> <span class="fl">15</span>,</span>
+<span>  edge_correction <span class="op">=</span> <span class="st">"none"</span>,</span>
+<span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">save_mark_model</span><span class="op">(</span><span class="va">object</span>, <span class="va">path</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
@@ -114,7 +132,7 @@ saved/loaded with <code>save_mark_model</code> and <code>load_mark_model</code>.
 
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>a <code>ldmppr_mark_model</code> object.</p></dd>
+<dd><p>an object of class <code>summary.ldmppr_mark_model</code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -126,7 +144,42 @@ saved/loaded with <code>save_mark_model</code> and <code>load_mark_model</code>.
 
 
 <dt id="arg-new-data">new_data<a class="anchor" aria-label="anchor" href="#arg-new-data"></a></dt>
-<dd><p>a data frame of predictors (and possibly outcome columns).</p></dd>
+<dd><p>a data frame of predictors (and possibly outcome columns).
+Ignored when <code>sim_realization</code> is supplied.</p></dd>
+
+
+<dt id="arg-sim-realization">sim_realization<a class="anchor" aria-label="anchor" href="#arg-sim-realization"></a></dt>
+<dd><p>optional simulation realization containing <code>x</code>, <code>y</code>, and <code>time</code>.
+When supplied, predictors are built from rasters and optional competition indices.</p></dd>
+
+
+<dt id="arg-raster-list">raster_list<a class="anchor" aria-label="anchor" href="#arg-raster-list"></a></dt>
+<dd><p>optional list of rasters used when <code>sim_realization</code> is supplied.
+If omitted, uses rasters stored in <code>object</code> when available.</p></dd>
+
+
+<dt id="arg-scaled-rasters">scaled_rasters<a class="anchor" aria-label="anchor" href="#arg-scaled-rasters"></a></dt>
+<dd><p><code>TRUE</code> or <code>FALSE</code>; whether supplied rasters are pre-scaled.</p></dd>
+
+
+<dt id="arg-xy-bounds">xy_bounds<a class="anchor" aria-label="anchor" href="#arg-xy-bounds"></a></dt>
+<dd><p>domain bounds <code>c(a_x, b_x, a_y, b_y)</code> used for competition indices.</p></dd>
+
+
+<dt id="arg-include-comp-inds">include_comp_inds<a class="anchor" aria-label="anchor" href="#arg-include-comp-inds"></a></dt>
+<dd><p><code>TRUE</code> or <code>FALSE</code>; include competition-index features.</p></dd>
+
+
+<dt id="arg-competition-radius">competition_radius<a class="anchor" aria-label="anchor" href="#arg-competition-radius"></a></dt>
+<dd><p>positive numeric distance used when <code>include_comp_inds = TRUE</code>.</p></dd>
+
+
+<dt id="arg-edge-correction">edge_correction<a class="anchor" aria-label="anchor" href="#arg-edge-correction"></a></dt>
+<dd><p>edge correction for competition indices (<code>"none"</code> or <code>"toroidal"</code>).</p></dd>
+
+
+<dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
+<dd><p>optional nonnegative integer seed.</p></dd>
 
 
 <dt id="arg-path">path<a class="anchor" aria-label="anchor" href="#arg-path"></a></dt>
@@ -155,6 +208,7 @@ to make saving/loading robust across R sessions.</p>
     <h2 id="methods-by-generic-">Methods (by generic)<a class="anchor" aria-label="anchor" href="#methods-by-generic-"></a></h2>
 
 <ul><li><p><code>print(ldmppr_mark_model)</code>: Print a brief summary of the mark model.</p></li>
+<li><p><code>summary(ldmppr_mark_model)</code>: Summarize a mark model.</p></li>
 <li><p><code>predict(ldmppr_mark_model)</code>: Predict marks for new data.</p></li>
 <li><p><code>save_mark_model(ldmppr_mark_model)</code>: Save method for <code>ldmppr_mark_model</code>.</p></li>
 </ul></div>
@@ -162,6 +216,7 @@ to make saving/loading robust across R sessions.</p>
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
 
 <ul><li><p><code>ldmppr_mark_model()</code>: Create a mark model container.</p></li>
+<li><p><code>print(summary.ldmppr_mark_model)</code>: Print a summary produced by <code>summary.ldmppr_mark_model</code>.</p></li>
 <li><p><code>save_mark_model()</code>: Save a mark model to disk.</p></li>
 <li><p><code>load_mark_model()</code>: Load a saved mark model from disk.</p></li>
 </ul></div>

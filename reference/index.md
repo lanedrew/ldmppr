@@ -28,6 +28,8 @@
   [`print(`*`<summary.ldmppr_fit>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_fit.md)
   [`plot(`*`<ldmppr_fit>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_fit.md)
   [`as_nloptr()`](https://lanedrew.github.io/ldmppr/reference/ldmppr_fit.md)
+  [`nobs(`*`<ldmppr_fit>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_fit.md)
+  [`as.data.frame(`*`<ldmppr_fit>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_fit.md)
   : Fitted point-process model object
 - [`print(`*`<ldmppr_grids>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_grids-class.md)
   [`summary(`*`<ldmppr_grids>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_grids-class.md)
@@ -41,6 +43,8 @@
   : Create a grid schedule for estimate_process_parameters()
 - [`ldmppr_mark_model()`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)
   [`print(`*`<ldmppr_mark_model>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)
+  [`summary(`*`<ldmppr_mark_model>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)
+  [`print(`*`<summary.ldmppr_mark_model>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)
   [`predict(`*`<ldmppr_mark_model>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)
   [`save_mark_model()`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)
   [`load_mark_model()`](https://lanedrew.github.io/ldmppr/reference/ldmppr_mark_model.md)
@@ -51,6 +55,8 @@
   [`plot(`*`<ldmppr_model_check>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_model_check.md)
   : Model fit diagnostic object
 - [`print(`*`<ldmppr_sim>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_sim.md)
+  [`summary(`*`<ldmppr_sim>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_sim.md)
+  [`print(`*`<summary.ldmppr_sim>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_sim.md)
   [`as.data.frame(`*`<ldmppr_sim>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_sim.md)
   [`nobs(`*`<ldmppr_sim>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_sim.md)
   [`plot(`*`<ldmppr_sim>`*`)`](https://lanedrew.github.io/ldmppr/reference/ldmppr_sim.md)
@@ -73,5 +79,7 @@
   : Simulate from the self-correcting model
 - [`small_example_data`](https://lanedrew.github.io/ldmppr/reference/small_example_data.md)
   : Small Example Data
+- [`thin_st_fast()`](https://lanedrew.github.io/ldmppr/reference/thin_st_fast.md)
+  : calculates acceptance for thinning mechanism during simulation
 - [`train_mark_model()`](https://lanedrew.github.io/ldmppr/reference/train_mark_model.md)
   : Train a flexible model for the mark distribution

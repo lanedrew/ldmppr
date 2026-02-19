@@ -1,6 +1,8 @@
-# calculates full self-correcting log-likelihood
+# Evaluate reference self-correcting log-likelihood
 
-calculates full self-correcting log-likelihood
+Reference implementation used for parity checks and validation. For
+production estimation, prefer
+[`full_sc_lhood_fast()`](https://lanedrew.github.io/ldmppr/reference/full_sc_lhood_fast.md).
 
 ## Usage
 
@@ -12,32 +14,33 @@ full_sc_lhood(xgrid, ygrid, tgrid, tobs, data, params, bounds)
 
 - xgrid:
 
-  a vector of grid values for x.
+  NumericVector of x-grid values.
 
 - ygrid:
 
-  a vector of grid values for y.
+  NumericVector of y-grid values.
 
 - tgrid:
 
-  a vector of grid values for t.
+  NumericVector of integration-time grid values.
 
 - tobs:
 
-  a vector of observed values for t.
+  NumericVector of observed event times.
 
 - data:
 
-  a matrix of times and locations.
+  NumericMatrix with columns (time, x, y), sorted by nondecreasing time.
 
 - params:
 
-  a vector of parameters.
+  NumericVector of model parameters (alpha1, beta1, gamma1, alpha2,
+  beta2, alpha3, beta3, gamma3).
 
 - bounds:
 
-  a vector of bounds for time, x, and y.
+  NumericVector of integration bounds (bt, bx, by).
 
 ## Value
 
-evaluation of full log-likelihood.
+Full self-correcting log-likelihood value.

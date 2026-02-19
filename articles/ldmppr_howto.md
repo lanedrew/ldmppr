@@ -136,18 +136,26 @@ fit_sc <- estimate_process_parameters(
   budgets = budgets,
   parameter_inits = parameter_inits,
   delta = 1,
+  rescore_control = list(
+    enabled = TRUE,
+    top = 5L,
+    objective_tol = 1e-6,
+    param_tol = 0.10
+  ),
   parallel = FALSE,
   strategy = "global_local",
   global_algorithm = "NLOPT_GN_CRS2_LM",
   local_algorithm = "NLOPT_LN_BOBYQA",
   verbose = TRUE
 )
+#> [ldmppr::estimate_process_parameters]
 #> Estimating self-correcting process parameters
 #>   Strategy: global_local
 #>   Delta: 1
 #>   Grids: 1 level(s)
 #>   Local optimizer: NLOPT_LN_BOBYQA
 #>   Global optimizer: NLOPT_GN_CRS2_LM
+#>   Rescore control: enabled=TRUE, top=5, objective_tol=1e-06, param_tol=0.1
 #>   Starts: global=1, local=1, jitter_sd=0.35, seed=1
 #>   Parallel: off
 #> Step 1/2: Preparing data and objective function...
@@ -157,22 +165,29 @@ fit_sc <- estimate_process_parameters(
 #> Single level (grid 20x20x20)
 #>   Global search: 1 restart(s), then local refinement.
 #>   Completed in 0.3s.
-#>   Best objective: 176.49434
+#>   Best objective: 193.68669
 #> Finished. Total time: 0.3s.
 # Print method for ldmppr_fit objects
 fit_sc
-#> ldmppr fit: 
-#>   process: self_correcting
-#>   engine:  nloptr
-#>   n_obs:   121
-#>   delta*:  1
-#>   objective (best): 176.4943
-#>  optimal parameters:  2.09849 4.953709 7.407446e-07 1.626127 3.883541 0.6801538 2.242364 0
+#> ldmppr Fit
+#>   process:         self_correcting
+#>   engine:          nloptr
+#>   strategy:        global_local
+#>   global_alg:      NLOPT_GN_CRS2_LM
+#>   local_alg:       NLOPT_LN_BOBYQA
+#>   starts:          global=1, local=1, jitter_sd=0.35, seed=1
+#>   n_obs:           121
+#>   selected_delta:  1
+#>   objective:       193.6867
+#>   final_status:    1
+#>   final_outcome:   NLOPT_SUCCESS: Generic success return value.
+#>   elapsed_sec:     0.28
+#>   coefficients:    1.35969, 5.32125, 0.00217149, 12.6532, 0.0305815, 23.0706, 0.875, 0.0254169
 
 estimated_parameters <- coef(fit_sc)
 estimated_parameters
-#> [1] 2.098490e+00 4.953709e+00 7.407446e-07 1.626127e+00 3.883541e+00
-#> [6] 6.801538e-01 2.242364e+00 0.000000e+00
+#> [1]  1.359688395  5.321246898  0.002171494 12.653199262  0.030581537
+#> [6] 23.070576702  0.874999769  0.025416854
 ```
 
 **Notes**
@@ -180,6 +195,8 @@ estimated_parameters
 - If you want to search over possible mappings between size and time,
   provide `delta = c(...)` and set `parallel = TRUE` to run one
   optimizer per delta (optionally in parallel).
+- Candidate rescoring and bound-handling controls are consolidated in
+  `rescore_control`, either as a single logical toggle or a named list.
 - For better accuracy you typically want denser grids than in this
   vignette example; the small grid here is chosen to keep runtime
   modest.
@@ -227,6 +244,7 @@ mark_model <- train_mark_model(
   tuning_grid_size = 20,
   verbose = TRUE
 )
+#> [ldmppr::train_mark_model]
 #> Training mark model
 #>   Model type: xgboost
 #>   Selection metric: rmse
@@ -239,7 +257,7 @@ mark_model <- train_mark_model(
 #>   Done in 0.0s.
 #> Step 2/6: Configuring parallel backend...
 #>   Parallel: off
-#>   Model engine threads: 3
+#>   Model engine threads: 1
 #>   Done in 0.0s.
 #> Step 3/6: Extracting raster covariates...
 #>   Using pre-scaled rasters (scaled_rasters = TRUE).
@@ -250,36 +268,43 @@ mark_model <- train_mark_model(
 #>   Final feature columns (incl x,y,time): 7
 #>   Done in 0.0s.
 #> Step 5/6: Fitting model (with optional CV tuning)...
-#>   Tuning enabled: 5-fold CV with 20 candidate(s).
-#>   Total model fits: 100 (5 folds x 20 grid).
-#>   Done in 25.3s.
+#>   foreach backend: doSEQ | workers=1
+#>   Done in 29.1s.
 #> Step 6/6: Finalizing output object...
-#>   Done in 0.0s.
-#> Training complete. Total time: 25.3s.
+#>   Residual bootstrap stored (source=oos, transform=sqrt, bins=6, min/bin=8).
+#>   Done in 1.6s.
+#> Training complete. Total time: 30.7s.
 
 # Print method for ldmppr_mark_model objects
 print(mark_model)
-#> ldmppr mark model:
-#>   engine: xgboost
-#>   has fit_engine: TRUE
-#>   has xgb_raw: FALSE
-#>   n_rasters: 4
-#>   raster names: Snodgrass_aspect_southness_1mSnodgrass_DEM_1mSnodgrass_slope_1mSnodgrass_wetness_index_1m
-#>   n_features: 7
+#> ldmppr Mark Model
+#>   engine:           xgboost
+#>   has_fit_engine:   TRUE
+#>   has_xgb_raw:      FALSE
+#>   n_features:       7
+#>   n_rasters:        4
+#>   raster_names:     Snodgrass_aspect_southness_1m, Snodgrass_DEM_1m, Snodgrass_slope_1m, Snodgrass_wetness_index_1m
+#>   scaled_rasters:   TRUE
+#>   comp_indices:     FALSE
 
 # Summary method for ldmppr_mark_model objects
 summary(mark_model)
-#>               Length Class       Mode       
-#> engine           1   -none-      character  
-#> fit_engine    1158   xgb.Booster list       
-#> xgb_raw          0   -none-      NULL       
-#> recipe          12   recipe      list       
-#> outcome          1   -none-      character  
-#> feature_names    7   -none-      character  
-#> rasters          4   -none-      list       
-#> info             8   -none-      list       
-#> cache            0   -none-      environment
+#> Summary: ldmppr Mark Model
+#>   engine:           xgboost
+#>   n_features:       7
+#>   n_rasters:        4
+#>   scaled_rasters:   TRUE
+#>   comp_indices:     FALSE
+#>   comp_radius:      10
+#>   edge_correction:  none
+#>   cv_folds:         5
+#>   tuning_grid_size: 20
+#>   selection_metric: rmse
 ```
+
+[`predict_marks()`](https://lanedrew.github.io/ldmppr/reference/predict_marks.md)
+is retained as a deprecated compatibility wrapper. For new workflows,
+use S3 prediction directly via `predict(mark_model, ...)`.
 
 If the user wants to save the trained mark model (and reload it at a
 later time), the package provides the `save_mark_model` and
@@ -336,6 +361,20 @@ model_check <- check_model_fit(
 #> Registered S3 method overwritten by 'spatstat.geom':
 #>   method       from     
 #>   print.metric yardstick
+#> [ldmppr::check_model_fit]
+#> Checking model fit
+#>   mark_mode=mark_model, n_sim=100, parallel=FALSE
+#>   include_comp_inds=FALSE, edge_correction=none
+#> Step 1/4: Preparing simulation setup
+#> Using FGJ r-grid from reference: 1:198 (max r=2.405), correction=km
+#>   Done in 0.1s.
+#> Step 2/4: Generating accepted simulations
+#>   Done in 5.1s.
+#> Step 3/4: Computing envelope tests
+#>   Done in 0.7s.
+#> Step 4/4: Finalizing output object
+#>   Done in 5.9s.
+#> Model check complete.
 
 # Plot method for ldmppr_model_check objects (defaults to combined global envelope test)
 plot(model_check)
@@ -382,13 +421,13 @@ plot(simulated)
 
 # Data-frame view of the simulated realization
 head(as.data.frame(simulated))
-#>        time          x         y    marks
-#> 1 0.0000000 10.0000000 14.000000 900.3945
-#> 2 0.1140356 10.7763927 16.557179 566.9804
-#> 3 0.1664013 22.0830495 12.213898 599.9713
-#> 4 0.1958571  0.4174274 19.246111 729.4594
-#> 5 0.2260247 24.4303317  8.796367 740.9364
-#> 6 0.2434549 17.8309537  4.295915 531.1793
+#>        time         x         y    marks
+#> 1 0.0000000 10.000000 14.000000 900.3945
+#> 2 0.2860798  7.388385 17.685260 568.0955
+#> 3 0.2978591  6.453600 15.853798 566.7167
+#> 4 0.3264533  3.869400  4.196575 669.2098
+#> 5 0.3622486  7.640830 10.125372 614.6098
+#> 6 0.3965467 24.225264 22.181715 571.1716
 ```
 
 ------------------------------------------------------------------------

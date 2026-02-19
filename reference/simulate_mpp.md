@@ -19,7 +19,10 @@ simulate_mpp(
   competition_radius = 15,
   edge_correction = "none",
   thinning = TRUE,
-  seed = NULL
+  seed = NULL,
+  mark_mode = c("mark_model", "time_to_size"),
+  size_range = NULL,
+  delta = NULL
 )
 ```
 
@@ -54,26 +57,24 @@ simulate_mpp(
 
 - raster_list:
 
-  (optional) a list of raster objects used for predicting marks. If
-  `NULL`, will attempt to infer from the `ldmppr_mark_model` if
-  possible.
+  (optional) list of raster objects used for mark prediction. Required
+  when `mark_mode='mark_model'` unless rasters are stored in
+  `mark_model`.
 
 - scaled_rasters:
 
-  (optional) `TRUE` or `FALSE` indicating whether the rasters have
-  already been scaled. If `NULL`, will attempt to infer from the
-  `ldmppr_mark_model` if possible.
+  `TRUE` or `FALSE` indicating whether rasters are already scaled.
+  Ignored when `mark_mode='time_to_size'`.
 
 - mark_model:
 
-  a mark model object. May be a `ldmppr_mark_model` or a legacy model.
+  a mark model object used when `mark_mode='mark_model'`. May be an
+  `ldmppr_mark_model`, `model_fit`, or `workflow`.
 
 - xy_bounds:
 
   (optional) vector of bounds as `c(a_x, b_x, a_y, b_y)`. If `NULL`,
-  will be inferred from `reference_data`'s window when `reference_data`
-  is provided, otherwise from `ldmppr_fit` with lower bounds assumed to
-  be 0.
+  bounds are inferred from `process_fit` when available.
 
 - include_comp_inds:
 
@@ -81,7 +82,7 @@ simulate_mpp(
 
 - competition_radius:
 
-  distance for competition radius if `include_comp_inds = TRUE`.
+  positive numeric distance used when `include_comp_inds = TRUE`.
 
 - edge_correction:
 
@@ -95,6 +96,22 @@ simulate_mpp(
 - seed:
 
   integer seed for reproducibility.
+
+- mark_mode:
+
+  mark generation mode: `"mark_model"` uses
+  [`predict()`](https://rdrr.io/r/stats/predict.html) on a mark model,
+  while `"time_to_size"` maps simulated times back to sizes via `delta`.
+
+- size_range:
+
+  numeric vector `c(smin, smax)` used for `mark_mode='time_to_size'`. If
+  `NULL`, inferred from `process_fit` when possible.
+
+- delta:
+
+  positive scalar used for `mark_mode='time_to_size'`. If `NULL`,
+  inferred from `process_fit` when possible.
 
 ## Value
 
@@ -137,24 +154,20 @@ example_mpp <- simulate_mpp(
   include_comp_inds = TRUE,
   competition_radius = 10,
   edge_correction = "none",
-  thinning = TRUE
+  thinning = TRUE,
+  seed = 90210
 )
 
 # Plot the realization and provide a summary
 plot(example_mpp, pattern_type = "simulated")
 
 summary(example_mpp)
-#>                    Length Class      Mode     
-#> process             1     -none-     character
-#> mpp                 6     ppp        list     
-#> realization         4     data.frame list     
-#> params              8     -none-     numeric  
-#> bounds              3     -none-     list     
-#> anchor_point        2     -none-     numeric  
-#> thinning            1     -none-     logical  
-#> edge_correction     1     -none-     character
-#> include_comp_inds   1     -none-     logical  
-#> competition_radius  1     -none-     numeric  
-#> call               14     -none-     call     
-#> meta                2     -none-     list     
+#> Summary: ldmppr Simulation
+#>   process:          self_correcting
+#>   n_points:         107
+#>   mark_range:       [57.15, 639.738]
+#>   time_range:       [0, 0.993054]
+#>   thinning:         TRUE
+#>   edge_correction:  none
+#>   xy_bounds:        [0, 25, 0, 25]
 ```

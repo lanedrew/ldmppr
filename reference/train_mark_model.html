@@ -64,7 +64,7 @@ Allows the user to incorporate location specific information and competition ind
 <span>  delta <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  save_model <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  save_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  parallel <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  parallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  num_cores <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  include_comp_inds <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  competition_radius <span class="op">=</span> <span class="fl">15</span>,</span>
@@ -85,11 +85,11 @@ Allows the user to incorporate location specific information and competition ind
 
 
 <dt id="arg-raster-list">raster_list<a class="anchor" aria-label="anchor" href="#arg-raster-list"></a></dt>
-<dd><p>a list of raster objects.</p></dd>
+<dd><p>list of raster objects used for mark-model training.</p></dd>
 
 
 <dt id="arg-scaled-rasters">scaled_rasters<a class="anchor" aria-label="anchor" href="#arg-scaled-rasters"></a></dt>
-<dd><p><code>TRUE</code> or <code>FALSE</code> indicating whether the rasters have been scaled.</p></dd>
+<dd><p><code>TRUE</code> or <code>FALSE</code> indicating whether rasters are already scaled.</p></dd>
 
 
 <dt id="arg-model-type">model_type<a class="anchor" aria-label="anchor" href="#arg-model-type"></a></dt>
@@ -115,11 +115,12 @@ If <code>data</code> is an <code>ldmppr_fit</code> and time is missing, the func
 
 
 <dt id="arg-parallel">parallel<a class="anchor" aria-label="anchor" href="#arg-parallel"></a></dt>
-<dd><p><code>TRUE</code> or <code>FALSE</code> indicating whether to use parallelization in model training.</p></dd>
+<dd><p><code>TRUE</code> or <code>FALSE</code>. If <code>TRUE</code>, tuning is parallelized over resamples.
+For small datasets, parallel overhead may outweigh speed gains.</p></dd>
 
 
 <dt id="arg-num-cores">num_cores<a class="anchor" aria-label="anchor" href="#arg-num-cores"></a></dt>
-<dd><p>number of cores to use in parallel model training (if <code>parallel</code> is <code>TRUE</code>).</p></dd>
+<dd><p>number of workers to use when <code>parallel=TRUE</code>. Ignored when <code>parallel=FALSE</code>.</p></dd>
 
 
 <dt id="arg-include-comp-inds">include_comp_inds<a class="anchor" aria-label="anchor" href="#arg-include-comp-inds"></a></dt>
@@ -127,7 +128,7 @@ If <code>data</code> is an <code>ldmppr_fit</code> and time is missing, the func
 
 
 <dt id="arg-competition-radius">competition_radius<a class="anchor" aria-label="anchor" href="#arg-competition-radius"></a></dt>
-<dd><p>distance for competition radius if <code>include_comp_inds</code> is <code>TRUE</code>.</p></dd>
+<dd><p>positive numeric distance used when <code>include_comp_inds = TRUE</code>.</p></dd>
 
 
 <dt id="arg-edge-correction">edge_correction<a class="anchor" aria-label="anchor" href="#arg-edge-correction"></a></dt>
@@ -189,6 +190,7 @@ If <code>cv_folds &lt;= 1</code>, tuning is skipped and the model is fit once wi
 <span class="r-in"><span>  tuning_grid_size <span class="op">=</span> <span class="fl">2</span>,</span></span>
 <span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> [ldmppr::train_mark_model]</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Training mark model</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Model type: xgboost</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Selection metric: rmse</span>
@@ -201,7 +203,7 @@ If <code>cv_folds &lt;= 1</code>, tuning is skipped and the model is fit once wi
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 0.0s.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Step 2/6: Configuring parallel backend...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Parallel: off</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Model engine threads: 3</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Model engine threads: 1</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 0.0s.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Step 3/6: Extracting raster covariates...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Using pre-scaled rasters (scaled_rasters = TRUE).</span>
@@ -212,21 +214,23 @@ If <code>cv_folds &lt;= 1</code>, tuning is skipped and the model is fit once wi
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Final feature columns (incl x,y,time): 7</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 0.0s.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Step 5/6: Fitting model (with optional CV tuning)...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Tuning enabled: 3-fold CV with 2 candidate(s).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Total model fits: 6 (3 folds x 2 grid).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 2.5s.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   foreach backend: doSEQ | workers=1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 2.4s.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Step 6/6: Finalizing output object...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 0.0s.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Residual bootstrap stored (source=oos, transform=sqrt, bins=6, min/bin=8).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Done in 0.1s.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Training complete. Total time: 2.5s.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">mark_model</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ldmppr mark model:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   engine: xgboost</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   has fit_engine: TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   has xgb_raw: FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   n_rasters: 4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   raster names: Snodgrass_DEM_1mSnodgrass_aspect_southness_1mSnodgrass_slope_1mSnodgrass_wetness_index_1m</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   n_features: 7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ldmppr Mark Model</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   engine:           xgboost</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   has_fit_engine:   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   has_xgb_raw:      FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   n_features:       7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   n_rasters:        4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   raster_names:     Snodgrass_DEM_1m, Snodgrass_aspect_southness_1m, Snodgrass_slope_1m, Snodgrass_wetness_index_1m</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   scaled_rasters:   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   comp_indices:     FALSE</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

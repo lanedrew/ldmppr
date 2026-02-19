@@ -57,7 +57,10 @@
 <span>  competition_radius <span class="op">=</span> <span class="fl">15</span>,</span>
 <span>  edge_correction <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>  thinning <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  seed <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  mark_mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mark_model"</span>, <span class="st">"time_to_size"</span><span class="op">)</span>,</span>
+<span>  size_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  delta <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -91,21 +94,23 @@ If <code>NULL</code>, inferred from the reference data (largest mark if availabl
 
 
 <dt id="arg-raster-list">raster_list<a class="anchor" aria-label="anchor" href="#arg-raster-list"></a></dt>
-<dd><p>(optional) a list of raster objects used for predicting marks. If <code>NULL</code>, will attempt to infer from the <code>ldmppr_mark_model</code> if possible.</p></dd>
+<dd><p>(optional) list of raster objects used for mark prediction.
+Required when <code>mark_mode='mark_model'</code> unless rasters are stored in <code>mark_model</code>.</p></dd>
 
 
 <dt id="arg-scaled-rasters">scaled_rasters<a class="anchor" aria-label="anchor" href="#arg-scaled-rasters"></a></dt>
-<dd><p>(optional) <code>TRUE</code> or <code>FALSE</code> indicating whether the rasters have already been scaled. If <code>NULL</code>, will attempt to infer from the <code>ldmppr_mark_model</code> if possible.</p></dd>
+<dd><p><code>TRUE</code> or <code>FALSE</code> indicating whether rasters are already scaled.
+Ignored when <code>mark_mode='time_to_size'</code>.</p></dd>
 
 
 <dt id="arg-mark-model">mark_model<a class="anchor" aria-label="anchor" href="#arg-mark-model"></a></dt>
-<dd><p>a mark model object. May be a <code>ldmppr_mark_model</code> or a legacy model.</p></dd>
+<dd><p>a mark model object used when <code>mark_mode='mark_model'</code>.
+May be an <code>ldmppr_mark_model</code>, <code>model_fit</code>, or <code>workflow</code>.</p></dd>
 
 
 <dt id="arg-xy-bounds">xy_bounds<a class="anchor" aria-label="anchor" href="#arg-xy-bounds"></a></dt>
-<dd><p>(optional) vector of bounds as <code>c(a_x, b_x, a_y, b_y)</code>. If <code>NULL</code>, will be
-inferred from <code>reference_data</code>'s window when <code>reference_data</code> is provided,
-otherwise from <code>ldmppr_fit</code> with lower bounds assumed to be 0.</p></dd>
+<dd><p>(optional) vector of bounds as <code>c(a_x, b_x, a_y, b_y)</code>. If <code>NULL</code>,
+bounds are inferred from <code>process_fit</code> when available.</p></dd>
 
 
 <dt id="arg-include-comp-inds">include_comp_inds<a class="anchor" aria-label="anchor" href="#arg-include-comp-inds"></a></dt>
@@ -113,7 +118,7 @@ otherwise from <code>ldmppr_fit</code> with lower bounds assumed to be 0.</p></d
 
 
 <dt id="arg-competition-radius">competition_radius<a class="anchor" aria-label="anchor" href="#arg-competition-radius"></a></dt>
-<dd><p>distance for competition radius if <code>include_comp_inds = TRUE</code>.</p></dd>
+<dd><p>positive numeric distance used when <code>include_comp_inds = TRUE</code>.</p></dd>
 
 
 <dt id="arg-edge-correction">edge_correction<a class="anchor" aria-label="anchor" href="#arg-edge-correction"></a></dt>
@@ -126,6 +131,21 @@ otherwise from <code>ldmppr_fit</code> with lower bounds assumed to be 0.</p></d
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
 <dd><p>integer seed for reproducibility.</p></dd>
+
+
+<dt id="arg-mark-mode">mark_mode<a class="anchor" aria-label="anchor" href="#arg-mark-mode"></a></dt>
+<dd><p>mark generation mode: <code>"mark_model"</code> uses <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> on a mark model,
+while <code>"time_to_size"</code> maps simulated times back to sizes via <code>delta</code>.</p></dd>
+
+
+<dt id="arg-size-range">size_range<a class="anchor" aria-label="anchor" href="#arg-size-range"></a></dt>
+<dd><p>numeric vector <code>c(smin, smax)</code> used for <code>mark_mode='time_to_size'</code>.
+If <code>NULL</code>, inferred from <code>process_fit</code> when possible.</p></dd>
+
+
+<dt id="arg-delta">delta<a class="anchor" aria-label="anchor" href="#arg-delta"></a></dt>
+<dd><p>positive scalar used for <code>mark_mode='time_to_size'</code>.
+If <code>NULL</code>, inferred from <code>process_fit</code> when possible.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -169,26 +189,22 @@ otherwise from <code>ldmppr_fit</code> with lower bounds assumed to be 0.</p></d
 <span class="r-in"><span>  include_comp_inds <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  competition_radius <span class="op">=</span> <span class="fl">10</span>,</span></span>
 <span class="r-in"><span>  edge_correction <span class="op">=</span> <span class="st">"none"</span>,</span></span>
-<span class="r-in"><span>  thinning <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span>  thinning <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  seed <span class="op">=</span> <span class="fl">90210</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Plot the realization and provide a summary</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">example_mpp</span>, pattern_type <span class="op">=</span> <span class="st">"simulated"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="simulate_mpp-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">example_mpp</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                    Length Class      Mode     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> process             1     -none-     character</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> mpp                 6     ppp        list     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> realization         4     data.frame list     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> params              8     -none-     numeric  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> bounds              3     -none-     list     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> anchor_point        2     -none-     numeric  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> thinning            1     -none-     logical  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> edge_correction     1     -none-     character</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> include_comp_inds   1     -none-     logical  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> competition_radius  1     -none-     numeric  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> call               14     -none-     call     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> meta                2     -none-     list     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Summary: ldmppr Simulation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   process:          self_correcting</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   n_points:         107</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   mark_range:       [57.15, 639.738]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   time_range:       [0, 0.993054]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   thinning:         TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   edge_correction:  none</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   xy_bounds:        [0, 25, 0, 25]</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -46,6 +46,7 @@ new_ldmppr_fit(
   fit,
   fits = NULL,
   mapping = NULL,
+  settings = NULL,
   grid = NULL,
   data_summary = NULL,
   data = NULL,
@@ -117,4 +118,32 @@ as_ldmppr_grids(x, ...)
 infer_rasters_from_mark_model(mm)
 
 infer_scaled_flag_from_mark_model(mm)
+
+.apply_resid_bootstrap(mu, rb)
+
+.inv_transform(z, transform)
+
+.inv_powerlaw_time_to_size(t, smin, smax, delta)
+
+.build_mark_predictors(
+  sim_realization,
+  raster_list,
+  scaled_rasters,
+  xy_bounds,
+  include_comp_inds,
+  competition_radius,
+  edge_correction
+)
+
+.predict_marks_legacy(
+  sim_realization,
+  raster_list,
+  scaled_rasters,
+  mark_model,
+  xy_bounds,
+  include_comp_inds,
+  competition_radius,
+  edge_correction,
+  seed = NULL
+)
 ```

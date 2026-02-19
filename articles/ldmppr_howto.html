@@ -201,18 +201,26 @@ point process.</p>
 <span>  budgets <span class="op">=</span> <span class="va">budgets</span>,</span>
 <span>  parameter_inits <span class="op">=</span> <span class="va">parameter_inits</span>,</span>
 <span>  delta <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  rescore_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    enabled <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    top <span class="op">=</span> <span class="fl">5L</span>,</span>
+<span>    objective_tol <span class="op">=</span> <span class="fl">1e-6</span>,</span>
+<span>    param_tol <span class="op">=</span> <span class="fl">0.10</span></span>
+<span>  <span class="op">)</span>,</span>
 <span>  parallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  strategy <span class="op">=</span> <span class="st">"global_local"</span>,</span>
 <span>  global_algorithm <span class="op">=</span> <span class="st">"NLOPT_GN_CRS2_LM"</span>,</span>
 <span>  local_algorithm <span class="op">=</span> <span class="st">"NLOPT_LN_BOBYQA"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; [ldmppr::estimate_process_parameters]</span></span>
 <span><span class="co">#&gt; Estimating self-correcting process parameters</span></span>
 <span><span class="co">#&gt;   Strategy: global_local</span></span>
 <span><span class="co">#&gt;   Delta: 1</span></span>
 <span><span class="co">#&gt;   Grids: 1 level(s)</span></span>
 <span><span class="co">#&gt;   Local optimizer: NLOPT_LN_BOBYQA</span></span>
 <span><span class="co">#&gt;   Global optimizer: NLOPT_GN_CRS2_LM</span></span>
+<span><span class="co">#&gt;   Rescore control: enabled=TRUE, top=5, objective_tol=1e-06, param_tol=0.1</span></span>
 <span><span class="co">#&gt;   Starts: global=1, local=1, jitter_sd=0.35, seed=1</span></span>
 <span><span class="co">#&gt;   Parallel: off</span></span>
 <span><span class="co">#&gt; Step 1/2: Preparing data and objective function...</span></span>
@@ -222,27 +230,37 @@ point process.</p>
 <span><span class="co">#&gt; Single level (grid 20x20x20)</span></span>
 <span><span class="co">#&gt;   Global search: 1 restart(s), then local refinement.</span></span>
 <span><span class="co">#&gt;   Completed in 0.3s.</span></span>
-<span><span class="co">#&gt;   Best objective: 176.49434</span></span>
+<span><span class="co">#&gt;   Best objective: 193.68669</span></span>
 <span><span class="co">#&gt; Finished. Total time: 0.3s.</span></span>
 <span><span class="co"># Print method for ldmppr_fit objects</span></span>
 <span><span class="va">fit_sc</span></span>
-<span><span class="co">#&gt; ldmppr fit: </span></span>
-<span><span class="co">#&gt;   process: self_correcting</span></span>
-<span><span class="co">#&gt;   engine:  nloptr</span></span>
-<span><span class="co">#&gt;   n_obs:   121</span></span>
-<span><span class="co">#&gt;   delta*:  1</span></span>
-<span><span class="co">#&gt;   objective (best): 176.4943</span></span>
-<span><span class="co">#&gt;  optimal parameters:  2.09849 4.953709 7.407446e-07 1.626127 3.883541 0.6801538 2.242364 0</span></span>
+<span><span class="co">#&gt; ldmppr Fit</span></span>
+<span><span class="co">#&gt;   process:         self_correcting</span></span>
+<span><span class="co">#&gt;   engine:          nloptr</span></span>
+<span><span class="co">#&gt;   strategy:        global_local</span></span>
+<span><span class="co">#&gt;   global_alg:      NLOPT_GN_CRS2_LM</span></span>
+<span><span class="co">#&gt;   local_alg:       NLOPT_LN_BOBYQA</span></span>
+<span><span class="co">#&gt;   starts:          global=1, local=1, jitter_sd=0.35, seed=1</span></span>
+<span><span class="co">#&gt;   n_obs:           121</span></span>
+<span><span class="co">#&gt;   selected_delta:  1</span></span>
+<span><span class="co">#&gt;   objective:       193.6867</span></span>
+<span><span class="co">#&gt;   final_status:    1</span></span>
+<span><span class="co">#&gt;   final_outcome:   NLOPT_SUCCESS: Generic success return value.</span></span>
+<span><span class="co">#&gt;   elapsed_sec:     0.28</span></span>
+<span><span class="co">#&gt;   coefficients:    1.35969, 5.32125, 0.00217149, 12.6532, 0.0305815, 23.0706, 0.875, 0.0254169</span></span>
 <span></span>
 <span><span class="va">estimated_parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit_sc</span><span class="op">)</span></span>
 <span><span class="va">estimated_parameters</span></span>
-<span><span class="co">#&gt; [1] 2.098490e+00 4.953709e+00 7.407446e-07 1.626127e+00 3.883541e+00</span></span>
-<span><span class="co">#&gt; [6] 6.801538e-01 2.242364e+00 0.000000e+00</span></span></code></pre></div>
+<span><span class="co">#&gt; [1]  1.359688395  5.321246898  0.002171494 12.653199262  0.030581537</span></span>
+<span><span class="co">#&gt; [6] 23.070576702  0.874999769  0.025416854</span></span></code></pre></div>
 <p><strong>Notes</strong></p>
 <ul>
 <li>If you want to search over possible mappings between size and time,
 provide <code>delta = c(...)</code> and set <code>parallel = TRUE</code>
 to run one optimizer per delta (optionally in parallel).</li>
+<li>Candidate rescoring and bound-handling controls are consolidated in
+<code>rescore_control</code>, either as a single logical toggle or a
+named list.</li>
 <li>For better accuracy you typically want denser grids than in this
 vignette example; the small grid here is chosen to keep runtime
 modest.</li>
@@ -293,6 +311,7 @@ parameter tuning grid for the model.</p>
 <span>  tuning_grid_size <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; [ldmppr::train_mark_model]</span></span>
 <span><span class="co">#&gt; Training mark model</span></span>
 <span><span class="co">#&gt;   Model type: xgboost</span></span>
 <span><span class="co">#&gt;   Selection metric: rmse</span></span>
@@ -305,7 +324,7 @@ parameter tuning grid for the model.</p>
 <span><span class="co">#&gt;   Done in 0.0s.</span></span>
 <span><span class="co">#&gt; Step 2/6: Configuring parallel backend...</span></span>
 <span><span class="co">#&gt;   Parallel: off</span></span>
-<span><span class="co">#&gt;   Model engine threads: 3</span></span>
+<span><span class="co">#&gt;   Model engine threads: 1</span></span>
 <span><span class="co">#&gt;   Done in 0.0s.</span></span>
 <span><span class="co">#&gt; Step 3/6: Extracting raster covariates...</span></span>
 <span><span class="co">#&gt;   Using pre-scaled rasters (scaled_rasters = TRUE).</span></span>
@@ -316,35 +335,41 @@ parameter tuning grid for the model.</p>
 <span><span class="co">#&gt;   Final feature columns (incl x,y,time): 7</span></span>
 <span><span class="co">#&gt;   Done in 0.0s.</span></span>
 <span><span class="co">#&gt; Step 5/6: Fitting model (with optional CV tuning)...</span></span>
-<span><span class="co">#&gt;   Tuning enabled: 5-fold CV with 20 candidate(s).</span></span>
-<span><span class="co">#&gt;   Total model fits: 100 (5 folds x 20 grid).</span></span>
-<span><span class="co">#&gt;   Done in 25.3s.</span></span>
+<span><span class="co">#&gt;   foreach backend: doSEQ | workers=1</span></span>
+<span><span class="co">#&gt;   Done in 29.1s.</span></span>
 <span><span class="co">#&gt; Step 6/6: Finalizing output object...</span></span>
-<span><span class="co">#&gt;   Done in 0.0s.</span></span>
-<span><span class="co">#&gt; Training complete. Total time: 25.3s.</span></span>
+<span><span class="co">#&gt;   Residual bootstrap stored (source=oos, transform=sqrt, bins=6, min/bin=8).</span></span>
+<span><span class="co">#&gt;   Done in 1.6s.</span></span>
+<span><span class="co">#&gt; Training complete. Total time: 30.7s.</span></span>
 <span></span>
 <span><span class="co"># Print method for ldmppr_mark_model objects</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">mark_model</span><span class="op">)</span></span>
-<span><span class="co">#&gt; ldmppr mark model:</span></span>
-<span><span class="co">#&gt;   engine: xgboost</span></span>
-<span><span class="co">#&gt;   has fit_engine: TRUE</span></span>
-<span><span class="co">#&gt;   has xgb_raw: FALSE</span></span>
-<span><span class="co">#&gt;   n_rasters: 4</span></span>
-<span><span class="co">#&gt;   raster names: Snodgrass_aspect_southness_1mSnodgrass_DEM_1mSnodgrass_slope_1mSnodgrass_wetness_index_1m</span></span>
-<span><span class="co">#&gt;   n_features: 7</span></span>
+<span><span class="co">#&gt; ldmppr Mark Model</span></span>
+<span><span class="co">#&gt;   engine:           xgboost</span></span>
+<span><span class="co">#&gt;   has_fit_engine:   TRUE</span></span>
+<span><span class="co">#&gt;   has_xgb_raw:      FALSE</span></span>
+<span><span class="co">#&gt;   n_features:       7</span></span>
+<span><span class="co">#&gt;   n_rasters:        4</span></span>
+<span><span class="co">#&gt;   raster_names:     Snodgrass_aspect_southness_1m, Snodgrass_DEM_1m, Snodgrass_slope_1m, Snodgrass_wetness_index_1m</span></span>
+<span><span class="co">#&gt;   scaled_rasters:   TRUE</span></span>
+<span><span class="co">#&gt;   comp_indices:     FALSE</span></span>
 <span></span>
 <span><span class="co"># Summary method for ldmppr_mark_model objects</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">mark_model</span><span class="op">)</span></span>
-<span><span class="co">#&gt;               Length Class       Mode       </span></span>
-<span><span class="co">#&gt; engine           1   -none-      character  </span></span>
-<span><span class="co">#&gt; fit_engine    1158   xgb.Booster list       </span></span>
-<span><span class="co">#&gt; xgb_raw          0   -none-      NULL       </span></span>
-<span><span class="co">#&gt; recipe          12   recipe      list       </span></span>
-<span><span class="co">#&gt; outcome          1   -none-      character  </span></span>
-<span><span class="co">#&gt; feature_names    7   -none-      character  </span></span>
-<span><span class="co">#&gt; rasters          4   -none-      list       </span></span>
-<span><span class="co">#&gt; info             8   -none-      list       </span></span>
-<span><span class="co">#&gt; cache            0   -none-      environment</span></span></code></pre></div>
+<span><span class="co">#&gt; Summary: ldmppr Mark Model</span></span>
+<span><span class="co">#&gt;   engine:           xgboost</span></span>
+<span><span class="co">#&gt;   n_features:       7</span></span>
+<span><span class="co">#&gt;   n_rasters:        4</span></span>
+<span><span class="co">#&gt;   scaled_rasters:   TRUE</span></span>
+<span><span class="co">#&gt;   comp_indices:     FALSE</span></span>
+<span><span class="co">#&gt;   comp_radius:      10</span></span>
+<span><span class="co">#&gt;   edge_correction:  none</span></span>
+<span><span class="co">#&gt;   cv_folds:         5</span></span>
+<span><span class="co">#&gt;   tuning_grid_size: 20</span></span>
+<span><span class="co">#&gt;   selection_metric: rmse</span></span></code></pre></div>
+<p><code><a href="../reference/predict_marks.html">predict_marks()</a></code> is retained as a deprecated
+compatibility wrapper. For new workflows, use S3 prediction directly via
+<code>predict(mark_model, ...)</code>.</p>
 <p>If the user wants to save the trained mark model (and reload it at a
 later time), the package provides the <code>save_mark_model</code> and
 <code>load_mark_model</code> functions (which handle model-engine
@@ -401,6 +426,20 @@ envelope test).</p>
 <span><span class="co">#&gt; Registered S3 method overwritten by 'spatstat.geom':</span></span>
 <span><span class="co">#&gt;   method       from     </span></span>
 <span><span class="co">#&gt;   print.metric yardstick</span></span>
+<span><span class="co">#&gt; [ldmppr::check_model_fit]</span></span>
+<span><span class="co">#&gt; Checking model fit</span></span>
+<span><span class="co">#&gt;   mark_mode=mark_model, n_sim=100, parallel=FALSE</span></span>
+<span><span class="co">#&gt;   include_comp_inds=FALSE, edge_correction=none</span></span>
+<span><span class="co">#&gt; Step 1/4: Preparing simulation setup</span></span>
+<span><span class="co">#&gt; Using FGJ r-grid from reference: 1:198 (max r=2.405), correction=km</span></span>
+<span><span class="co">#&gt;   Done in 0.1s.</span></span>
+<span><span class="co">#&gt; Step 2/4: Generating accepted simulations</span></span>
+<span><span class="co">#&gt;   Done in 5.1s.</span></span>
+<span><span class="co">#&gt; Step 3/4: Computing envelope tests</span></span>
+<span><span class="co">#&gt;   Done in 0.7s.</span></span>
+<span><span class="co">#&gt; Step 4/4: Finalizing output object</span></span>
+<span><span class="co">#&gt;   Done in 5.9s.</span></span>
+<span><span class="co">#&gt; Model check complete.</span></span>
 <span></span>
 <span><span class="co"># Plot method for ldmppr_model_check objects (defaults to combined global envelope test)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">model_check</span><span class="op">)</span></span></code></pre></div>
@@ -439,13 +478,13 @@ the fitted model.</p>
 <code class="sourceCode R"><span></span>
 <span><span class="co"># Data-frame view of the simulated realization</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">simulated</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;        time          x         y    marks</span></span>
-<span><span class="co">#&gt; 1 0.0000000 10.0000000 14.000000 900.3945</span></span>
-<span><span class="co">#&gt; 2 0.1140356 10.7763927 16.557179 566.9804</span></span>
-<span><span class="co">#&gt; 3 0.1664013 22.0830495 12.213898 599.9713</span></span>
-<span><span class="co">#&gt; 4 0.1958571  0.4174274 19.246111 729.4594</span></span>
-<span><span class="co">#&gt; 5 0.2260247 24.4303317  8.796367 740.9364</span></span>
-<span><span class="co">#&gt; 6 0.2434549 17.8309537  4.295915 531.1793</span></span></code></pre></div>
+<span><span class="co">#&gt;        time         x         y    marks</span></span>
+<span><span class="co">#&gt; 1 0.0000000 10.000000 14.000000 900.3945</span></span>
+<span><span class="co">#&gt; 2 0.2860798  7.388385 17.685260 568.0955</span></span>
+<span><span class="co">#&gt; 3 0.2978591  6.453600 15.853798 566.7167</span></span>
+<span><span class="co">#&gt; 4 0.3264533  3.869400  4.196575 669.2098</span></span>
+<span><span class="co">#&gt; 5 0.3622486  7.640830 10.125372 614.6098</span></span>
+<span><span class="co">#&gt; 6 0.3965467 24.225264 22.181715 571.1716</span></span></code></pre></div>
 <hr>
 </div>
 </div>

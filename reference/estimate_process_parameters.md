@@ -23,6 +23,8 @@ estimate_process_parameters(
   starts = list(global = 1L, local = 1L, jitter_sd = 0.35, seed = 1L),
   finite_bounds = NULL,
   refine_best_delta = TRUE,
+  rescore_control = list(enabled = TRUE, top = 5L, objective_tol = 1e-06, param_tol =
+    0.1, avoid_bound_solutions = TRUE, bound_eps = 1e-08),
   verbose = TRUE
 )
 ```
@@ -81,17 +83,18 @@ estimate_process_parameters(
   `TRUE` or `FALSE` specifying furrr/future to parallelize either: (a)
   over candidate `delta` values (when `length(delta) > 1`), and/or (b)
   over local multi-start initializations (when `starts$local > 1`),
-  and/or (c) over global restarts (when `starts$global > 1`).
+  and/or (c) over global restarts (when `starts$global > 1`). For small
+  problems, parallel overhead may outweigh speed gains.
 
 - num_cores:
 
-  number of workers to use when `set_future_plan = TRUE`.
+  number of workers to use when `parallel=TRUE` and
+  `set_future_plan=TRUE`.
 
 - set_future_plan:
 
-  `TRUE` or `FALSE`, temporarily sets
-  `future::plan(multisession, workers = num_cores)` and restores the
-  original plan on exit.
+  `TRUE` or `FALSE`. If `TRUE` and `parallel=TRUE`, set a temporary
+  future plan internally and restore the previous plan on exit.
 
 - strategy:
 
@@ -137,6 +140,21 @@ estimate_process_parameters(
   `TRUE` or `FALSE`. If `TRUE` and `length(delta) > 1`, performs
   refinement of the best `delta` across additional grid levels (if
   available).
+
+- rescore_control:
+
+  controls candidate rescoring and bound-handling behavior in
+  multi-resolution fitting. Can be either:
+
+  - a single logical value (toggle rescoring on/off while keeping
+    defaults), or
+
+  - a named list with any of: `enabled`, `top`, `objective_tol`,
+    `param_tol`, `avoid_bound_solutions`, `bound_eps`.
+
+  Defaults are:
+  `list(enabled = TRUE, top = 5L, objective_tol = 1e-6, param_tol = 0.10,`
+  `avoid_bound_solutions = TRUE, bound_eps = 1e-8)`.
 
 - verbose:
 
@@ -197,14 +215,16 @@ fit <- estimate_process_parameters(
   starts = list(global = 2, local = 2, jitter_sd = 0.25, seed = 1),
   verbose = TRUE
 )
+#> [ldmppr::estimate_process_parameters]
 #> Using default starting values (parameter_inits) since none were provided.
-#>   Initial values: 7.185, 0.01, 0.03963, 2.369, 2, 0.5, 2.369, 0.05
+#>   Initial values: 3.125, 4.805, 0.03963, 2.369, 2, 0.5, 2.369, 0.1
 #> Estimating self-correcting process parameters
 #>   Strategy: global_local
 #>   Delta: 1
 #>   Grids: 1 level(s)
 #>   Local optimizer: NLOPT_LN_BOBYQA
 #>   Global optimizer: NLOPT_GN_CRS2_LM
+#>   Rescore control: enabled=TRUE, top=5, objective_tol=1e-06, param_tol=0.1
 #>   Starts: global=2, local=2, jitter_sd=0.25, seed=1
 #>   Parallel: off
 #> Step 1/2: Preparing data and objective function...
@@ -214,14 +234,14 @@ fit <- estimate_process_parameters(
 #> Single level (grid 10x10x10)
 #>   Global search: 2 restart(s), then local refinement.
 #>   Local multi-start: 2 start(s).
-#>   Completed in 0.1s.
-#>   Best objective: 223.98064
-#> Finished. Total time: 0.1s.
+#>   Completed in 0.2s.
+#>   Best objective: 188.04405
+#> Finished. Total time: 0.2s.
 coef(fit)
-#> [1]  0.660472398  6.291173241  0.009606337 16.278852354  0.000000000
-#> [6]  4.496232222 12.534987011  1.283571769
+#> [1] 2.290657e+00 4.130412e+00 5.970705e-05 2.795717e+00 2.053278e+00
+#> [6] 4.086056e-01 2.695652e+00 1.139847e-01
 logLik(fit)
-#> 'log Lik.' -223.9806 (df=8)
+#> 'log Lik.' -188.0441 (df=8)
 
 # \donttest{
 # Estimate parameters using multiple delta values (delta search)
