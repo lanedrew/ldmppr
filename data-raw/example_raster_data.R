@@ -33,10 +33,11 @@ terra::writeRaster(cropped_rasters[[4]], "./inst/extdata/Snodgrass_DEM_1m.tif", 
 
 
 # Specify the spatial extent for the real example data
-a_x <- 326496
-a_y <- 4311439
-b_x <- 326596 - 50
-b_y <- 4311539 - 50
+a_x <- 327308.19109940575
+a_y <- 4311057.818756809
+L <- 50
+b_x <- a_x + L
+b_y <- a_y + L
 
 new_ext <- c(a_x, b_x, a_y, b_y)
 

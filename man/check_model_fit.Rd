@@ -25,7 +25,10 @@ check_model_fit(
   seed = 0,
   parallel = FALSE,
   num_cores = max(1L, parallel::detectCores() - 1L),
-  set_future_plan = FALSE
+  set_future_plan = FALSE,
+  mark_mode = c("mark_model", "time_to_size"),
+  fg_correction = c("km", "rs"),
+  max_attempts = NULL
 )
 }
 \arguments{
@@ -47,11 +50,14 @@ or a numeric vector of length 8 giving the process parameters.}
 If \code{NULL}, inferred from the reference data (largest mark if available) or from
 \code{ldmppr_fit}.}
 
-\item{raster_list}{(optional) a list of raster objects used for predicting marks. If \code{NULL}, will attempt to infer from the \code{ldmppr_mark_model} if possible.}
+\item{raster_list}{(optional) list of raster objects used for mark prediction.
+Required when \code{mark_mode='mark_model'} unless rasters are stored in \code{mark_model}.}
 
-\item{scaled_rasters}{(optional) \code{TRUE} or \code{FALSE} indicating whether the rasters have already been scaled. If \code{NULL}, will attempt to infer from the \code{ldmppr_mark_model} if possible.}
+\item{scaled_rasters}{\code{TRUE} or \code{FALSE} indicating whether rasters are already scaled.
+Ignored when \code{mark_mode='time_to_size'}.}
 
-\item{mark_model}{a mark model object. May be a \code{ldmppr_mark_model} or a legacy model.}
+\item{mark_model}{a mark model object used when \code{mark_mode='mark_model'}.
+May be an \code{ldmppr_mark_model}, \code{model_fit}, or \code{workflow}.}
 
 \item{xy_bounds}{(optional) vector of bounds as \code{c(a_x, b_x, a_y, b_y)}. If \code{NULL}, will be
 inferred from \code{reference_data}'s window when \code{reference_data} is provided,
@@ -63,7 +69,7 @@ otherwise from \code{ldmppr_fit} with lower bounds assumed to be 0.}
 
 \item{edge_correction}{type of edge correction to apply (\code{"none"} or \code{"toroidal"}).}
 
-\item{competition_radius}{distance for competition radius if \code{include_comp_inds = TRUE}.}
+\item{competition_radius}{positive numeric distance used when \code{include_comp_inds = TRUE}.}
 
 \item{n_sim}{number of simulated datasets to generate.}
 
@@ -74,12 +80,21 @@ When \code{TRUE}, progress is reported via \pkg{progressr} (if available) and is
 
 \item{seed}{integer seed for reproducibility.}
 
-\item{parallel}{\code{TRUE} or \code{FALSE}. If \code{TRUE}, simulations are run in parallel via \pkg{furrr}/\pkg{future}.}
+\item{parallel}{\code{TRUE} or \code{FALSE}. If \code{TRUE}, simulations run in parallel via \pkg{furrr}/\pkg{future}.
+For small simulation sizes, parallel overhead may outweigh speed gains.}
 
-\item{num_cores}{number of workers to use when \code{parallel=TRUE}. Defaults to one fewer than the number of detected cores.}
+\item{num_cores}{number of workers to use when \code{parallel=TRUE}. Defaults to one fewer than detected cores.}
 
-\item{set_future_plan}{\code{TRUE} or \code{FALSE}. If \code{TRUE} and \code{parallel=TRUE}, set a local \pkg{future}
-plan internally (default behavior uses \code{multisession}).}
+\item{set_future_plan}{\code{TRUE} or \code{FALSE}. If \code{TRUE} and \code{parallel=TRUE},
+set a temporary \pkg{future} plan internally and restore the previous plan on exit.}
+
+\item{mark_mode}{mark generation mode: \code{"mark_model"} uses \code{predict()} on a mark model,
+while \code{"time_to_size"} maps simulated times back to sizes via \code{delta}.}
+
+\item{fg_correction}{correction used for F/G/J summaries (\code{"km"} or \code{"rs"}).}
+
+\item{max_attempts}{maximum number of simulation attempts when rejection occurs
+due to non-finite summaries.}
 }
 \value{
 an object of class \code{"ldmppr_model_check"}.
@@ -124,7 +139,7 @@ estimated_parameters <- c(
   1.82729512, 0.65330061, 0.86666748, 0.04681878
 )
 
-# NOTE: examples are run by CRAN with --run-donttest; keep parallel=FALSE here.
+# Keep parallel=FALSE in examples to avoid setup overhead.
 example_model_fit <- check_model_fit(
   reference_data = reference_data,
   t_min = 0,

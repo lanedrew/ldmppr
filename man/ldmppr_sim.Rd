@@ -4,6 +4,8 @@
 \name{ldmppr_sim}
 \alias{ldmppr_sim}
 \alias{print.ldmppr_sim}
+\alias{summary.ldmppr_sim}
+\alias{print.summary.ldmppr_sim}
 \alias{as.data.frame.ldmppr_sim}
 \alias{nobs.ldmppr_sim}
 \alias{plot.ldmppr_sim}
@@ -11,6 +13,10 @@
 \title{Simulated marked point process object}
 \usage{
 \method{print}{ldmppr_sim}(x, ...)
+
+\method{summary}{ldmppr_sim}(object, ...)
+
+\method{print}{summary.ldmppr_sim}(x, ...)
 
 \method{as.data.frame}{ldmppr_sim}(x, ...)
 
@@ -33,6 +39,7 @@ mpp.ldmppr_sim(x, ...)
 For methods:
 \describe{
   \item{\code{print()}}{prints a summary of the simulation.}
+  \item{\code{summary()}}{returns a \code{summary.ldmppr_sim} object.}
   \item{\code{plot()}}{returns a ggplot visualization of the marked point pattern.}
   \item{\code{as.data.frame()}}{returns the simulated realization as a data.frame.}
   \item{\code{nobs()}}{returns the number of points in the realization.}
@@ -57,6 +64,8 @@ An \code{ldmppr_sim} is a list with at least:
 \itemize{
 \item \code{print(ldmppr_sim)}: Print a brief summary of the simulation.
 
+\item \code{summary(ldmppr_sim)}: Summarize a simulated realization.
+
 \item \code{as.data.frame(ldmppr_sim)}: Coerce to a data.frame of the simulated realization.
 
 \item \code{nobs(ldmppr_sim)}: Number of simulated points.
@@ -66,6 +75,8 @@ An \code{ldmppr_sim} is a list with at least:
 }}
 \section{Functions}{
 \itemize{
+\item \code{print(summary.ldmppr_sim)}: Print a summary produced by \code{\link{summary.ldmppr_sim}}.
+
 \item \code{mpp.ldmppr_sim()}: Extract the underlying marked point pattern object.
 
 }}

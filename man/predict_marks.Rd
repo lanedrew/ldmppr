@@ -12,68 +12,35 @@ predict_marks(
   xy_bounds = NULL,
   include_comp_inds = FALSE,
   competition_radius = 15,
-  edge_correction = "none"
+  edge_correction = "none",
+  seed = NULL
 )
 }
 \arguments{
-\item{sim_realization}{a data.frame containing a thinned or unthinned realization from \code{simulate_mpp} (or \code{simulate_sc}).}
+\item{sim_realization}{a data.frame containing a thinned or unthinned realization from
+\code{simulate_mpp} (or \code{simulate_sc}). Must contain \code{x}, \code{y}, and \code{time}.}
 
-\item{raster_list}{a list of raster objects.}
+\item{raster_list}{list of raster objects used for mark prediction.}
 
-\item{scaled_rasters}{\code{TRUE} or \code{FALSE} indicating whether the rasters have been scaled.}
+\item{scaled_rasters}{\code{TRUE} or \code{FALSE} indicating whether rasters are already scaled.}
 
-\item{mark_model}{a mark model object. May be a \code{ldmppr_mark_model} or a legacy model.}
+\item{mark_model}{a mark model object. May be an \code{ldmppr_mark_model}, \code{model_fit}, or \code{workflow}.}
 
-\item{xy_bounds}{a vector of domain bounds (2 for x, 2 for y).}
+\item{xy_bounds}{vector of domain bounds as \code{c(a_x, b_x, a_y, b_y)}.}
 
 \item{include_comp_inds}{\code{TRUE} or \code{FALSE} indicating whether to generate and use competition indices as covariates.}
 
-\item{competition_radius}{distance for competition radius if \code{include_comp_inds} is \code{TRUE}.}
+\item{competition_radius}{positive numeric distance used when \code{include_comp_inds = TRUE}.}
 
 \item{edge_correction}{type of edge correction to apply (\code{"none"} or \code{"toroidal"}).}
+
+\item{seed}{optional nonnegative integer seed for reproducibility.}
 }
 \value{
 a vector of predicted mark values.
 }
 \description{
-Predict values from the mark distribution
-}
-\examples{
-# Simulate a realization
-generating_parameters <- c(2, 8, .02, 2.5, 3, 1, 2.5, .2)
-M_n <- c(10, 14)
-generated_locs <- simulate_sc(
-  t_min = 0,
-  t_max = 1,
-  sc_params = generating_parameters,
-  anchor_point = M_n,
-  xy_bounds = c(0, 25, 0, 25)
-)
-
-# Load the raster files
-raster_paths <- list.files(system.file("extdata", package = "ldmppr"),
-  pattern = "\\\\.tif$", full.names = TRUE
-)
-raster_paths <- raster_paths[!grepl("_med\\\\.tif$", raster_paths)]
-rasters <- lapply(raster_paths, terra::rast)
-
-# Scale the rasters
-scaled_raster_list <- scale_rasters(rasters)
-
-# Load the example mark model
-file_path <- system.file("extdata", "example_mark_model.rds", package = "ldmppr")
-mark_model <- load_mark_model(file_path)
-
-# Predict the mark values
-predict_marks(
-  sim_realization = generated_locs$thinned,
-  raster_list = scaled_raster_list,
-  scaled_rasters = TRUE,
-  mark_model = mark_model,
-  xy_bounds = c(0, 25, 0, 25),
-  include_comp_inds = TRUE,
-  competition_radius = 10,
-  edge_correction = "none"
-)
-
+Prefer using the S3 method \code{predict()} on an \code{ldmppr_mark_model}:
+\code{predict(mark_model, sim_realization = ..., xy_bounds = ...)}.
+This wrapper is retained for backward compatibility and is deprecated.
 }

@@ -2,29 +2,31 @@
 % Please edit documentation in R/RcppExports.R
 \name{full_sc_lhood_fast}
 \alias{full_sc_lhood_fast}
-\title{calculates fast full self-correcting log-likelihood}
+\title{Evaluate optimized self-correcting log-likelihood}
 \usage{
 full_sc_lhood_fast(xgrid, ygrid, tgrid, tobs, data, params, bounds)
 }
 \arguments{
-\item{xgrid}{a vector of grid values for x.}
+\item{xgrid}{NumericVector of x-grid values.}
 
-\item{ygrid}{a vector of grid values for y.}
+\item{ygrid}{NumericVector of y-grid values.}
 
-\item{tgrid}{a vector of grid values for t.}
+\item{tgrid}{NumericVector of integration-time grid values.}
 
-\item{tobs}{a vector of observed values for t.}
+\item{tobs}{NumericVector of observed event times.}
 
-\item{data}{a matrix of times and locations.}
+\item{data}{NumericMatrix with columns (time, x, y), sorted by nondecreasing time.}
 
-\item{params}{a vector of parameters.}
+\item{params}{NumericVector of model parameters
+(alpha1, beta1, gamma1, alpha2, beta2, alpha3, beta3, gamma3).}
 
-\item{bounds}{a vector of bounds for time, x, and y.}
+\item{bounds}{NumericVector of integration bounds (bt, bx, by).}
 }
 \value{
-evaluation of full log-likelihood.
+Full self-correcting log-likelihood value.
 }
 \description{
-calculates fast full self-correcting log-likelihood
+Optimized implementation used by estimation workflows.
+Intended to be numerically consistent with \code{full_sc_lhood()}.
 }
 \keyword{internal}

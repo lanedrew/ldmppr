@@ -86,8 +86,7 @@ simulate_sc <- function(t_min = 0,
   colnames(txy_sim) <- c("time", "x", "y")
 
   # ---- Thinning ----
-  keep <- stats::runif(nrow(txy_sim), 0, 1) < interaction_st_fast(txy_sim, sc_params[6:8])
-
+  keep <- thin_st_fast(txy_sim, sc_params[6:8])
   txy_sim_thin <- txy_sim[keep, , drop = FALSE]
 
   sim_df      <- as.data.frame(txy_sim)

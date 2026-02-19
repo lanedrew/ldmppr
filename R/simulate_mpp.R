@@ -10,18 +10,26 @@
 #' @param anchor_point (optional) vector of (x,y) coordinates of the point to condition on.
 #'   If \code{NULL}, inferred from the reference data (largest mark if available) or from
 #'   \code{process_fit$data_original} (largest size).
-#' @param raster_list (optional) a list of raster objects used for predicting marks. If \code{NULL}, will attempt to infer from the \code{ldmppr_mark_model} if possible.
-#' @param scaled_rasters (optional) \code{TRUE} or \code{FALSE} indicating whether the rasters have already been scaled. If \code{NULL}, will attempt to infer from the \code{ldmppr_mark_model} if possible.
-#' @param mark_model a mark model object. May be a \code{ldmppr_mark_model} or a legacy model.
-#' @param xy_bounds (optional) vector of bounds as \code{c(a_x, b_x, a_y, b_y)}. If \code{NULL}, will be
-#'   inferred from \code{reference_data}'s window when \code{reference_data} is provided,
-#'   otherwise from \code{ldmppr_fit} with lower bounds assumed to be 0.
+#' @param raster_list (optional) list of raster objects used for mark prediction.
+#'   Required when \code{mark_mode='mark_model'} unless rasters are stored in \code{mark_model}.
+#' @param scaled_rasters \code{TRUE} or \code{FALSE} indicating whether rasters are already scaled.
+#'   Ignored when \code{mark_mode='time_to_size'}.
+#' @param mark_model a mark model object used when \code{mark_mode='mark_model'}.
+#'   May be an \code{ldmppr_mark_model}, \code{model_fit}, or \code{workflow}.
+#' @param xy_bounds (optional) vector of bounds as \code{c(a_x, b_x, a_y, b_y)}. If \code{NULL},
+#'   bounds are inferred from \code{process_fit} when available.
 #' @param include_comp_inds \code{TRUE} or \code{FALSE} indicating whether to compute competition indices.
-#' @param competition_radius distance for competition radius if \code{include_comp_inds = TRUE}.
+#' @param competition_radius positive numeric distance used when \code{include_comp_inds = TRUE}.
 #' @param thinning \code{TRUE} or \code{FALSE} indicating whether to use the thinned simulated values.
 #' @param edge_correction type of edge correction to apply (\code{"none"} or \code{"toroidal"}).
 #' @param seed integer seed for reproducibility.
-#'
+#' @param mark_mode mark generation mode: \code{"mark_model"} uses \code{predict()} on a mark model,
+#'   while \code{"time_to_size"} maps simulated times back to sizes via \code{delta}.
+#' @param size_range numeric vector \code{c(smin, smax)} used for \code{mark_mode='time_to_size'}.
+#'   If \code{NULL}, inferred from \code{process_fit} when possible.
+#' @param delta positive scalar used for \code{mark_mode='time_to_size'}.
+#'   If \code{NULL}, inferred from \code{process_fit} when possible.
+#' 
 #' @return an object of class \code{"ldmppr_sim"}.
 #'
 #' @examples
@@ -59,7 +67,8 @@
 #'   include_comp_inds = TRUE,
 #'   competition_radius = 10,
 #'   edge_correction = "none",
-#'   thinning = TRUE
+#'   thinning = TRUE,
+#'   seed = 90210
 #' )
 #'
 #' # Plot the realization and provide a summary
@@ -79,9 +88,15 @@ simulate_mpp <- function(process = c("self_correcting"),
                          competition_radius = 15,
                          edge_correction = "none",
                          thinning = TRUE,
-                         seed = NULL) {
+                         seed = NULL,
+                         # Mark generation mode
+                         mark_mode = c("mark_model", "time_to_size"),
+                         # Arguments used in time_to_size mode
+                         size_range = NULL,   # c(smin, smax)
+                         delta = NULL) {       # scalar; if NULL, try to infer
 
   process <- match.arg(process)
+  mark_mode <- match.arg(mark_mode)
 
   # ---- checks ----
   if (is.null(process_fit)) {
@@ -117,13 +132,6 @@ simulate_mpp <- function(process = c("self_correcting"),
     stop("Provide anchor_point = c(x,y), or pass an ldmppr_fit that contains data_original/data to infer it.", call. = FALSE)
   }
 
-  if (!is.null(raster_list) && !is.list(raster_list)) {
-    stop("Provide `raster_list` as a list of rasters (or leave NULL to infer from `mark_model`).", call. = FALSE)
-  }
-  if (!is.logical(scaled_rasters) || length(scaled_rasters) != 1L) {
-    stop("Provide a single logical value for `scaled_rasters`.", call. = FALSE)
-  }
-
   if (!edge_correction %in% c("none", "toroidal")) stop("Provide correction = 'none' or 'toroidal'.", call. = FALSE)
   if (!is.logical(thinning)) stop("Provide a logical value for thinning.", call. = FALSE)
   if (!is.logical(include_comp_inds)) stop("Provide a logical value for include_comp_inds.", call. = FALSE)
@@ -131,37 +139,133 @@ simulate_mpp <- function(process = c("self_correcting"),
     stop("Provide a nonnegative competition_radius.", call. = FALSE)
   }
 
-  # Accept new or legacy mark model formats
-  mark_model <- as_mark_model(mark_model)
+  # ---- helpers for mark_mode == "time_to_size" ----
+  .infer_size_range <- function(process_fit) {
+    # Try common places: process_fit$data_original, process_fit$data, or marks in embedded ppp
+    # We look for columns: size, marks, dbh (fallback).
+    candidates <- NULL
 
-  # ---- infer rasters / scaled flag from mark_model if not provided ----
-  if (is.null(raster_list)) {
-    mm_rasters <- NULL
-    if (is.list(mark_model) && !is.null(mark_model$rasters)) mm_rasters <- mark_model$rasters
-
-    if (!is.null(mm_rasters)) {
-      raster_list <- mm_rasters
-      # if user didn't explicitly say rasters were scaled, inherit the mark_model flag when available
-      mm_scaled <- NULL
-      if (is.list(mark_model) && !is.null(mark_model$info) && !is.null(mark_model$info$scaled_rasters)) {
-        mm_scaled <- mark_model$info$scaled_rasters
+    if (inherits(process_fit, "ldmppr_fit")) {
+      if (is.data.frame(process_fit$data_original)) candidates <- process_fit$data_original
+      if (is.null(candidates) && is.matrix(process_fit$data)) {
+        candidates <- as.data.frame(process_fit$data)
       }
-      if (isTRUE(mm_scaled)) scaled_rasters <- TRUE
     }
+
+    if (is.data.frame(candidates)) {
+      nm <- names(candidates)
+      if ("size" %in% nm) {
+        v <- candidates[["size"]]
+      } else if ("marks" %in% nm) {
+        v <- candidates[["marks"]]
+      } else if ("dbh" %in% nm) {
+        v <- candidates[["dbh"]]
+      } else {
+        v <- NULL
+      }
+      if (!is.null(v)) {
+        v <- as.numeric(v)
+        v <- v[is.finite(v)]
+        if (length(v)) return(range(v))
+      }
+    }
+
+    # last resort: if process_fit contains a ppp-like object in data_original, try marks()
+    if (inherits(process_fit, "ldmppr_fit") && !is.null(process_fit$ppp) &&
+        spatstat.geom::is.ppp(process_fit$ppp) && !is.null(spatstat.geom::marks(process_fit$ppp))) {
+      v <- as.numeric(spatstat.geom::marks(process_fit$ppp))
+      v <- v[is.finite(v)]
+      if (length(v)) return(range(v))
+    }
+
+    NULL
   }
 
-  # final validation
-  if (is.null(raster_list) || !is.list(raster_list)) {
-    stop(
-      "Provide `raster_list` as a list of rasters, or supply a `ldmppr_mark_model` that contains `rasters`.",
-      call. = FALSE
-    )
+  .infer_delta <- function(process_fit) {
+    if (inherits(process_fit, "ldmppr_fit")) {
+      # common place in your code: fit_obj$mapping$delta
+      if (!is.null(process_fit$mapping) && !is.null(process_fit$mapping$delta)) {
+        d <- as.numeric(process_fit$mapping$delta)
+        if (length(d) == 1L && is.finite(d)) return(d)
+      }
+      # sometimes stored as attribute on data matrix (from .build_sc_matrix)
+      if (!is.null(process_fit$data) && !is.null(attr(process_fit$data, "ldmppr_delta"))) {
+        d <- as.numeric(attr(process_fit$data, "ldmppr_delta"))
+        if (length(d) == 1L && is.finite(d)) return(d)
+      }
+    }
+    NULL
   }
 
-  # ---- scale rasters if necessary ----
-  if (!isTRUE(scaled_rasters)) {
-    raster_list <- scale_rasters(raster_list)
-    scaled_rasters <- TRUE
+  .time_to_size <- function(t, smin, smax, delta) {
+    t <- as.numeric(t)
+    # clamp to [0,1] to be safe
+    t <- pmin(pmax(t, 0), 1)
+    if (!is.finite(delta) || delta <= 0) stop("delta must be a positive finite scalar for time_to_size.", call. = FALSE)
+    # inverse of: t = 1 - ((size - smin)/(smax - smin))^delta
+    u <- (1 - t)^(1 / delta)
+    smin + u * (smax - smin)
+  }
+
+  # ---- mark_model mode requires mark_model + rasters; time_to_size does not ----
+  if (mark_mode == "mark_model") {
+    mark_model <- as_mark_model(mark_model)
+
+    if (!is.null(raster_list) && !is.list(raster_list)) {
+      stop("Provide `raster_list` as a list of rasters (or leave NULL to infer from `mark_model`).", call. = FALSE)
+    }
+    if (!is.logical(scaled_rasters) || length(scaled_rasters) != 1L) {
+      stop("Provide a single logical value for `scaled_rasters`.", call. = FALSE)
+    }
+
+    # ---- infer rasters / scaled flag from mark_model if not provided ----
+    if (is.null(raster_list)) {
+      mm_rasters <- NULL
+      if (is.list(mark_model) && !is.null(mark_model$rasters)) mm_rasters <- mark_model$rasters
+
+      if (!is.null(mm_rasters)) {
+        raster_list <- mm_rasters
+        mm_scaled <- NULL
+        if (is.list(mark_model) && !is.null(mark_model$info) && !is.null(mark_model$info$scaled_rasters)) {
+          mm_scaled <- mark_model$info$scaled_rasters
+        }
+        if (isTRUE(mm_scaled)) scaled_rasters <- TRUE
+      }
+    }
+
+    if (is.null(raster_list) || !is.list(raster_list)) {
+      stop(
+        "mark_mode='mark_model' requires `raster_list` (or an `ldmppr_mark_model` that contains `rasters`).",
+        call. = FALSE
+      )
+    }
+
+    if (!isTRUE(scaled_rasters)) {
+      raster_list <- scale_rasters(raster_list)
+      scaled_rasters <- TRUE
+    }
+  } else {
+    # time_to_size mode: infer size_range and delta if not given
+    if (is.null(size_range)) {
+      size_range <- .infer_size_range(process_fit)
+    }
+    if (is.null(size_range) || length(size_range) != 2L || any(!is.finite(size_range))) {
+      stop(
+        "mark_mode='time_to_size' requires `size_range = c(smin, smax)` or an ldmppr_fit containing original sizes/marks.",
+        call. = FALSE
+      )
+    }
+    if (is.null(delta)) {
+      delta <- .infer_delta(process_fit)
+    }
+    if (is.null(delta) || length(delta) != 1L || !is.finite(delta) || delta <= 0) {
+      stop(
+        "mark_mode='time_to_size' requires a positive scalar `delta`, or an ldmppr_fit with mapping$delta / ldmppr_delta.",
+        call. = FALSE
+      )
+    }
+    size_range <- as.numeric(size_range)
+    delta <- as.numeric(delta)
   }
 
   # ---- Simulate (delegate to simulate_sc so thinning uses interaction_st_fast, and empty cases are safe) ----
@@ -202,27 +306,53 @@ simulate_mpp <- function(process = c("self_correcting"),
       include_comp_inds = include_comp_inds,
       competition_radius = competition_radius,
       call = match.call(),
-      meta = list(unthinned = sim_df, thinned = sim_thin_df)
+      meta = list(unthinned = sim_df, thinned = sim_thin_df, mark_mode = mark_mode)
     ))
   }
 
-  # ---- Predict marks ----
-  marks <- predict_marks(
-    sim_realization = used_df,
-    raster_list = raster_list,
-    scaled_rasters = TRUE,
-    mark_model = mark_model,
-    xy_bounds = xy_bounds,
-    include_comp_inds = include_comp_inds,
-    competition_radius = competition_radius,
-    edge_correction = edge_correction
-  )
+  # ---- Marks ----
+  if (mark_mode == "mark_model") {
 
-  marks_vec <- if (is.data.frame(marks)) {
-    if (!(".pred" %in% names(marks))) stop("predict_marks() returned a data.frame without a `.pred` column.", call. = FALSE)
-    marks[[".pred"]]
+    marks <- if (inherits(mark_model, "ldmppr_mark_model")) {
+      stats::predict(
+        mark_model,
+        sim_realization = used_df,
+        raster_list = raster_list,
+        scaled_rasters = TRUE,
+        xy_bounds = xy_bounds,
+        include_comp_inds = include_comp_inds,
+        competition_radius = competition_radius,
+        edge_correction = edge_correction,
+        seed = seed
+      )
+    } else {
+      predict_marks(
+        sim_realization = used_df,
+        raster_list = raster_list,
+        scaled_rasters = TRUE,
+        mark_model = mark_model,
+        xy_bounds = xy_bounds,
+        include_comp_inds = include_comp_inds,
+        competition_radius = competition_radius,
+        edge_correction = edge_correction,
+        seed = seed
+      )
+    }
+
+    marks_vec <- if (is.data.frame(marks)) {
+      if (!(".pred" %in% names(marks))) stop("predict_marks() returned a data.frame without a `.pred` column.", call. = FALSE)
+      as.numeric(marks[[".pred"]])
+    } else {
+      as.numeric(marks)
+    }
+
   } else {
-    as.numeric(marks)
+    # location-independent marks by inverting the time mapping
+    smin <- size_range[1]; smax <- size_range[2]
+    if (!is.finite(smin) || !is.finite(smax) || smax <= smin) {
+      stop("Invalid size_range: must be finite with smax > smin.", call. = FALSE)
+    }
+    marks_vec <- .time_to_size(used_df$time, smin = smin, smax = smax, delta = delta)
   }
 
   realization <- data.frame(
@@ -250,6 +380,11 @@ simulate_mpp <- function(process = c("self_correcting"),
     include_comp_inds = include_comp_inds,
     competition_radius = competition_radius,
     call = match.call(),
-    meta = list(unthinned = sim_df, thinned = sim_thin_df)
+    meta = list(
+      unthinned = sim_df,
+      thinned = sim_thin_df,
+      mark_mode = mark_mode,
+      mapping = if (mark_mode == "time_to_size") list(delta = delta, size_range = size_range) else NULL
+    )
   )
 }

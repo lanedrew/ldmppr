@@ -97,6 +97,12 @@ fit_sc <- estimate_process_parameters(
   budgets = budgets,
   parameter_inits = parameter_inits,
   delta = 1,
+  rescore_control = list(
+    enabled = TRUE,
+    top = 5L,
+    objective_tol = 1e-6,
+    param_tol = 0.10
+  ),
   parallel = FALSE,
   strategy = "global_local",
   global_algorithm = "NLOPT_GN_CRS2_LM",
@@ -113,6 +119,7 @@ estimated_parameters
 **Notes**
 
 - If you want to search over possible mappings between size and time, provide `delta = c(...)` and set `parallel = TRUE` to run one optimizer per delta (optionally in parallel).
+- Candidate rescoring and bound-handling controls are consolidated in `rescore_control`, either as a single logical toggle or a named list.
 - For better accuracy you typically want denser grids than in this vignette example; the small grid here is chosen to keep runtime modest.
 
 ## Step 2: Train a mark model
@@ -158,6 +165,8 @@ print(mark_model)
 # Summary method for ldmppr_mark_model objects
 summary(mark_model)
 ```
+
+`predict_marks()` is retained as a deprecated compatibility wrapper. For new workflows, use S3 prediction directly via `predict(mark_model, ...)`.
 
 If the user wants to save the trained mark model (and reload it at a later time), the package provides the `save_mark_model` and `load_mark_model` functions (which handle model-engine specifics appropriately):
 

@@ -16,6 +16,7 @@
 #' @return For methods:
 #' \describe{
 #'   \item{\code{print()}}{prints a summary of the simulation.}
+#'   \item{\code{summary()}}{returns a \code{summary.ldmppr_sim} object.}
 #'   \item{\code{plot()}}{returns a ggplot visualization of the marked point pattern.}
 #'   \item{\code{as.data.frame()}}{returns the simulated realization as a data.frame.}
 #'   \item{\code{nobs()}}{returns the number of points in the realization.}
@@ -33,13 +34,58 @@ NULL
 #' @param ... additional arguments (not used).
 #' @export
 print.ldmppr_sim <- function(x, ...) {
-  cat("ldmppr sim: \n")
-  cat("  process: ", x$process, "\n", sep = "")
-  cat("  n:       ", nrow(x$realization), "\n", sep = "")
-  cat("  thinning:", x$thinning, "\n", sep = "")
-  cat("  correction: ", x$correction, "\n", sep = "")
-  cat("  time bounds: [", x$bounds$t_min, ", ", x$bounds$t_max, "]\n", sep = "")
-  cat("  xy bounds:   [", paste(x$bounds$xy_bounds, collapse = ", "), "]\n", sep = "")
+  n <- if (is.data.frame(x$realization)) nrow(x$realization) else NA_integer_
+  cat("ldmppr Simulation\n")
+  cat("  process:          ", x$process %||% NA_character_, "\n", sep = "")
+  cat("  n_points:         ", n, "\n", sep = "")
+  cat("  thinning:         ", x$thinning %||% NA, "\n", sep = "")
+  cat("  edge_correction:  ", x$edge_correction %||% NA_character_, "\n", sep = "")
+  if (!is.null(x$bounds$t_min) && !is.null(x$bounds$t_max)) {
+    cat("  time_bounds:      [", x$bounds$t_min, ", ", x$bounds$t_max, "]\n", sep = "")
+  }
+  if (!is.null(x$bounds$xy_bounds)) {
+    cat("  xy_bounds:        [", paste(x$bounds$xy_bounds, collapse = ", "), "]\n", sep = "")
+  }
+  invisible(x)
+}
+
+#' @describeIn ldmppr_sim Summarize a simulated realization.
+#' @param object a \code{ldmppr_sim} object.
+#' @param ... additional arguments (not used).
+#' @export
+summary.ldmppr_sim <- function(object, ...) {
+  r <- object$realization
+  marks <- if (is.data.frame(r) && "marks" %in% names(r)) as.numeric(r$marks) else numeric(0)
+  times <- if (is.data.frame(r) && "time" %in% names(r)) as.numeric(r$time) else numeric(0)
+
+  out <- list(
+    process = object$process,
+    n_points = if (is.data.frame(r)) nrow(r) else NA_integer_,
+    mark_range = if (length(marks)) range(marks, na.rm = TRUE) else c(NA_real_, NA_real_),
+    time_range = if (length(times)) range(times, na.rm = TRUE) else c(NA_real_, NA_real_),
+    thinning = object$thinning,
+    edge_correction = object$edge_correction,
+    bounds = object$bounds
+  )
+  class(out) <- "summary.ldmppr_sim"
+  out
+}
+
+#' @describeIn ldmppr_sim Print a summary produced by \code{\link{summary.ldmppr_sim}}.
+#' @param x an object of class \code{summary.ldmppr_sim}.
+#' @param ... additional arguments (not used).
+#' @export
+print.summary.ldmppr_sim <- function(x, ...) {
+  cat("Summary: ldmppr Simulation\n")
+  cat("  process:          ", x$process %||% NA_character_, "\n", sep = "")
+  cat("  n_points:         ", x$n_points %||% NA_integer_, "\n", sep = "")
+  cat("  mark_range:       [", paste(signif(x$mark_range, 6), collapse = ", "), "]\n", sep = "")
+  cat("  time_range:       [", paste(signif(x$time_range, 6), collapse = ", "), "]\n", sep = "")
+  cat("  thinning:         ", x$thinning %||% NA, "\n", sep = "")
+  cat("  edge_correction:  ", x$edge_correction %||% NA_character_, "\n", sep = "")
+  if (!is.null(x$bounds$xy_bounds)) {
+    cat("  xy_bounds:        [", paste(x$bounds$xy_bounds, collapse = ", "), "]\n", sep = "")
+  }
   invisible(x)
 }
 

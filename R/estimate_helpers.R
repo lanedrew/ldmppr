@@ -2,8 +2,9 @@
 # Internal helpers for estimate_process_parameters()
 # ---------------------------------------------------------------------
 
-#' @noRd
-`%||%` <- function(a, b) if (!is.null(a)) a else b
+# NOTE:
+# Shared internal helpers (e.g., `%||%`, `.build_sc_matrix`) are defined in
+# internal_helpers.R to avoid duplicate definitions across helper files.
 
 # ---------------------------------------------------------------------
 # Input validation
@@ -127,13 +128,53 @@
 
 #' @noRd
 .derive_finite_bounds <- function(init,
+                                  data = NULL,
+                                  upper_bounds = NULL,
+                                  delta = NULL,
                                   mult = 15,
+                                  # original-style fallback caps
                                   min_ub = c(NA_real_, 25, 2, 25, 10, 25, 25, 2),
                                   max_ub = c(NA_real_, 500, 50, 500, 50, 500, 500, 50)) {
   if (length(init) != 8) stop("init must be length 8.", call. = FALSE)
 
+  # ---- defaults: old behavior ----
   ub_pos <- pmax(min_ub[-1], abs(init[-1]) * mult, 1e-3)
   ub_pos <- pmin(ub_pos, max_ub[-1])
+
+  # ---- data-derived caps (if possible) ----
+  t_span <- NA_real_
+  diag_len <- NA_real_
+
+  if (!is.null(data)) {
+    mat <- .build_sc_matrix(data, delta = delta)
+    tt <- as.numeric(mat[, 1])
+    if (length(tt) >= 2L && all(is.finite(tt))) {
+      t_span <- max(tt) - min(tt)
+      if (!is.finite(t_span) || t_span <= 0) t_span <- NA_real_
+    }
+  }
+
+  if (!is.null(upper_bounds) && length(upper_bounds) >= 3L &&
+      all(is.finite(upper_bounds[2:3])) && all(upper_bounds[2:3] > 0)) {
+    w <- upper_bounds[2]
+    h <- upper_bounds[3]
+    diag_len <- sqrt(w^2 + h^2)
+    if (!is.finite(diag_len) || diag_len <= 0) diag_len <- NA_real_
+  }
+
+  # If times were mapped to [0,1], t_span will usually be 1.
+  # gamma3 cap = max temporal separation
+  if (is.finite(t_span)) {
+    ub_pos[7] <- min(ub_pos[7], t_span)      # gamma3 is the 8th param -> ub_pos[7]
+  }
+
+  # beta3 cap = max spatial separation
+  if (is.finite(diag_len)) {
+    ub_pos[6] <- min(ub_pos[6], diag_len)    # beta3 is the 7th param -> ub_pos[6]
+  }
+
+  # alpha2 cap = max spatial separation (same as beta3)
+  if (is.finite(diag_len)) ub_pos[3] <- min(ub_pos[3], diag_len)
 
   a1_span <- max(10, abs(init[1]) * mult)
   lb <- c(-a1_span, rep(0, 7))
@@ -203,98 +244,6 @@
 
 
 # ---------------------------------------------------------------------
-# Data construction for SC likelihood
-# ---------------------------------------------------------------------
-
-#' @noRd
-.build_sc_matrix <- function(data, delta = NULL) {
-  # Returns a (time,x,y) matrix.
-  # Attaches attributes for downstream convenience:
-  #  - attr(mat,"ldmppr_original") : data.frame (time,x,y,size?) in the order used
-  #  - attr(mat,"ldmppr_delta")    : delta used (NA if not applicable)
-  #
-  # Supported inputs:
-  #  - data.frame with (time,x,y) optionally plus size
-  #  - data.frame with (x,y,size)   -> requires delta
-  #  - matrix with 3 cols:
-  #     * if has colnames time,x,y  -> treated as txy
-  #     * if has colnames x,y,size  -> requires delta and maps to time
-  #     * if no colnames            -> treated as txy (time,x,y) in column order
-
-  # ---- matrix input ----
-  if (is.matrix(data)) {
-    if (ncol(data) != 3) stop("`data` matrix must have 3 columns.", call. = FALSE)
-
-    cn <- colnames(data)
-
-    if (!is.null(cn) && all(c("x", "y", "size") %in% cn)) {
-      if (is.null(delta)) stop("`delta` must be provided when `data` has (x,y,size) but no time.", call. = FALSE)
-      o <- order(-data[, "size"])
-      size <- as.numeric(data[o, "size"])
-      x <- as.numeric(data[o, "x"])
-      y <- as.numeric(data[o, "y"])
-      time <- power_law_mapping(size, delta)
-      mat <- cbind(time = time, x = x, y = y)
-      attr(mat, "ldmppr_original") <- data.frame(time = time, x = x, y = y, size = size)
-      attr(mat, "ldmppr_delta") <- delta
-      return(mat)
-    }
-
-    if (!is.null(cn) && all(c("time", "x", "y") %in% cn)) {
-      mat <- cbind(
-        time = as.numeric(data[, "time"]),
-        x = as.numeric(data[, "x"]),
-        y = as.numeric(data[, "y"])
-      )
-      attr(mat, "ldmppr_original") <- as.data.frame(mat)
-      attr(mat, "ldmppr_delta") <- NA_real_
-      return(mat)
-    }
-
-    # no usable colnames => assume already (time,x,y) in order
-    mat <- cbind(time = as.numeric(data[, 1]), x = as.numeric(data[, 2]), y = as.numeric(data[, 3]))
-    attr(mat, "ldmppr_original") <- as.data.frame(mat)
-    attr(mat, "ldmppr_delta") <- NA_real_
-    return(mat)
-  }
-
-  # ---- data.frame input ----
-  if (!is.data.frame(data)) stop("`data` must be a data.frame or matrix.", call. = FALSE)
-
-  nms <- names(data)
-
-  # Already has time,x,y (+ maybe size)
-  if (all(c("time", "x", "y") %in% nms)) {
-    mat <- as.matrix(data[, c("time", "x", "y")])
-    storage.mode(mat) <- "double"
-
-    # Preserve size if present
-    orig <- data[, intersect(c("time", "x", "y", "size"), nms), drop = FALSE]
-    attr(mat, "ldmppr_original") <- orig
-    attr(mat, "ldmppr_delta") <- NA_real_
-    return(mat)
-  }
-
-  # Has x,y,size => map to time via delta
-  if (all(c("x", "y", "size") %in% nms)) {
-    if (is.null(delta)) stop("`delta` must be provided when `data` contains (x,y,size) but no time.", call. = FALSE)
-
-    o <- order(-data$size)
-    size <- as.numeric(data$size[o])
-    x <- as.numeric(data$x[o])
-    y <- as.numeric(data$y[o])
-    time <- power_law_mapping(size, delta)
-
-    mat <- cbind(time = time, x = x, y = y)
-    attr(mat, "ldmppr_original") <- data.frame(time = time, x = x, y = y, size = size)
-    attr(mat, "ldmppr_delta") <- delta
-    return(mat)
-  }
-
-  stop("`data` must contain either (time,x,y) or (x,y,size).", call. = FALSE)
-}
-
-# ---------------------------------------------------------------------
 # Default initialization (SC)
 # ---------------------------------------------------------------------
 
@@ -308,38 +257,85 @@
                                         min_beta2  = 1e-3,
                                         min_alpha3 = 0,
                                         min_beta3  = 0,
-                                        min_gamma3 = 0) {
+                                        min_gamma3 = 0,
+                                        beta1_factor_target = 5,   # exp(beta1 * t_span) ~ beta1_factor_target
+                                        beta1_cap = 50) {          # hard cap on beta1 for stability
   if (is.null(upper_bounds) || length(upper_bounds) != 3L ||
       anyNA(upper_bounds) || any(!is.finite(upper_bounds))) {
     stop("default_parameter_inits_sc(): `upper_bounds` must be finite numeric length 3: c(b_t, b_x, b_y).",
          call. = FALSE)
   }
 
-  # Use the same construction logic as the likelihood pipeline
+  # Build (t,x,y) with the same construction logic used elsewhere
   mat <- .build_sc_matrix(data, delta = delta)
   t <- as.numeric(mat[, 1])
   x <- as.numeric(mat[, 2])
   y <- as.numeric(mat[, 3])
   n <- length(t)
 
-  # --- temporal component: exp(alpha1 + beta1 t - gamma1 N(t)) ---
-  t_span <- max(t, na.rm = TRUE) - min(t, na.rm = TRUE)
+  # ---- basic spans / geometry ----
+  t0 <- min(t, na.rm = TRUE)
+  t1 <- max(t, na.rm = TRUE)
+  t_span <- t1 - t0
   if (!is.finite(t_span) || t_span <= 0) t_span <- 1
 
-  tbar <- mean(t)
-  alpha_base <- log(n / t_span)
-
-  gamma1 <- max(min_gamma1, alpha_base / max(1, n))  # ~ log(n)/n scale
-  beta1  <- max(min_beta1, 1e-2)
-
-  # Make log-intensity around mid-run roughly alpha_base
-  alpha1 <- alpha_base - beta1 * tbar + gamma1 * (n/2)
-
-  # --- spatial inhibition scale: alpha2 ---
   w <- upper_bounds[2]
   h <- upper_bounds[3]
   diag_len <- sqrt(w^2 + h^2)
+  if (!is.finite(diag_len) || diag_len <= 0) diag_len <- 1
 
+  tbar <- mean(t, na.rm = TRUE)
+
+  # ---- temporal component: exp(alpha1 + beta1 t - gamma1 N(t)) ----
+  # Baseline scale from average rate over the observed time span
+  alpha_base <- log(max(n, 1) / t_span)
+
+  # gamma1: keep in a conservative ~log(n)/n regime (avoid explosive growth)
+  gamma1 <- max(min_gamma1, alpha_base / max(1, n))
+
+  # initialize beta1 using a crude Poisson regression on binned event counts
+  # (fallback to exp(beta1 * t_span) ~ beta1_factor_target if regression is unstable)
+  beta1_hat <- NA_real_
+  if (n >= 20 && all(is.finite(t))) {
+    nbins <- max(4L, min(10L, floor(n / 25L)))
+    brks <- unique(as.numeric(stats::quantile(t, probs = seq(0, 1, length.out = nbins + 1L),
+                                              na.rm = TRUE, names = FALSE)))
+    if (length(brks) >= 3L) {
+      bin_id <- cut(t, breaks = brks, include.lowest = TRUE, labels = FALSE)
+      # counts + bin midpoints + bin widths
+      counts <- as.numeric(tabulate(bin_id, nbins))
+      mids <- 0.5 * (brks[-1] + brks[-length(brks)])
+      dts  <- pmax(brks[-1] - brks[-length(brks)], 1e-8)
+
+      dat <- data.frame(counts = counts, mid = mids, dt = dts)
+      ok <- is.finite(dat$counts) & is.finite(dat$mid) & is.finite(dat$dt) & dat$dt > 0
+      dat <- dat[ok, , drop = FALSE]
+
+      if (nrow(dat) >= 4 && sum(dat$counts) > 0) {
+        dat$log_dt <- log(dat$dt)
+        fit <- try(stats::glm(counts ~ mid + offset(log_dt),
+                              family = stats::poisson(), data = dat),
+                    silent = TRUE)
+        if (!inherits(fit, "try-error")) {
+          b <- stats::coef(fit)[["mid"]]
+          if (is.finite(b)) beta1_hat <- as.numeric(b)
+        }
+      }
+    }
+  }
+
+  # fallback heuristic: modest multiplicative change over the interval
+  if (!is.finite(beta1_hat)) {
+    beta1_hat <- log(max(beta1_factor_target, 1.5)) / t_span
+  }
+
+  # enforce minimum + cap
+  beta1 <- max(min_beta1, min(abs(beta1_hat), beta1_cap))
+
+  # choose alpha1 so log-intensity around mid-run is ~ alpha_base
+  alpha1 <- alpha_base - beta1 * tbar + gamma1 * (n / 2)
+
+  # ---- spatial inhibition scale: alpha2 ----
   alpha2 <- 0.05 * min(w, h)  # fallback
 
   if (n >= 2L) {
@@ -351,7 +347,6 @@
       nn <- nn[is.finite(nn)]
     }
 
-    # Fallback only if nndist isn't available for some reason
     if (is.null(nn) || !length(nn)) {
       dmat <- as.matrix(stats::dist(coords))
       diag(dmat) <- Inf
@@ -367,14 +362,17 @@
 
   alpha2 <- max(min_alpha2, min(alpha2, 0.5 * diag_len))
 
-  # --- spatial interaction shape: beta2 ---
+  # ---- spatial interaction shape: beta2 ----
   beta2 <- max(min_beta2, 2)
 
-  # --- spatio-temporal thinning interaction: (alpha3, beta3, gamma3) ---
-  # Conservative defaults so thinning doesn't annihilate the process
+  # ---- spatio-temporal thinning interaction: (alpha3, beta3, gamma3) ----
+  # Natural caps:
+  #  - beta3 is a spatial distance scale, so cap by max possible distance ~ diag_len
+  #  - gamma3 is a temporal distance scale, so cap by max time gap ~ t_span (often 1)
   alpha3 <- max(min_alpha3, 0.5)
-  beta3  <- max(min_beta3, alpha2)
-  gamma3 <- max(min_gamma3, 0.05)
+
+  beta3  <- max(min_beta3, min(alpha2, diag_len))
+  gamma3 <- max(min_gamma3, min(0.10 * t_span, t_span))
 
   c(alpha1, beta1, gamma1, alpha2, beta2, alpha3, beta3, gamma3)
 }
@@ -490,7 +488,10 @@
                               seed = 1L,
                               global_n_starts = 1L,
                               worker_parallel = FALSE,
-                              worker_verbose = FALSE) {
+                              worker_verbose = FALSE,
+                              global_to_local = 1L,
+                              bound_tol = 1e-6,
+                              bound_penalty = 1e-6) {
 
   obj <- .make_objective_sc(level_grids$x, level_grids$y, level_grids$t, data_mat, upper_bounds)
   print_level <- if (isTRUE(worker_verbose)) 2L else 0L
@@ -512,6 +513,16 @@
     ub_loc <- rep(Inf, 8)
   }
 
+  # ---- helper: soft-penalize boundary hits (tie-breaker only) ----
+  .on_bound <- function(x, lb, ub, tol = bound_tol) {
+    any(is.finite(lb) & abs(x - lb) <= tol) || any(is.finite(ub) & abs(x - ub) <= tol)
+  }
+  .score_with_penalty <- function(fit, lb, ub) {
+    val <- fit$objective
+    if (isTRUE(.on_bound(fit$solution, lb, ub))) val <- val + bound_penalty
+    val
+  }
+
   # ---- ensure x0 is valid for global/local stages ----
   p0 <- .ensure_x0_in_bounds(
     x0 = start_params,
@@ -526,15 +537,12 @@
 
   # ---- GLOBAL stage (optional) ----
   if (isTRUE(do_global)) {
-
     global_n_starts <- max(1L, as.integer(global_n_starts))
+    global_to_local <- max(1L, as.integer(global_to_local))
 
-    # Multiple *seeded* global restarts are usually more meaningful than different x0 for CRS2
     run_one_global <- function(k) {
       gseed <- as.integer(seed) + as.integer(k) - 1L
       gopts <- utils::modifyList(global_options %||% list(), list(seed = gseed))
-
-      # make sure the x0 is inside bounds (and stable)
       x0g <- .ensure_x0_in_bounds(p0, lb_glob, ub_glob, verbose = FALSE)
 
       .run_nloptr(
@@ -561,20 +569,33 @@
       global_fits <- lapply(seq_len(global_n_starts), run_one_global)
     }
 
-    gobj <- vapply(global_fits, function(f) f$objective, numeric(1))
+    gobj <- vapply(global_fits, .score_with_penalty, numeric(1), lb = lb_glob, ub = ub_glob)
     best_g <- which.min(gobj)
     global_fit <- global_fits[[best_g]]
     p0 <- global_fit$solution
   }
 
-  # ---- LOCAL multistart stage ----
-  inits <- if (isTRUE(do_multistart) && as.integer(n_starts) > 1L) {
-    .jitter_inits(p0, n = n_starts, sd = jitter_sd, seed = seed)
+  # ---- LOCAL stage inits ----
+  inits <- list()
+
+  # (A) include top-k global solutions as local seeds (if requested)
+  if (isTRUE(do_global) && length(global_fits)) {
+    gobj_raw <- vapply(global_fits, function(f) f$objective, numeric(1))
+    ord <- order(gobj_raw)
+    k <- min(as.integer(global_to_local), length(ord))
+    g_solutions <- lapply(ord[seq_len(k)], function(i) global_fits[[i]]$solution)
+    inits <- c(inits, g_solutions)
   } else {
-    list(p0)
+    inits <- c(inits, list(p0))
   }
 
-  # clamp all local inits to local bounds (this fixes “start outside bounds” errors)
+  # (B) optional multistart jitter around best seed (first element)
+  if (isTRUE(do_multistart) && as.integer(n_starts) > 1L) {
+    jit <- .jitter_inits(inits[[1]], n = n_starts, sd = jitter_sd, seed = seed)
+    inits <- c(inits, jit)
+  }
+
+  # clamp all local inits to local bounds
   inits <- lapply(inits, .ensure_x0_in_bounds, lb = lb_loc, ub = ub_loc, verbose = FALSE)
 
   run_local_from_init <- function(init) {
@@ -602,15 +623,22 @@
     local_fits <- lapply(inits, run_local_from_init)
   }
 
-  objectives <- vapply(local_fits, function(f) f$objective, numeric(1))
-  best_idx <- which.min(objectives)
+  lobj <- vapply(local_fits, .score_with_penalty, numeric(1), lb = lb_loc, ub = ub_loc)
+  best_idx <- which.min(lobj)
   best_local <- local_fits[[best_idx]]
+
+  # candidates for rescoring at higher resolution
+  candidates <- list(
+    local = local_fits,
+    global = global_fits
+  )
 
   list(
     best = best_local,
     local_fits = local_fits,
     global_fit = global_fit,
-    global_fits = global_fits
+    global_fits = global_fits,
+    candidates = candidates
   )
 }
 
@@ -637,7 +665,7 @@
 
   data_mat <- .build_sc_matrix(data, delta = delta)
 
-  # IMPORTANT: forward global_n_starts (and seed/jitter) down to the level fitter
+  # Forward global restart controls to the one-level fitter.
   lvl_fit <- .fit_one_level_sc(
     level_grids = coarse_grids,
     data_mat = data_mat,
@@ -679,4 +707,95 @@
   if (is.na(out$seed)) stop("starts$seed must be a finite integer.", call. = FALSE)
 
   out
+}
+
+
+# Rescoring helpers
+#' @noRd
+.safe_unique_params <- function(par_list, tol = 1e-12) {
+  # de-dup by exact-ish numeric equality
+  keep <- logical(length(par_list))
+  kept <- list()
+  for (i in seq_along(par_list)) {
+    p <- as.numeric(par_list[[i]])
+    if (!length(kept)) {
+      keep[i] <- TRUE
+      kept[[1]] <- p
+    } else {
+      d <- vapply(kept, function(q) sqrt(sum((p - q)^2)), numeric(1))
+      if (all(d > tol)) {
+        keep[i] <- TRUE
+        kept[[length(kept) + 1]] <- p
+      }
+    }
+  }
+  par_list[keep]
+}
+
+#' @noRd
+.rel_l2 <- function(a, b) {
+  a <- as.numeric(a); b <- as.numeric(b)
+  den <- max(1e-12, sqrt(sum(b^2)))
+  sqrt(sum((a - b)^2)) / den
+}
+
+#' @noRd
+.is_on_bound <- function(sol, lb, ub, eps = 1e-8) {
+  sol <- as.numeric(sol)
+  near_lb <- is.finite(lb) & (sol <= lb + eps)
+  near_ub <- is.finite(ub) & (sol >= ub - eps)
+  any(near_lb | near_ub)
+}
+
+#' @noRd
+.nudge_interior <- function(sol, lb, ub, eps = 1e-8) {
+  # move any bound-huggers slightly into interior
+  sol <- as.numeric(sol)
+  out <- sol
+  for (k in seq_along(sol)) {
+    if (is.finite(lb[k]) && out[k] <= lb[k] + eps) out[k] <- lb[k] + 10 * eps
+    if (is.finite(ub[k]) && out[k] >= ub[k] - eps) out[k] <- ub[k] - 10 * eps
+  }
+  out
+}
+
+#' @noRd
+.rescore_on_grid <- function(param_list, grids_lvl, data_mat, upper_bounds) {
+  obj <- .make_objective_sc(grids_lvl$x, grids_lvl$y, grids_lvl$t, data_mat, upper_bounds)
+  vals <- vapply(param_list, function(p) obj(as.numeric(p)), numeric(1))
+  ord <- order(vals)
+  list(params = param_list[ord], obj = vals[ord])
+}
+
+#' @noRd
+.run_local_from_starts <- function(starts_list, grids_lvl, data_mat, upper_bounds,
+                                   local_algorithm, local_options, finite_bounds) {
+
+  obj <- .make_objective_sc(grids_lvl$x, grids_lvl$y, grids_lvl$t, data_mat, upper_bounds)
+
+  if (.needs_finite_bounds(local_algorithm)) {
+    lb <- finite_bounds$lb
+    ub <- finite_bounds$ub
+  } else {
+    lb <- c(-Inf, rep(0, 7))
+    ub <- rep(Inf, 8)
+  }
+
+  starts_list <- lapply(starts_list, .ensure_x0_in_bounds, lb = lb, ub = ub, verbose = FALSE)
+
+  fits <- lapply(starts_list, function(x0) {
+    .run_nloptr(
+      x0 = x0,
+      obj_fun = obj,
+      algorithm = local_algorithm,
+      opts = local_options,
+      print_level = 0L,
+      lb = lb,
+      ub = ub
+    )
+  })
+
+  objs <- vapply(fits, function(f) f$objective, numeric(1))
+  best_i <- which.min(objs)
+  list(best = fits[[best_i]], fits = fits)
 }

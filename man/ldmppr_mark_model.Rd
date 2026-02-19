@@ -4,6 +4,8 @@
 \name{ldmppr_mark_model}
 \alias{ldmppr_mark_model}
 \alias{print.ldmppr_mark_model}
+\alias{summary.ldmppr_mark_model}
+\alias{print.summary.ldmppr_mark_model}
 \alias{predict.ldmppr_mark_model}
 \alias{save_mark_model}
 \alias{save_mark_model.ldmppr_mark_model}
@@ -23,7 +25,23 @@ ldmppr_mark_model(
 
 \method{print}{ldmppr_mark_model}(x, ...)
 
-\method{predict}{ldmppr_mark_model}(object, new_data, ...)
+\method{summary}{ldmppr_mark_model}(object, ...)
+
+\method{print}{summary.ldmppr_mark_model}(x, ...)
+
+\method{predict}{ldmppr_mark_model}(
+  object,
+  new_data = NULL,
+  sim_realization = NULL,
+  raster_list = NULL,
+  scaled_rasters = FALSE,
+  xy_bounds = NULL,
+  include_comp_inds = FALSE,
+  competition_radius = 15,
+  edge_correction = "none",
+  seed = NULL,
+  ...
+)
 
 save_mark_model(object, path, ...)
 
@@ -48,13 +66,32 @@ load_mark_model(path)
 
 \item{info}{(optional) list of metadata.}
 
-\item{x}{a \code{ldmppr_mark_model} object.}
+\item{x}{an object of class \code{summary.ldmppr_mark_model}.}
 
 \item{...}{passed to methods.}
 
 \item{object}{a \code{ldmppr_mark_model} object.}
 
-\item{new_data}{a data frame of predictors (and possibly outcome columns).}
+\item{new_data}{a data frame of predictors (and possibly outcome columns).
+Ignored when \code{sim_realization} is supplied.}
+
+\item{sim_realization}{optional simulation realization containing \code{x}, \code{y}, and \code{time}.
+When supplied, predictors are built from rasters and optional competition indices.}
+
+\item{raster_list}{optional list of rasters used when \code{sim_realization} is supplied.
+If omitted, uses rasters stored in \code{object} when available.}
+
+\item{scaled_rasters}{\code{TRUE} or \code{FALSE}; whether supplied rasters are pre-scaled.}
+
+\item{xy_bounds}{domain bounds \code{c(a_x, b_x, a_y, b_y)} used for competition indices.}
+
+\item{include_comp_inds}{\code{TRUE} or \code{FALSE}; include competition-index features.}
+
+\item{competition_radius}{positive numeric distance used when \code{include_comp_inds = TRUE}.}
+
+\item{edge_correction}{edge correction for competition indices (\code{"none"} or \code{"toroidal"}).}
+
+\item{seed}{optional nonnegative integer seed.}
 
 \item{path}{path to an \code{.rds} created by \code{\link{save_mark_model}} (or legacy objects).}
 }
@@ -81,6 +118,8 @@ to make saving/loading robust across R sessions.
 \itemize{
 \item \code{print(ldmppr_mark_model)}: Print a brief summary of the mark model.
 
+\item \code{summary(ldmppr_mark_model)}: Summarize a mark model.
+
 \item \code{predict(ldmppr_mark_model)}: Predict marks for new data.
 
 \item \code{save_mark_model(ldmppr_mark_model)}: Save method for \code{ldmppr_mark_model}.
@@ -89,6 +128,8 @@ to make saving/loading robust across R sessions.
 \section{Functions}{
 \itemize{
 \item \code{ldmppr_mark_model()}: Create a mark model container.
+
+\item \code{print(summary.ldmppr_mark_model)}: Print a summary produced by \code{\link{summary.ldmppr_mark_model}}.
 
 \item \code{save_mark_model()}: Save a mark model to disk.
 

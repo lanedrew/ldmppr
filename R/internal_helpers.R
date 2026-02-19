@@ -8,6 +8,16 @@
 NULL
 
 
+# -----------------------------------------------------------------------------
+# Internal helper organization
+# - Object constructors and validators for package S3 internals
+# - Data coercion and preprocessing helpers
+# - Training and prediction support helpers
+# - check_model_fit and simulation support helpers
+# - Grid/budget constructors and validators used by process estimation
+# -----------------------------------------------------------------------------
+
+
 # ---- Constructors for internal S3 classes ----
 
 # Constructor for ldmppr_model_check
@@ -103,6 +113,7 @@ new_ldmppr_fit <- function(process,
                            fit,
                            fits = NULL,
                            mapping = NULL,
+                           settings = NULL,
                            grid = NULL,
                            data_summary = NULL,
                            data = NULL,
@@ -122,6 +133,7 @@ new_ldmppr_fit <- function(process,
       fit = fit,
       fits = fits,
       mapping = mapping,
+      settings = settings,
       grid = grid,
       data = data,
       data_original = data_original,
@@ -796,3 +808,53 @@ infer_scaled_flag_from_mark_model <- function(mm) {
   }
   NULL
 }
+
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+.apply_resid_bootstrap <- function(mu, rb) {
+  # mu: numeric predicted mean in transform space
+  brks <- rb$bin_breaks
+  pools <- rb$pools
+
+  # find bin for each mu
+  bin_id <- cut(mu, breaks = brks, include.lowest = TRUE, labels = FALSE)
+  # sample residual within each bin
+  eps <- numeric(length(mu))
+  for (k in seq_along(pools)) {
+    idx <- which(bin_id == k)
+    if (!length(idx)) next
+    pool <- pools[[k]]
+    if (!length(pool)) next
+    eps[idx] <- sample(pool, size = length(idx), replace = TRUE)
+  }
+  mu + eps
+}
+
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+.inv_transform <- function(z, transform) {
+  switch(transform,
+         sqrt  = pmax(z, 0)^2,
+         log1p = pmax(expm1(z), 0),
+         none  = z
+  )
+}
+
+
+#' @rdname ldmppr-internal
+#' @keywords internal
+.inv_powerlaw_time_to_size <- function(t, smin, smax, delta) {
+  t <- as.numeric(t)
+  if (!is.finite(smin) || !is.finite(smax) || smax <= smin) stop("Bad smin/smax.", call. = FALSE)
+  if (!is.finite(delta) || delta <= 0) stop("delta must be > 0 for time->size inversion.", call. = FALSE)
+
+  # clamp to [0,1] for numerical safety (sim can very slightly exceed bounds)
+  t <- pmin(pmax(t, 0), 1)
+
+  smin + (smax - smin) * (1 - t)^(1 / delta)
+}
+
+
+# (retired helper prototypes removed)

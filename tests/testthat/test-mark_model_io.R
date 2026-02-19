@@ -32,11 +32,11 @@ test_that("save_mark_model/load_mark_model roundtrip preserves predictions (xgbo
   # Use a small "sim_realization"-shaped object (x/y/time columns)
   sim_real <- locations[, c("x", "y", "time")]
 
-  p1 <- predict_marks(
+  p1 <- predict(
+    mm,
     sim_realization = sim_real,
     raster_list = scaled_raster_list,
     scaled_rasters = TRUE,
-    mark_model = mm,
     xy_bounds = c(0, 25, 0, 25),
     include_comp_inds = FALSE,
     edge_correction = "none"
@@ -46,11 +46,11 @@ test_that("save_mark_model/load_mark_model roundtrip preserves predictions (xgbo
   save_mark_model(mm, tmp)
   mm2 <- load_mark_model(tmp)
 
-  p2 <- predict_marks(
+  p2 <- predict(
+    mm2,
     sim_realization = sim_real,
     raster_list = scaled_raster_list,
     scaled_rasters = TRUE,
-    mark_model = mm2,
     xy_bounds = c(0, 25, 0, 25),
     include_comp_inds = FALSE,
     edge_correction = "none"
@@ -91,11 +91,11 @@ test_that("save_mark_model/load_mark_model roundtrip preserves predictions (rang
 
   sim_real <- locations[, c("x", "y", "time")]
 
-  p1 <- predict_marks(
+  p1 <- predict(
+    mm,
     sim_realization = sim_real,
     raster_list = scaled_raster_list,
     scaled_rasters = TRUE,
-    mark_model = mm,
     xy_bounds = c(0, 25, 0, 25),
     include_comp_inds = FALSE,
     edge_correction = "none"
@@ -105,11 +105,11 @@ test_that("save_mark_model/load_mark_model roundtrip preserves predictions (rang
   save_mark_model(mm, tmp)
   mm2 <- load_mark_model(tmp)
 
-  p2 <- predict_marks(
+  p2 <- predict(
+    mm2,
     sim_realization = sim_real,
     raster_list = scaled_raster_list,
     scaled_rasters = TRUE,
-    mark_model = mm2,
     xy_bounds = c(0, 25, 0, 25),
     include_comp_inds = FALSE,
     edge_correction = "none"

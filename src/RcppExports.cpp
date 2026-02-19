@@ -248,6 +248,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// thin_st_fast
+Rcpp::LogicalVector thin_st_fast(const Rcpp::NumericMatrix& data, const Rcpp::NumericVector& params);
+RcppExport SEXP _ldmppr_thin_st_fast(SEXP dataSEXP, SEXP paramsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type params(paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(thin_st_fast(data, params));
+    return rcpp_result_gen;
+END_RCPP
+}
 // temporal_sc
 double temporal_sc(const NumericVector& params, const double eval_t, const NumericVector& obs_t);
 RcppExport SEXP _ldmppr_temporal_sc(SEXP paramsSEXP, SEXP eval_tSEXP, SEXP obs_tSEXP) {
@@ -307,6 +319,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ldmppr_full_sc_lhood_fast", (DL_FUNC) &_ldmppr_full_sc_lhood_fast, 7},
     {"_ldmppr_spat_interaction", (DL_FUNC) &_ldmppr_spat_interaction, 3},
     {"_ldmppr_interaction_st_fast", (DL_FUNC) &_ldmppr_interaction_st_fast, 2},
+    {"_ldmppr_thin_st_fast", (DL_FUNC) &_ldmppr_thin_st_fast, 2},
     {"_ldmppr_temporal_sc", (DL_FUNC) &_ldmppr_temporal_sc, 3},
     {"_ldmppr_sim_temporal_sc", (DL_FUNC) &_ldmppr_sim_temporal_sc, 3},
     {"_ldmppr_sim_spatial_sc", (DL_FUNC) &_ldmppr_sim_spatial_sc, 4},

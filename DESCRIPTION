@@ -52,7 +52,8 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0),
     dplyr,
-    rstudioapi
+    rstudioapi,
+    parallelly
 VignetteBuilder: knitr
 Depends: 
     R (>= 3.5.0)

@@ -6,3 +6,5 @@
 .quarto
 inst/doc
 docs
+
+data-raw/comps_and_tests

@@ -20,6 +20,8 @@ estimate_process_parameters(
   starts = list(global = 1L, local = 1L, jitter_sd = 0.35, seed = 1L),
   finite_bounds = NULL,
   refine_best_delta = TRUE,
+  rescore_control = list(enabled = TRUE, top = 5L, objective_tol = 1e-06, param_tol =
+    0.1, avoid_bound_solutions = TRUE, bound_eps = 1e-08),
   verbose = TRUE
 )
 }
@@ -55,12 +57,15 @@ and is an error when \code{length(delta)>1}.}
 \item{parallel}{\code{TRUE} or \code{FALSE} specifying furrr/future to parallelize either:
 (a) over candidate \code{delta} values (when \code{length(delta) > 1}), and/or
 (b) over local multi-start initializations (when \code{starts$local > 1}), and/or
-(c) over global restarts (when \code{starts$global > 1}).}
+(c) over global restarts (when \code{starts$global > 1}).
+For small problems, parallel overhead may outweigh speed gains.}
 
-\item{num_cores}{number of workers to use when \code{set_future_plan = TRUE}.}
+\item{num_cores}{number of workers to use when \code{parallel=TRUE} and
+\code{set_future_plan=TRUE}.}
 
-\item{set_future_plan}{\code{TRUE} or \code{FALSE}, temporarily sets
-\code{future::plan(multisession, workers = num_cores)} and restores the original plan on exit.}
+\item{set_future_plan}{\code{TRUE} or \code{FALSE}. If \code{TRUE} and
+\code{parallel=TRUE}, set a temporary \pkg{future} plan internally and
+restore the previous plan on exit.}
 
 \item{strategy}{character string specifying the estimation strategy:
 \itemize{
@@ -86,6 +91,20 @@ Global algorithms and select local algorithms in NLopt require finite bounds.}
 
 \item{refine_best_delta}{\code{TRUE} or \code{FALSE}. If \code{TRUE} and \code{length(delta) > 1}, performs refinement
 of the best \code{delta} across additional grid levels (if available).}
+
+\item{rescore_control}{controls candidate rescoring and bound-handling behavior in
+  multi-resolution fitting. Can be either:
+  
+  \itemize{
+    \item a single logical value (toggle rescoring on/off while keeping defaults), or
+    \item a named list with any of:
+      \code{enabled}, \code{top}, \code{objective_tol}, \code{param_tol},
+      \code{avoid_bound_solutions}, \code{bound_eps}.
+  }
+
+  Defaults are:
+  \code{list(enabled = TRUE, top = 5L, objective_tol = 1e-6, param_tol = 0.10,}
+  \code{avoid_bound_solutions = TRUE, bound_eps = 1e-8)}.}
 
 \item{verbose}{\code{TRUE} or \code{FALSE} indicating whether to show progress of model estimation.}
 }

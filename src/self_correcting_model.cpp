@@ -497,23 +497,27 @@ double part_2_full(const NumericVector& xgrid,
     sum_over_t += temporal * ratio;
   }
 
-  // IMPORTANT: this matches your *existing* estimator under the assumption of a uniform grid.
+  // This matches the legacy estimator under a uniform grid.
   // (bounds[1]*bounds[2]) cancels analytically, leaving only bounds[0]/M scaling.
   return (bounds[0] / static_cast<double>(M)) * sum_over_t;
 }
 
 
-//' calculates full self-correcting log-likelihood
+//' Evaluate reference self-correcting log-likelihood
 //'
-//' @param xgrid a vector of grid values for x.
-//' @param ygrid a vector of grid values for y.
-//' @param tgrid a vector of grid values for t.
-//' @param tobs a vector of observed values for t.
-//' @param data a matrix of times and locations.
-//' @param params a vector of parameters.
-//' @param bounds a vector of bounds for time, x, and y.
+//' Reference implementation used for parity checks and validation.
+//' For production estimation, prefer \code{full_sc_lhood_fast()}.
 //'
-//' @returns evaluation of full log-likelihood.
+//' @param xgrid NumericVector of x-grid values.
+//' @param ygrid NumericVector of y-grid values.
+//' @param tgrid NumericVector of integration-time grid values.
+//' @param tobs NumericVector of observed event times.
+//' @param data NumericMatrix with columns (time, x, y), sorted by nondecreasing time.
+//' @param params NumericVector of model parameters
+//'   (alpha1, beta1, gamma1, alpha2, beta2, alpha3, beta3, gamma3).
+//' @param bounds NumericVector of integration bounds (bt, bx, by).
+//'
+//' @returns Full self-correcting log-likelihood value.
 //' @keywords internal
 // [[Rcpp::export]]
 double full_sc_lhood(const NumericVector& xgrid,
@@ -533,17 +537,21 @@ double full_sc_lhood(const NumericVector& xgrid,
 }
 
 
-//' calculates fast full self-correcting log-likelihood
+//' Evaluate optimized self-correcting log-likelihood
 //'
-//' @param xgrid a vector of grid values for x.
-//' @param ygrid a vector of grid values for y.
-//' @param tgrid a vector of grid values for t.
-//' @param tobs a vector of observed values for t.
-//' @param data a matrix of times and locations.
-//' @param params a vector of parameters.
-//' @param bounds a vector of bounds for time, x, and y.
+//' Optimized implementation used by estimation workflows.
+//' Intended to be numerically consistent with \code{full_sc_lhood()}.
 //'
-//' @returns evaluation of full log-likelihood.
+//' @param xgrid NumericVector of x-grid values.
+//' @param ygrid NumericVector of y-grid values.
+//' @param tgrid NumericVector of integration-time grid values.
+//' @param tobs NumericVector of observed event times.
+//' @param data NumericMatrix with columns (time, x, y), sorted by nondecreasing time.
+//' @param params NumericVector of model parameters
+//'   (alpha1, beta1, gamma1, alpha2, beta2, alpha3, beta3, gamma3).
+//' @param bounds NumericVector of integration bounds (bt, bx, by).
+//'
+//' @returns Full self-correcting log-likelihood value.
 //' @keywords internal
 // [[Rcpp::export]]
 double full_sc_lhood_fast(const NumericVector& xgrid,
@@ -580,7 +588,7 @@ double full_sc_lhood_fast(const NumericVector& xgrid,
   const double area = bx * by;
   const int G = nx * ny;
 
-  // ---- Part 1_1 (tie-handling matches old) ----
+  // ---- Part 1_1 ----
   double part_1_1 = 0.0;
   int first_idx = 0;
   for (int i = 1; i < n; ++i) {
@@ -588,7 +596,7 @@ double full_sc_lhood_fast(const NumericVector& xgrid,
     part_1_1 += alpha1 + beta1 * data(i, 0) - gamma1 * static_cast<double>(first_idx);
   }
 
-  // ---- Part 1_2 (matches old) ----
+  // ---- Part 1_2 ----
   double part_1_2 = 0.0;
   const bool use_phi = (alpha2 > 0.0 && beta2 != 0.0);
   const double a2_2 = use_phi ? (alpha2 * alpha2) : 0.0;
@@ -609,7 +617,7 @@ double full_sc_lhood_fast(const NumericVector& xgrid,
     }
   }
 
-  // ---- Part 1_4 (matches old) ----
+  // ---- Part 1_4 ----
   double part_1_4 = 0.0;
   if (alpha3 != 0.0 && beta3 >= 0.0 && gamma3 >= 0.0) {
     const double b3_2 = beta3 * beta3;
@@ -662,7 +670,6 @@ double full_sc_lhood_fast(const NumericVector& xgrid,
         const double r2 = dx2 + dy * dy;
 
         if (use_phi && r2 <= a2_2) {
-          // IMPORTANT: match old behavior — hard fail if r2 == 0 inside cutoff
           if (r2 == 0.0) {
             return false; // signal -Inf likelihood
           }
@@ -838,14 +845,23 @@ Rcpp::NumericVector interaction_st_fast(const Rcpp::NumericMatrix& data,
   out[0] = 1.0;
   if (n == 1) return out;
 
-  if (beta3 <= 0.0) {
+  if (beta3 <= 0.0 || alpha3 <= 0.0) {
     for (int i = 1; i < n; ++i) out[i] = 1.0;
     return out;
   }
 
   const double b2 = beta3 * beta3;
 
-  // ---- small-n path: lag pointer + direct scan (usually faster up to a few hundred) ----
+  auto is_eligible_time = [&](double tj, double ti) -> bool {
+    // Møller: sum over tj < ti AND (ti - tj) >= gamma3
+    if (gamma3 <= 0.0) {
+      return (tj < ti);                 // enforce strict
+    } else {
+      return (tj <= (ti - gamma3));     // implies tj < ti
+    }
+  };
+
+  // ---- small-n path ----
   if (n <= 300) {
     int lag_end = 0;
     for (int i = 1; i < n; ++i) {
@@ -853,8 +869,8 @@ Rcpp::NumericVector interaction_st_fast(const Rcpp::NumericMatrix& data,
       const double xi = data(i, 1);
       const double yi = data(i, 2);
 
-      const double cutoff = ti - gamma3;
-      while (lag_end < i && data(lag_end, 0) <= cutoff) ++lag_end;
+      // advance lag_end to include exactly the eligible past times
+      while (lag_end < i && is_eligible_time(data(lag_end, 0), ti)) ++lag_end;
 
       double count = 0.0;
       for (int j = 0; j < lag_end; ++j) {
@@ -885,8 +901,7 @@ Rcpp::NumericVector interaction_st_fast(const Rcpp::NumericMatrix& data,
     const double xi = data(i, 1);
     const double yi = data(i, 2);
 
-    const double cutoff = ti - gamma3;
-    while (lag_ptr < i && data(lag_ptr, 0) <= cutoff) {
+    while (lag_ptr < i && is_eligible_time(data(lag_ptr, 0), ti)) {
       const double xj = data(lag_ptr, 1);
       const double yj = data(lag_ptr, 2);
       const int cx = static_cast<int>(std::floor(xj / cell));
@@ -922,6 +937,106 @@ Rcpp::NumericVector interaction_st_fast(const Rcpp::NumericMatrix& data,
   }
 
   return out;
+}
+
+
+//' calculates acceptance for thinning mechanism during simulation
+//'
+//' @param data NumericMatrix with columns (time, x, y). Assumed sorted by time ascending.
+//' @param params NumericVector length 3: (alpha3, beta3, gamma3
+//'
+//' @return LogicalVector length n of whether to keep each point (true) or thin it (false).
+// [[Rcpp::export]]
+Rcpp::LogicalVector thin_st_fast(const Rcpp::NumericMatrix& data,
+                                 const Rcpp::NumericVector& params) {
+  const int n = data.nrow();
+  Rcpp::LogicalVector keep(n);
+  if (n == 0) return keep;
+
+  const double alpha3 = params[0];
+  const double beta3  = params[1];
+  const double gamma3 = params[2];
+
+  // If no inhibition, keep all
+  if (alpha3 <= 0.0 || beta3 <= 0.0) {
+    for (int i = 0; i < n; ++i) keep[i] = true;
+    return keep;
+  }
+
+  const double b2 = beta3 * beta3;
+
+  auto eligible_time = [&](double tj, double ti) -> bool {
+    if (gamma3 <= 0.0) return (tj < ti);            // strict
+    return (tj <= (ti - gamma3));                   // implies strict
+  };
+
+  const double cell = beta3;
+  auto key_of = [](int cx, int cy) -> long long {
+    return (static_cast<long long>(cx) << 32) ^ static_cast<unsigned long long>(cy);
+  };
+
+  // Maintain only ACCEPTED indices in cells
+  std::unordered_map<long long, std::vector<int>> cells;
+  cells.reserve(static_cast<size_t>(n) * 2);
+
+  // Always accept the first event (matches your current convention; you can change if desired)
+  keep[0] = true;
+
+  // pointer for time-eligibility among accepted points:
+  // we’ll store accepted indices in a vector and advance a pointer as ti grows.
+  std::vector<int> accepted;
+  accepted.reserve(n);
+  accepted.push_back(0);
+
+  int acc_time_ptr = 0;
+
+  for (int i = 1; i < n; ++i) {
+    const double ti = data(i, 0);
+    const double xi = data(i, 1);
+    const double yi = data(i, 2);
+
+    // Add newly time-eligible accepted points to spatial hash
+    while (acc_time_ptr < (int)accepted.size() &&
+           eligible_time(data(accepted[acc_time_ptr], 0), ti)) {
+      const int idx = accepted[acc_time_ptr];
+      const double xj = data(idx, 1);
+      const double yj = data(idx, 2);
+      const int cx = static_cast<int>(std::floor(xj / cell));
+      const int cy = static_cast<int>(std::floor(yj / cell));
+      cells[key_of(cx, cy)].push_back(idx);
+      ++acc_time_ptr;
+    }
+
+    // Count eligible accepted neighbors within beta3
+    double count = 0.0;
+    const int cxi = static_cast<int>(std::floor(xi / cell));
+    const int cyi = static_cast<int>(std::floor(yi / cell));
+
+    for (int dx = -1; dx <= 1; ++dx) {
+      for (int dy = -1; dy <= 1; ++dy) {
+        const auto it = cells.find(key_of(cxi + dx, cyi + dy));
+        if (it == cells.end()) continue;
+        const std::vector<int>& idxs = it->second;
+        for (int idx : idxs) {
+          const double dxp = xi - data(idx, 1);
+          const double dyp = yi - data(idx, 2);
+          const double r2  = dxp*dxp + dyp*dyp;
+          if (r2 <= b2) count += 1.0;
+        }
+      }
+    }
+
+    const double p = std::exp(-alpha3 * count);
+    keep[i] = (R::runif(0.0, 1.0) < p);
+
+    if (keep[i]) {
+      accepted.push_back(i);
+      // NOTE: we do NOT immediately add it to `cells` unless it is time-eligible
+      // for future points. That’s handled by the acc_time_ptr loop above.
+    }
+  }
+
+  return keep;
 }
 
 

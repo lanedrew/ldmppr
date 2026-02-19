@@ -11,6 +11,8 @@
 \alias{plot.ldmppr_fit}
 \alias{as_nloptr}
 \alias{as_nloptr.ldmppr_fit}
+\alias{nobs.ldmppr_fit}
+\alias{as.data.frame.ldmppr_fit}
 \title{Fitted point-process model object}
 \usage{
 \method{print}{ldmppr_fit}(x, ...)
@@ -28,6 +30,10 @@
 as_nloptr(x, ...)
 
 \method{as_nloptr}{ldmppr_fit}(x, ...)
+
+\method{nobs}{ldmppr_fit}(object, ...)
+
+\method{as.data.frame}{ldmppr_fit}(x, ...)
 }
 \arguments{
 \item{x}{an object of class \code{ldmppr_fit}.}
@@ -72,6 +78,10 @@ A \code{ldmppr_fit} is a list with (at minimum):
 \item \code{plot(ldmppr_fit)}: Plot diagnostics for a fitted model.
 
 \item \code{as_nloptr(ldmppr_fit)}: Extract the underlying \code{nloptr} result.
+
+\item \code{nobs(ldmppr_fit)}: Number of observations used in the fitted model.
+
+\item \code{as.data.frame(ldmppr_fit)}: Coerce fit summary to a one-row data frame.
 
 }}
 \section{Functions}{
