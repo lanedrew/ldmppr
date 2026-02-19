@@ -42,8 +42,11 @@
 #' @param num_cores number of workers to use when \code{parallel=TRUE}. Defaults to one fewer than detected cores.
 #' @param set_future_plan \code{TRUE} or \code{FALSE}. If \code{TRUE} and \code{parallel=TRUE},
 #'   set a temporary \pkg{future} plan internally and restore the previous plan on exit.
-#' @param mark_mode mark generation mode: \code{"mark_model"} uses \code{predict()} on a mark model,
-#'   while \code{"time_to_size"} maps simulated times back to sizes via \code{delta}.
+#' @param mark_mode (optional) mark generation mode: \code{"mark_model"} uses
+#'   \code{predict()} on a mark model, while \code{"time_to_size"} maps simulated
+#'   times back to sizes via \code{delta}. If \code{NULL}, inferred as
+#'   \code{"mark_model"} when \code{mark_model} is provided, otherwise
+#'   \code{"time_to_size"}.
 #' @param fg_correction correction used for F/G/J summaries (\code{"km"} or \code{"rs"}).
 #' @param max_attempts maximum number of simulation attempts when rejection occurs
 #'   due to non-finite summaries.
@@ -138,12 +141,16 @@ check_model_fit <- function(reference_data = NULL,
                             parallel = FALSE,
                             num_cores = max(1L, parallel::detectCores() - 1L),
                             set_future_plan = FALSE,
-                            mark_mode = c("mark_model", "time_to_size"),
+                            mark_mode = NULL,
                             fg_correction = c("km", "rs"),
                             max_attempts = NULL) {
 
   process <- match.arg(process)
-  mark_mode <- match.arg(mark_mode)
+  if (is.null(mark_mode)) {
+    mark_mode <- if (!is.null(mark_model)) "mark_model" else "time_to_size"
+  } else {
+    mark_mode <- match.arg(mark_mode, c("mark_model", "time_to_size"))
+  }
   fg_correction <- match.arg(fg_correction)
 
   # ---- argument checks ----

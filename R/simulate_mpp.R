@@ -23,13 +23,16 @@
 #' @param thinning \code{TRUE} or \code{FALSE} indicating whether to use the thinned simulated values.
 #' @param edge_correction type of edge correction to apply (\code{"none"} or \code{"toroidal"}).
 #' @param seed integer seed for reproducibility.
-#' @param mark_mode mark generation mode: \code{"mark_model"} uses \code{predict()} on a mark model,
-#'   while \code{"time_to_size"} maps simulated times back to sizes via \code{delta}.
+#' @param mark_mode (optional) mark generation mode: \code{"mark_model"} uses
+#'   \code{predict()} on a mark model, while \code{"time_to_size"} maps simulated
+#'   times back to sizes via \code{delta}. If \code{NULL}, inferred as
+#'   \code{"mark_model"} when \code{mark_model} is provided, otherwise
+#'   \code{"time_to_size"}.
 #' @param size_range numeric vector \code{c(smin, smax)} used for \code{mark_mode='time_to_size'}.
 #'   If \code{NULL}, inferred from \code{process_fit} when possible.
 #' @param delta positive scalar used for \code{mark_mode='time_to_size'}.
 #'   If \code{NULL}, inferred from \code{process_fit} when possible.
-#' 
+#'
 #' @return an object of class \code{"ldmppr_sim"}.
 #'
 #' @examples
@@ -89,14 +92,16 @@ simulate_mpp <- function(process = c("self_correcting"),
                          edge_correction = "none",
                          thinning = TRUE,
                          seed = NULL,
-                         # Mark generation mode
-                         mark_mode = c("mark_model", "time_to_size"),
-                         # Arguments used in time_to_size mode
-                         size_range = NULL,   # c(smin, smax)
-                         delta = NULL) {       # scalar; if NULL, try to infer
+                         mark_mode = NULL,
+                         size_range = NULL,
+                         delta = NULL) {
 
   process <- match.arg(process)
-  mark_mode <- match.arg(mark_mode)
+  if (is.null(mark_mode)) {
+    mark_mode <- if (!is.null(mark_model)) "mark_model" else "time_to_size"
+  } else {
+    mark_mode <- match.arg(mark_mode, c("mark_model", "time_to_size"))
+  }
 
   # ---- checks ----
   if (is.null(process_fit)) {

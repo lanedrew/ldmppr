@@ -197,7 +197,9 @@ model_check <- check_model_fit(
   thinning = TRUE,
   edge_correction = "none",
   competition_radius = 10,
-  n_sim = 100,
+  n_sim = 199,
+  mark_mode = "mark_model",
+  fg_correction = "km",
   save_sims = FALSE,
   verbose = TRUE,
   seed = 90210
@@ -223,6 +225,7 @@ simulated <- simulate_mpp(
   t_min = 0,
   t_max = 1,
   mark_model = mark_model,
+  mark_mode = "mark_model",
   include_comp_inds = TRUE,
   competition_radius = 10,
   edge_correction = "none",

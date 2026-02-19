@@ -26,7 +26,7 @@ check_model_fit(
   parallel = FALSE,
   num_cores = max(1L, parallel::detectCores() - 1L),
   set_future_plan = FALSE,
-  mark_mode = c("mark_model", "time_to_size"),
+  mark_mode = NULL,
   fg_correction = c("km", "rs"),
   max_attempts = NULL
 )
@@ -88,8 +88,11 @@ For small simulation sizes, parallel overhead may outweigh speed gains.}
 \item{set_future_plan}{\code{TRUE} or \code{FALSE}. If \code{TRUE} and \code{parallel=TRUE},
 set a temporary \pkg{future} plan internally and restore the previous plan on exit.}
 
-\item{mark_mode}{mark generation mode: \code{"mark_model"} uses \code{predict()} on a mark model,
-while \code{"time_to_size"} maps simulated times back to sizes via \code{delta}.}
+\item{mark_mode}{(optional) mark generation mode: \code{"mark_model"} uses
+\code{predict()} on a mark model, while \code{"time_to_size"} maps simulated
+times back to sizes via \code{delta}. If \code{NULL}, inferred as
+\code{"mark_model"} when \code{mark_model} is provided, otherwise
+\code{"time_to_size"}.}
 
 \item{fg_correction}{correction used for F/G/J summaries (\code{"km"} or \code{"rs"}).}
 

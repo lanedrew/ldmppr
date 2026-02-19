@@ -19,7 +19,7 @@ simulate_mpp(
   edge_correction = "none",
   thinning = TRUE,
   seed = NULL,
-  mark_mode = c("mark_model", "time_to_size"),
+  mark_mode = NULL,
   size_range = NULL,
   delta = NULL
 )
@@ -62,8 +62,11 @@ bounds are inferred from \code{process_fit} when available.}
 
 \item{seed}{integer seed for reproducibility.}
 
-\item{mark_mode}{mark generation mode: \code{"mark_model"} uses \code{predict()} on a mark model,
-while \code{"time_to_size"} maps simulated times back to sizes via \code{delta}.}
+\item{mark_mode}{(optional) mark generation mode: \code{"mark_model"} uses
+\code{predict()} on a mark model, while \code{"time_to_size"} maps simulated
+times back to sizes via \code{delta}. If \code{NULL}, inferred as
+\code{"mark_model"} when \code{mark_model} is provided, otherwise
+\code{"time_to_size"}.}
 
 \item{size_range}{numeric vector \code{c(smin, smax)} used for \code{mark_mode='time_to_size'}.
 If \code{NULL}, inferred from \code{process_fit} when possible.}
