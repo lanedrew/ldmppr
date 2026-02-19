@@ -179,11 +179,11 @@ mark_model <- train_mark_model(
 #>   Done in 0.0s.
 #> Step 5/6: Fitting model (with optional CV tuning)...
 #>   foreach backend: doSEQ | workers=1
-#>   Done in 2.4s.
+#>   Done in 2.1s.
 #> Step 6/6: Finalizing output object...
 #>   Residual bootstrap stored (source=oos, transform=sqrt, bins=6, min/bin=8).
 #>   Done in 0.1s.
-#> Training complete. Total time: 2.5s.
+#> Training complete. Total time: 2.2s.
 
 print(mark_model)
 #> ldmppr Mark Model

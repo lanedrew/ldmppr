@@ -33,7 +33,7 @@ check_model_fit(
   parallel = FALSE,
   num_cores = max(1L, parallel::detectCores() - 1L),
   set_future_plan = FALSE,
-  mark_mode = c("mark_model", "time_to_size"),
+  mark_mode = NULL,
   fg_correction = c("km", "rs"),
   max_attempts = NULL
 )
@@ -148,9 +148,11 @@ check_model_fit(
 
 - mark_mode:
 
-  mark generation mode: `"mark_model"` uses
+  (optional) mark generation mode: `"mark_model"` uses
   [`predict()`](https://rdrr.io/r/stats/predict.html) on a mark model,
   while `"time_to_size"` maps simulated times back to sizes via `delta`.
+  If `NULL`, inferred as `"mark_model"` when `mark_model` is provided,
+  otherwise `"time_to_size"`.
 
 - fg_correction:
 
@@ -255,11 +257,11 @@ example_model_fit <- check_model_fit(
 #> Using FGJ r-grid from reference: 1:198 (max r=2.405), correction=km
 #>   Done in 0.1s.
 #> Step 2/4: Generating accepted simulations
-#>   Done in 7.9s.
+#>   Done in 7.0s.
 #> Step 3/4: Computing envelope tests
 #>   Done in 0.6s.
 #> Step 4/4: Finalizing output object
-#>   Done in 8.6s.
+#>   Done in 7.7s.
 #> Model check complete.
 
 plot(example_model_fit, which = 'combined')

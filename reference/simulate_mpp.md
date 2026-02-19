@@ -20,7 +20,7 @@ simulate_mpp(
   edge_correction = "none",
   thinning = TRUE,
   seed = NULL,
-  mark_mode = c("mark_model", "time_to_size"),
+  mark_mode = NULL,
   size_range = NULL,
   delta = NULL
 )
@@ -99,9 +99,11 @@ simulate_mpp(
 
 - mark_mode:
 
-  mark generation mode: `"mark_model"` uses
+  (optional) mark generation mode: `"mark_model"` uses
   [`predict()`](https://rdrr.io/r/stats/predict.html) on a mark model,
   while `"time_to_size"` maps simulated times back to sizes via `delta`.
+  If `NULL`, inferred as `"mark_model"` when `mark_model` is provided,
+  otherwise `"time_to_size"`.
 
 - size_range:
 

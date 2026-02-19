@@ -58,7 +58,7 @@
 <span>  edge_correction <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>  thinning <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  mark_mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mark_model"</span>, <span class="st">"time_to_size"</span><span class="op">)</span>,</span>
+<span>  mark_mode <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  size_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  delta <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -134,8 +134,11 @@ bounds are inferred from <code>process_fit</code> when available.</p></dd>
 
 
 <dt id="arg-mark-mode">mark_mode<a class="anchor" aria-label="anchor" href="#arg-mark-mode"></a></dt>
-<dd><p>mark generation mode: <code>"mark_model"</code> uses <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> on a mark model,
-while <code>"time_to_size"</code> maps simulated times back to sizes via <code>delta</code>.</p></dd>
+<dd><p>(optional) mark generation mode: <code>"mark_model"</code> uses
+<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> on a mark model, while <code>"time_to_size"</code> maps simulated
+times back to sizes via <code>delta</code>. If <code>NULL</code>, inferred as
+<code>"mark_model"</code> when <code>mark_model</code> is provided, otherwise
+<code>"time_to_size"</code>.</p></dd>
 
 
 <dt id="arg-size-range">size_range<a class="anchor" aria-label="anchor" href="#arg-size-range"></a></dt>
