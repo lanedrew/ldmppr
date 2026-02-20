@@ -21,6 +21,7 @@ train_mark_model(
   selection_metric = "rmse",
   cv_folds = 5,
   tuning_grid_size = 200,
+  seed = 0,
   verbose = TRUE
 )
 }
@@ -60,6 +61,8 @@ For small datasets, parallel overhead may outweigh speed gains.}
 If \code{cv_folds <= 1}, tuning is skipped and the model is fit once with default hyperparameters.}
 
 \item{tuning_grid_size}{size of the tuning grid for hyperparameter tuning.}
+
+\item{seed}{integer seed for reproducible resampling/tuning/model fitting.}
 
 \item{verbose}{\code{TRUE} or \code{FALSE} indicating whether to show progress of model training.}
 }

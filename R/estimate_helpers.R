@@ -542,7 +542,7 @@
 
     run_one_global <- function(k) {
       gseed <- as.integer(seed) + as.integer(k) - 1L
-      gopts <- utils::modifyList(global_options %||% list(), list(seed = gseed))
+      gopts <- utils::modifyList(global_options %||% list(), list(ranseed = gseed))
       x0g <- .ensure_x0_in_bounds(p0, lb_glob, ub_glob, verbose = FALSE)
 
       .run_nloptr(

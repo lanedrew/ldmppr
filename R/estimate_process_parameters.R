@@ -257,6 +257,14 @@ estimate_process_parameters <- function(data,
   grids   <- as_ldmppr_grids(grids)
   budgets <- as_ldmppr_budgets(budgets)
 
+  global_opts <- budgets$global_options %||% list()
+  # Backward-compatible normalization for NLopt RNG option naming.
+  # NLopt expects `ranseed`; legacy user configs may still pass `seed`.
+  if (!is.null(global_opts$seed) && is.null(global_opts$ranseed)) {
+    global_opts$ranseed <- global_opts$seed
+  }
+  global_opts$seed <- NULL
+
   upper_bounds <- grids$upper_bounds
   starts <- .normalize_epp_starts(starts)
 
@@ -484,7 +492,7 @@ estimate_process_parameters <- function(data,
           upper_bounds     = upper_bounds,
           global_algorithm = global_algorithm,
           local_algorithm  = local_algorithm,
-          global_options   = budgets$global_options %||% list(),
+          global_options   = global_opts,
           local_options    = local_opts,
           finite_bounds    = finite_bounds,
           do_global        = do_global,
@@ -640,7 +648,7 @@ estimate_process_parameters <- function(data,
       upper_bounds     = upper_bounds,
       global_algorithm = global_algorithm,
       local_algorithm  = local_algorithm,
-      global_options   = budgets$global_options %||% list(),
+      global_options   = global_opts,
       local_options    = budgets$local_budget_first_level %||% list(),
       finite_bounds    = finite_bounds,
       do_global_coarse = isTRUE(do_global_coarse),
@@ -769,7 +777,7 @@ estimate_process_parameters <- function(data,
           upper_bounds     = upper_bounds,
           global_algorithm = global_algorithm,
           local_algorithm  = local_algorithm,
-          global_options   = budgets$global_options %||% list(),
+          global_options   = global_opts,
           local_options    = local_opts,
           finite_bounds    = finite_bounds,
           do_global        = FALSE,

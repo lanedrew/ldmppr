@@ -27,6 +27,7 @@
 #' @param cv_folds number of cross-validation folds to use in model training.
 #'   If \code{cv_folds <= 1}, tuning is skipped and the model is fit once with default hyperparameters.
 #' @param tuning_grid_size size of the tuning grid for hyperparameter tuning.
+#' @param seed integer seed for reproducible resampling/tuning/model fitting.
 #' @param verbose \code{TRUE} or \code{FALSE} indicating whether to show progress of model training.
 #' @return an object of class \code{"ldmppr_mark_model"} containing the trained mark model.
 #'
@@ -82,6 +83,7 @@ train_mark_model <- function(data,
                              selection_metric = "rmse",
                              cv_folds = 5,
                              tuning_grid_size = 200,
+                             seed = 0,
                              verbose = TRUE) {
 
   # Residual-bootstrap settings are intentionally internal-only.
@@ -315,7 +317,14 @@ train_mark_model <- function(data,
   tuning_grid_size <- as.integer(tuning_grid_size)
   if (is.na(tuning_grid_size) || tuning_grid_size < 1L) stop("tuning_grid_size must be >= 1.", call. = FALSE)
 
+  if (!is.numeric(seed) || length(seed) != 1L || is.na(seed) || !is.finite(seed)) {
+    stop("Provide a single finite numeric value for `seed`.", call. = FALSE)
+  }
+  seed <- as.integer(seed)
+  set.seed(seed)
+
   .vcat("Rows: ", nrow(df), .indent = 1L)
+  .vcat("Seed: ", seed, .indent = 1L)
   .vcat("Done in ", .fmt_time(.elapsed_sec(step_t)), ".", .indent = 1L)
 
   # -------------------------
@@ -404,7 +413,7 @@ train_mark_model <- function(data,
 
     n_pts <- nrow(X)
     for (i in seq_len(n_pts)) {
-        if (isTRUE(verbose) && n_pts >= 2000L && (i %% 500L == 0L)) .vcat("...processed ", i, "/", n_pts, .indent = 1L)
+      if (isTRUE(verbose) && n_pts >= 2000L && (i %% 500L == 0L)) .vcat("...processed ", i, "/", n_pts, .indent = 1L)
 
       close_points <- unique(which(distance_matrix[i, ] < competition_radius & distance_matrix[i, ] != 0))
       close_times <- X$time[close_points]
@@ -483,6 +492,7 @@ train_mark_model <- function(data,
       parsnip::set_engine(
         "xgboost",
         objective = "reg:squarederror",
+        seed = seed,
         nthread = engine_threads,
         verbose = 0
       )
@@ -492,6 +502,7 @@ train_mark_model <- function(data,
       workflows::add_recipe(recipe_spec)
 
     if (do_tuning) {
+      set.seed(seed + 101L)
       folds <- rsample::vfold_cv(model_data, v = cv_folds)
       params <- dials::parameters(
         dials::trees(),
@@ -500,6 +511,7 @@ train_mark_model <- function(data,
         dials::learn_rate(),
         dials::loss_reduction()
       )
+      set.seed(seed + 102L)
       grid <- dials::grid_space_filling(params, size = tuning_grid_size)
 
       .vcat("foreach backend: ", foreach::getDoParName(),
@@ -531,15 +543,17 @@ train_mark_model <- function(data,
       trees = if (do_tuning) hardhat::tune() else 500,
       min_n = if (do_tuning) hardhat::tune() else 5
     ) %>%
-      parsnip::set_engine("ranger", num.threads = engine_threads)
+      parsnip::set_engine("ranger", num.threads = engine_threads, seed = seed)
 
     wf0 <- workflows::workflow() %>%
       workflows::add_model(spec) %>%
       workflows::add_recipe(recipe_spec)
 
     if (do_tuning) {
+      set.seed(seed + 201L)
       folds <- rsample::vfold_cv(model_data, v = cv_folds)
       params <- dials::parameters(dials::trees(), dials::min_n())
+      set.seed(seed + 202L)
       grid <- dials::grid_space_filling(params, size = tuning_grid_size)
 
       tuned <- tune::tune_grid(
@@ -676,6 +690,7 @@ train_mark_model <- function(data,
       selection_metric = selection_metric,
       cv_folds = cv_folds,
       tuning_grid_size = tuning_grid_size,
+      seed = seed,
       scaled_rasters = scaled_rasters,
       residual_bootstrap = rb_info
     )
