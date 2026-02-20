@@ -164,10 +164,9 @@ fit_sc <- estimate_process_parameters(
 #> Step 2/2: Optimizing parameters...
 #> Single level (grid 20x20x20)
 #>   Global search: 1 restart(s), then local refinement.
-#>   Best solution is on/near a bound; nudging interior and re-polishing locally.
-#>   Completed in 0.5s.
-#>   Best objective: 178.44067
-#> Finished. Total time: 0.5s.
+#>   Completed in 0.4s.
+#>   Best objective: 174.58351
+#> Finished. Total time: 0.4s.
 # Print method for ldmppr_fit objects
 fit_sc
 #> ldmppr Fit
@@ -179,16 +178,16 @@ fit_sc
 #>   starts:          global=1, local=1, jitter_sd=0.35, seed=1
 #>   n_obs:           121
 #>   selected_delta:  1
-#>   objective:       178.4407
+#>   objective:       174.5835
 #>   final_status:    5
 #>   final_outcome:   NLOPT_MAXEVAL_REACHED: Optimization stopped because maxeval (above) was reached.
-#>   elapsed_sec:     0.542
-#>   coefficients:    -2.82691, 11.2366, 0.00343743, 4.84536, 0.211584, 1.25251, 2.01562, 1.01319e-07
+#>   elapsed_sec:     0.374
+#>   coefficients:    -1.15389, 10.1308, 0.025621, 1.76271, 2.57658, 0.793192, 2.5001, 0.111552
 
 estimated_parameters <- coef(fit_sc)
 estimated_parameters
-#> [1] -2.826907e+00  1.123659e+01  3.437431e-03  4.845360e+00  2.115840e-01
-#> [6]  1.252508e+00  2.015623e+00  1.013188e-07
+#> [1] -1.15389260 10.13079399  0.02562104  1.76271138  2.57657919  0.79319202
+#> [7]  2.50010138  0.11155188
 ```
 
 **Notes**
@@ -255,6 +254,7 @@ mark_model <- train_mark_model(
 #>   Edge correction: none
 #> Step 1/6: Preparing training data...
 #>   Rows: 121
+#>   Seed: 0
 #>   Done in 0.0s.
 #> Step 2/6: Configuring parallel backend...
 #>   Parallel: off
@@ -270,11 +270,11 @@ mark_model <- train_mark_model(
 #>   Done in 0.0s.
 #> Step 5/6: Fitting model (with optional CV tuning)...
 #>   foreach backend: doSEQ | workers=1
-#>   Done in 28.2s.
+#>   Done in 28.0s.
 #> Step 6/6: Finalizing output object...
 #>   Residual bootstrap stored (source=oos, transform=sqrt, bins=6, min/bin=8).
-#>   Done in 1.7s.
-#> Training complete. Total time: 29.9s.
+#>   Done in 1.6s.
+#> Training complete. Total time: 29.6s.
 
 # Print method for ldmppr_mark_model objects
 print(mark_model)
@@ -370,13 +370,13 @@ model_check <- check_model_fit(
 #>   include_comp_inds=FALSE, edge_correction=none
 #> Step 1/4: Preparing simulation setup
 #> Using FGJ r-grid from reference: 1:198 (max r=2.405), correction=km
-#>   Done in 0.1s.
+#>   Done in 0.2s.
 #> Step 2/4: Generating accepted simulations
-#>   Done in 10.0s.
+#>   Done in 9.1s.
 #> Step 3/4: Computing envelope tests
 #>   Done in 0.9s.
 #> Step 4/4: Finalizing output object
-#>   Done in 11.0s.
+#>   Done in 10.1s.
 #> Model check complete.
 
 # Plot method for ldmppr_model_check objects (defaults to combined global envelope test)
@@ -425,13 +425,13 @@ plot(simulated)
 
 # Data-frame view of the simulated realization
 head(as.data.frame(simulated))
-#>        time         x         y    marks
-#> 1 0.0000000 10.000000 14.000000 900.3945
-#> 2 0.2508321 23.987417 11.297746 586.4118
-#> 3 0.5051586 18.572458  5.710538 550.3572
-#> 4 0.5366080  4.797567  9.510434 575.9373
-#> 5 0.6024284  4.281041  3.619611 697.5296
-#> 6 0.6482596 23.551399 13.869056 343.5427
+#>        time         x        y    marks
+#> 1 0.0000000 10.000000 14.00000 900.3945
+#> 2 0.4430049 21.577247 23.11145 541.6990
+#> 3 0.5039294 16.632781 22.06146 647.5046
+#> 4 0.5317340  9.118835 14.39470 829.9317
+#> 5 0.5408029  8.470302 22.65708 587.2133
+#> 6 0.5605597 13.255630 11.32068 749.7777
 ```
 
 ------------------------------------------------------------------------

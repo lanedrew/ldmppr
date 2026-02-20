@@ -257,11 +257,11 @@ example_model_fit <- check_model_fit(
 #> Using FGJ r-grid from reference: 1:198 (max r=2.405), correction=km
 #>   Done in 0.1s.
 #> Step 2/4: Generating accepted simulations
-#>   Done in 7.6s.
+#>   Done in 7.7s.
 #> Step 3/4: Computing envelope tests
-#>   Done in 0.8s.
+#>   Done in 0.6s.
 #> Step 4/4: Finalizing output object
-#>   Done in 8.6s.
+#>   Done in 8.4s.
 #> Model check complete.
 
 plot(example_model_fit, which = 'combined')

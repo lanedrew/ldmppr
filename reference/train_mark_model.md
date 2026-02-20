@@ -29,6 +29,7 @@ train_mark_model(
   selection_metric = "rmse",
   cv_folds = 5,
   tuning_grid_size = 200,
+  seed = 0,
   verbose = TRUE
 )
 ```
@@ -110,6 +111,10 @@ train_mark_model(
 
   size of the tuning grid for hyperparameter tuning.
 
+- seed:
+
+  integer seed for reproducible resampling/tuning/model fitting.
+
 - verbose:
 
   `TRUE` or `FALSE` indicating whether to show progress of model
@@ -164,6 +169,7 @@ mark_model <- train_mark_model(
 #>   Edge correction: none
 #> Step 1/6: Preparing training data...
 #>   Rows: 121
+#>   Seed: 0
 #>   Done in 0.0s.
 #> Step 2/6: Configuring parallel backend...
 #>   Parallel: off
@@ -179,7 +185,7 @@ mark_model <- train_mark_model(
 #>   Done in 0.0s.
 #> Step 5/6: Fitting model (with optional CV tuning)...
 #>   foreach backend: doSEQ | workers=1
-#>   Done in 2.4s.
+#>   Done in 2.3s.
 #> Step 6/6: Finalizing output object...
 #>   Residual bootstrap stored (source=oos, transform=sqrt, bins=6, min/bin=8).
 #>   Done in 0.1s.
