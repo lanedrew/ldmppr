@@ -432,9 +432,31 @@ estimate_process_parameters <- function(data,
           if (all(rels >= rescore_par_tol)) kept[[length(kept) + 1L]] <- resc$params[[i]]
         }
 
-        # run local polishing from each kept start, take best
+        # Optional local jitter around the best rescored start.
+        # This preserves the carry-forward best while still exploring nearby starts.
+        starts_list <- kept
+        if (isTRUE(starts$local > 1L)) {
+          if (.needs_finite_bounds(local_algorithm)) {
+            lb_loc <- finite_bounds$lb
+            ub_loc <- finite_bounds$ub
+          } else {
+            lb_loc <- ub_loc <- NULL
+          }
+          jit <- .jitter_inits(
+            base_init = kept[[1]],
+            n = starts$local,
+            sd = starts$jitter_sd,
+            seed = as.integer(starts$seed) + as.integer(lvl) - 1L,
+            lb = lb_loc,
+            ub = ub_loc,
+            clamp = !is.null(lb_loc)
+          )
+          starts_list <- .safe_unique_params(c(starts_list, jit))
+        }
+
+        # run local polishing from rescored starts (+ optional jitter), take best
         pol <- .run_local_from_starts(
-          starts_list = kept,
+          starts_list = starts_list,
           grids_lvl = grids_lvl,
           data_mat = data_mat,
           upper_bounds = upper_bounds,
@@ -706,8 +728,28 @@ estimate_process_parameters <- function(data,
           if (all(rels >= rescore_par_tol)) kept[[length(kept) + 1L]] <- resc$params[[i]]
         }
 
+        starts_list <- kept
+        if (isTRUE(starts$local > 1L)) {
+          if (.needs_finite_bounds(local_algorithm)) {
+            lb_loc <- finite_bounds$lb
+            ub_loc <- finite_bounds$ub
+          } else {
+            lb_loc <- ub_loc <- NULL
+          }
+          jit <- .jitter_inits(
+            base_init = kept[[1]],
+            n = starts$local,
+            sd = starts$jitter_sd,
+            seed = as.integer(starts$seed) + as.integer(lvl) - 1L,
+            lb = lb_loc,
+            ub = ub_loc,
+            clamp = !is.null(lb_loc)
+          )
+          starts_list <- .safe_unique_params(c(starts_list, jit))
+        }
+
         pol <- .run_local_from_starts(
-          starts_list = kept,
+          starts_list = starts_list,
           grids_lvl = grids_lvl,
           data_mat = mat_best,
           upper_bounds = upper_bounds,
