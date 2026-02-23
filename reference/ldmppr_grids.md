@@ -62,11 +62,11 @@ g <- ldmppr_grids(
 )
 g
 #> <ldmppr_grids>
-#>   upper_bounds: b_t=1, b_x=50, b_y=50
+#>   upper_bounds:    b_t=1, b_x=50, b_y=50
 #>   levels: 3
-#>     - level 1: 25x25x25  [x:0..50, y:0..50, t:0..1]
-#>     - level 2: 75x75x75  [x:0..50, y:0..50, t:0..1]
-#>     - level 3: 100x100x100  [x:0..50, y:0..50, t:0..1]
+#>     - level 1: 25x25x25 [x:0..50, y:0..50, t:0..1]
+#>     - level 2: 75x75x75 [x:0..50, y:0..50, t:0..1]
+#>     - level 3: 100x100x100 [x:0..50, y:0..50, t:0..1]
 length(g)
 #> [1] 3
 summary(g)

@@ -236,7 +236,7 @@ fit <- estimate_process_parameters(
 #>   Local multi-start: 2 start(s).
 #>   Completed in 0.1s.
 #>   Best objective: 188.04405
-#> Finished. Total time: 0.1s.
+#> Finished. Total time: 0.2s.
 coef(fit)
 #> [1] 2.290657e+00 4.130412e+00 5.970705e-05 2.795717e+00 2.053278e+00
 #> [6] 4.086056e-01 2.695652e+00 1.139847e-01

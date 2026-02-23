@@ -245,9 +245,12 @@ point process.</p>
 <span><span class="co">#&gt;   selected_delta:  1</span></span>
 <span><span class="co">#&gt;   objective:       174.5835</span></span>
 <span><span class="co">#&gt;   final_status:    5</span></span>
-<span><span class="co">#&gt;   final_outcome:   NLOPT_MAXEVAL_REACHED: Optimization stopped because maxeval (above) was reached.</span></span>
+<span><span class="co">#&gt;   final_outcome:   NLOPT_MAXEVAL_REACHED: Optimization stopped because maxeval</span></span>
+<span><span class="co">#&gt;                    (above) was reached.</span></span>
 <span><span class="co">#&gt;   elapsed_sec:     0.374</span></span>
-<span><span class="co">#&gt;   coefficients:    -1.15389, 10.1308, 0.025621, 1.76271, 2.57658, 0.793192, 2.5001, 0.111552</span></span>
+<span><span class="co">#&gt;   coefficients:</span></span>
+<span><span class="co">#&gt; [1] -1.153890 10.130800  0.025621  1.762710  2.576580  0.793192  2.500100</span></span>
+<span><span class="co">#&gt; [8]  0.111552</span></span>
 <span></span>
 <span><span class="va">estimated_parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit_sc</span><span class="op">)</span></span>
 <span><span class="va">estimated_parameters</span></span>
@@ -337,11 +340,11 @@ parameter tuning grid for the model.</p>
 <span><span class="co">#&gt;   Done in 0.0s.</span></span>
 <span><span class="co">#&gt; Step 5/6: Fitting model (with optional CV tuning)...</span></span>
 <span><span class="co">#&gt;   foreach backend: doSEQ | workers=1</span></span>
-<span><span class="co">#&gt;   Done in 28.0s.</span></span>
+<span><span class="co">#&gt;   Done in 28.5s.</span></span>
 <span><span class="co">#&gt; Step 6/6: Finalizing output object...</span></span>
 <span><span class="co">#&gt;   Residual bootstrap stored (source=oos, transform=sqrt, bins=6, min/bin=8).</span></span>
 <span><span class="co">#&gt;   Done in 1.6s.</span></span>
-<span><span class="co">#&gt; Training complete. Total time: 29.6s.</span></span>
+<span><span class="co">#&gt; Training complete. Total time: 30.1s.</span></span>
 <span></span>
 <span><span class="co"># Print method for ldmppr_mark_model objects</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">mark_model</span><span class="op">)</span></span>
@@ -351,7 +354,8 @@ parameter tuning grid for the model.</p>
 <span><span class="co">#&gt;   has_xgb_raw:      FALSE</span></span>
 <span><span class="co">#&gt;   n_features:       7</span></span>
 <span><span class="co">#&gt;   n_rasters:        4</span></span>
-<span><span class="co">#&gt;   raster_names:     Snodgrass_aspect_southness_1m, Snodgrass_DEM_1m, Snodgrass_slope_1m, Snodgrass_wetness_index_1m</span></span>
+<span><span class="co">#&gt;   raster_names:     Snodgrass_aspect_southness_1m, Snodgrass_DEM_1m,</span></span>
+<span><span class="co">#&gt;                     Snodgrass_slope_1m, Snodgrass_wetness_index_1m</span></span>
 <span><span class="co">#&gt;   scaled_rasters:   TRUE</span></span>
 <span><span class="co">#&gt;   comp_indices:     FALSE</span></span>
 <span></span>
@@ -437,11 +441,11 @@ envelope test).</p>
 <span><span class="co">#&gt; Using FGJ r-grid from reference: 1:198 (max r=2.405), correction=km</span></span>
 <span><span class="co">#&gt;   Done in 0.2s.</span></span>
 <span><span class="co">#&gt; Step 2/4: Generating accepted simulations</span></span>
-<span><span class="co">#&gt;   Done in 9.1s.</span></span>
+<span><span class="co">#&gt;   Done in 9.4s.</span></span>
 <span><span class="co">#&gt; Step 3/4: Computing envelope tests</span></span>
 <span><span class="co">#&gt;   Done in 0.9s.</span></span>
 <span><span class="co">#&gt; Step 4/4: Finalizing output object</span></span>
-<span><span class="co">#&gt;   Done in 10.1s.</span></span>
+<span><span class="co">#&gt;   Done in 10.4s.</span></span>
 <span><span class="co">#&gt; Model check complete.</span></span>
 <span></span>
 <span><span class="co"># Plot method for ldmppr_model_check objects (defaults to combined global envelope test)</span></span>

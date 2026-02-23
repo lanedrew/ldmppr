@@ -180,9 +180,12 @@ fit_sc
 #>   selected_delta:  1
 #>   objective:       174.5835
 #>   final_status:    5
-#>   final_outcome:   NLOPT_MAXEVAL_REACHED: Optimization stopped because maxeval (above) was reached.
+#>   final_outcome:   NLOPT_MAXEVAL_REACHED: Optimization stopped because maxeval
+#>                    (above) was reached.
 #>   elapsed_sec:     0.374
-#>   coefficients:    -1.15389, 10.1308, 0.025621, 1.76271, 2.57658, 0.793192, 2.5001, 0.111552
+#>   coefficients:
+#> [1] -1.153890 10.130800  0.025621  1.762710  2.576580  0.793192  2.500100
+#> [8]  0.111552
 
 estimated_parameters <- coef(fit_sc)
 estimated_parameters
@@ -270,11 +273,11 @@ mark_model <- train_mark_model(
 #>   Done in 0.0s.
 #> Step 5/6: Fitting model (with optional CV tuning)...
 #>   foreach backend: doSEQ | workers=1
-#>   Done in 28.0s.
+#>   Done in 28.5s.
 #> Step 6/6: Finalizing output object...
 #>   Residual bootstrap stored (source=oos, transform=sqrt, bins=6, min/bin=8).
 #>   Done in 1.6s.
-#> Training complete. Total time: 29.6s.
+#> Training complete. Total time: 30.1s.
 
 # Print method for ldmppr_mark_model objects
 print(mark_model)
@@ -284,7 +287,8 @@ print(mark_model)
 #>   has_xgb_raw:      FALSE
 #>   n_features:       7
 #>   n_rasters:        4
-#>   raster_names:     Snodgrass_aspect_southness_1m, Snodgrass_DEM_1m, Snodgrass_slope_1m, Snodgrass_wetness_index_1m
+#>   raster_names:     Snodgrass_aspect_southness_1m, Snodgrass_DEM_1m,
+#>                     Snodgrass_slope_1m, Snodgrass_wetness_index_1m
 #>   scaled_rasters:   TRUE
 #>   comp_indices:     FALSE
 
@@ -372,11 +376,11 @@ model_check <- check_model_fit(
 #> Using FGJ r-grid from reference: 1:198 (max r=2.405), correction=km
 #>   Done in 0.2s.
 #> Step 2/4: Generating accepted simulations
-#>   Done in 9.1s.
+#>   Done in 9.4s.
 #> Step 3/4: Computing envelope tests
 #>   Done in 0.9s.
 #> Step 4/4: Finalizing output object
-#>   Done in 10.1s.
+#>   Done in 10.4s.
 #> Model check complete.
 
 # Plot method for ldmppr_model_check objects (defaults to combined global envelope test)
