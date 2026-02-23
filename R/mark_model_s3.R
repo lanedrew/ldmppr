@@ -74,15 +74,17 @@ print.ldmppr_mark_model <- function(x, ...) {
   }
 
   cat("ldmppr Mark Model\n")
-  cat("  engine:           ", x$engine %||% NA_character_, "\n", sep = "")
+  .cat_wrapped_field("  engine:           ", x$engine %||% NA_character_)
   cat("  has_fit_engine:   ", !is.null(x$fit_engine), "\n", sep = "")
   cat("  has_xgb_raw:      ", !is.null(x$xgb_raw), "\n", sep = "")
   if (!is.null(x$feature_names)) cat("  n_features:       ", length(x$feature_names), "\n", sep = "")
   if (!is.null(x$rasters)) {
     cat("  n_rasters:        ", length(x$rasters), "\n", sep = "")
     labels <- vapply(x$rasters, .raster_label, character(1))
-    cat("  raster_names:     ", paste(utils::head(labels, 4L), collapse = ", "),
-        if (length(labels) > 4L) " ..." else "", "\n", sep = "")
+    .cat_wrapped_field(
+      "  raster_names:     ",
+      paste0(paste(utils::head(labels, 4L), collapse = ", "), if (length(labels) > 4L) " ..." else "")
+    )
   }
   if (!is.null(x$info$scaled_rasters)) cat("  scaled_rasters:   ", x$info$scaled_rasters, "\n", sep = "")
   if (!is.null(x$info$include_comp_inds)) cat("  comp_indices:     ", x$info$include_comp_inds, "\n", sep = "")
@@ -116,16 +118,16 @@ summary.ldmppr_mark_model <- function(object, ...) {
 #' @export
 print.summary.ldmppr_mark_model <- function(x, ...) {
   cat("Summary: ldmppr Mark Model\n")
-  cat("  engine:           ", x$engine %||% NA_character_, "\n", sep = "")
+  .cat_wrapped_field("  engine:           ", x$engine %||% NA_character_)
   cat("  n_features:       ", x$n_features, "\n", sep = "")
   cat("  n_rasters:        ", x$n_rasters, "\n", sep = "")
   cat("  scaled_rasters:   ", x$scaled_rasters, "\n", sep = "")
   cat("  comp_indices:     ", x$include_comp_inds, "\n", sep = "")
   cat("  comp_radius:      ", x$competition_radius, "\n", sep = "")
-  cat("  edge_correction:  ", x$edge_correction, "\n", sep = "")
+  .cat_wrapped_field("  edge_correction:  ", x$edge_correction)
   cat("  cv_folds:         ", x$cv_folds, "\n", sep = "")
   cat("  tuning_grid_size: ", x$tuning_grid_size, "\n", sep = "")
-  cat("  selection_metric: ", x$selection_metric, "\n", sep = "")
+  .cat_wrapped_field("  selection_metric: ", x$selection_metric)
   invisible(x)
 }
 

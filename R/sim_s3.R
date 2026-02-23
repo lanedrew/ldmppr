@@ -36,15 +36,15 @@ NULL
 print.ldmppr_sim <- function(x, ...) {
   n <- if (is.data.frame(x$realization)) nrow(x$realization) else NA_integer_
   cat("ldmppr Simulation\n")
-  cat("  process:          ", x$process %||% NA_character_, "\n", sep = "")
+  .cat_wrapped_field("  process:          ", x$process %||% NA_character_)
   cat("  n_points:         ", n, "\n", sep = "")
   cat("  thinning:         ", x$thinning %||% NA, "\n", sep = "")
-  cat("  edge_correction:  ", x$edge_correction %||% NA_character_, "\n", sep = "")
+  .cat_wrapped_field("  edge_correction:  ", x$edge_correction %||% NA_character_)
   if (!is.null(x$bounds$t_min) && !is.null(x$bounds$t_max)) {
-    cat("  time_bounds:      [", x$bounds$t_min, ", ", x$bounds$t_max, "]\n", sep = "")
+    .cat_wrapped_field("  time_bounds:      ", paste0("[", x$bounds$t_min, ", ", x$bounds$t_max, "]"))
   }
   if (!is.null(x$bounds$xy_bounds)) {
-    cat("  xy_bounds:        [", paste(x$bounds$xy_bounds, collapse = ", "), "]\n", sep = "")
+    .cat_wrapped_field("  xy_bounds:        ", paste0("[", paste(x$bounds$xy_bounds, collapse = ", "), "]"))
   }
   invisible(x)
 }
@@ -77,14 +77,14 @@ summary.ldmppr_sim <- function(object, ...) {
 #' @export
 print.summary.ldmppr_sim <- function(x, ...) {
   cat("Summary: ldmppr Simulation\n")
-  cat("  process:          ", x$process %||% NA_character_, "\n", sep = "")
+  .cat_wrapped_field("  process:          ", x$process %||% NA_character_)
   cat("  n_points:         ", x$n_points %||% NA_integer_, "\n", sep = "")
-  cat("  mark_range:       [", paste(signif(x$mark_range, 6), collapse = ", "), "]\n", sep = "")
-  cat("  time_range:       [", paste(signif(x$time_range, 6), collapse = ", "), "]\n", sep = "")
+  .cat_wrapped_field("  mark_range:       ", paste0("[", paste(signif(x$mark_range, 6), collapse = ", "), "]"))
+  .cat_wrapped_field("  time_range:       ", paste0("[", paste(signif(x$time_range, 6), collapse = ", "), "]"))
   cat("  thinning:         ", x$thinning %||% NA, "\n", sep = "")
-  cat("  edge_correction:  ", x$edge_correction %||% NA_character_, "\n", sep = "")
+  .cat_wrapped_field("  edge_correction:  ", x$edge_correction %||% NA_character_)
   if (!is.null(x$bounds$xy_bounds)) {
-    cat("  xy_bounds:        [", paste(x$bounds$xy_bounds, collapse = ", "), "]\n", sep = "")
+    .cat_wrapped_field("  xy_bounds:        ", paste0("[", paste(x$bounds$xy_bounds, collapse = ", "), "]"))
   }
   invisible(x)
 }

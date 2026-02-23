@@ -352,6 +352,37 @@ as_mark_model <- function(mark_model) {
 }
 
 
+.cat_wrapped_field <- function(prefix, value, width = getOption("width")) {
+  txt <- if (length(value)) paste(as.character(value), collapse = ", ") else ""
+
+  width <- suppressWarnings(as.integer(width %||% 80L))
+  if (is.na(width) || width < 40L) width <- 80L
+
+  prefix_width <- nchar(prefix, type = "width")
+  wrap_width <- max(20L, width - prefix_width)
+  wrapped <- strwrap(txt, width = wrap_width)
+
+  force_wrap <- function(line, w) {
+    if (!nzchar(line) || nchar(line, type = "width") <= w) return(line)
+    starts <- seq.int(1L, nchar(line), by = w)
+    substring(line, starts, pmin(starts + w - 1L, nchar(line)))
+  }
+
+  wrapped <- unlist(lapply(wrapped, force_wrap, w = wrap_width), use.names = FALSE)
+  if (!length(wrapped)) wrapped <- ""
+
+  cat(prefix, wrapped[[1L]], "\n", sep = "")
+  if (length(wrapped) > 1L) {
+    cont_prefix <- strrep(" ", prefix_width)
+    for (line in wrapped[-1L]) {
+      cat(cont_prefix, line, "\n", sep = "")
+    }
+  }
+
+  invisible(NULL)
+}
+
+
 # ----------------------------
 # helpers for train_mark_model
 # ----------------------------

@@ -36,18 +36,21 @@ print.ldmppr_grids <- function(x, ...) {
   stopifnot(is_ldmppr_grids(x))
   ub <- x$upper_bounds
   cat("<ldmppr_grids>\n")
-  cat("  upper_bounds: b_t=", ub[1], ", b_x=", ub[2], ", b_y=", ub[3], "\n", sep = "")
+  .cat_wrapped_field("  upper_bounds:    ", paste0("b_t=", ub[1], ", b_x=", ub[2], ", b_y=", ub[3]))
   cat("  levels: ", length(x$levels), "\n", sep = "")
   for (i in seq_along(x$levels)) {
     L <- x$levels[[i]]
     lab <- x$labels[[i]]
     if (nzchar(lab)) lab <- paste0(" (", lab, ")")
-    cat("    - level ", i, lab, ": ",
+    .cat_wrapped_field(
+      paste0("    - level ", i, lab, ": "),
+      paste0(
         length(L$x), "x", length(L$y), "x", length(L$t),
         "  [x:", signif(min(L$x), 4), "..", signif(max(L$x), 4),
         ", y:", signif(min(L$y), 4), "..", signif(max(L$y), 4),
-        ", t:", signif(min(L$t), 4), "..", signif(max(L$t), 4), "]\n",
-        sep = "")
+        ", t:", signif(min(L$t), 4), "..", signif(max(L$t), 4), "]"
+      )
+    )
   }
   invisible(x)
 }

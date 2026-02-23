@@ -85,7 +85,7 @@ summary.ldmppr_budgets <- function(object, ...) {
 print.summary.ldmppr_budgets <- function(x, ...) {
   cat("<summary: ldmppr_budgets>\n")
   cat("  local stages: ", x$n_local_stages, "\n", sep = "")
-  cat("  has refinement budgets: ", if (isTRUE(x$has_refinement)) "yes" else "no", "\n", sep = "")
+  .cat_wrapped_field("  has refinement budgets: ", if (isTRUE(x$has_refinement)) "yes" else "no")
   print(x$table)
   invisible(x)
 }

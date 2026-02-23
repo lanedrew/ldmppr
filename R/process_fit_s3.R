@@ -35,28 +35,35 @@ NULL
 #' @export
 print.ldmppr_fit <- function(x, ...) {
   cat("ldmppr Fit\n")
-  cat("  process:         ", x$process %||% NA_character_, "\n", sep = "")
-  cat("  engine:          ", x$engine %||% NA_character_, "\n", sep = "")
-  if (!is.null(x$settings$strategy)) cat("  strategy:        ", x$settings$strategy, "\n", sep = "")
-  if (!is.null(x$settings$global_algorithm)) cat("  global_alg:      ", x$settings$global_algorithm, "\n", sep = "")
-  if (!is.null(x$settings$local_algorithm)) cat("  local_alg:       ", x$settings$local_algorithm, "\n", sep = "")
+  .cat_wrapped_field("  process:         ", x$process %||% NA_character_)
+  .cat_wrapped_field("  engine:          ", x$engine %||% NA_character_)
+  if (!is.null(x$settings$strategy)) .cat_wrapped_field("  strategy:        ", x$settings$strategy)
+  if (!is.null(x$settings$global_algorithm)) .cat_wrapped_field("  global_alg:      ", x$settings$global_algorithm)
+  if (!is.null(x$settings$local_algorithm)) .cat_wrapped_field("  local_alg:       ", x$settings$local_algorithm)
   if (!is.null(x$settings$starts) && is.list(x$settings$starts)) {
     st <- x$settings$starts
-    cat("  starts:          ",
+    .cat_wrapped_field(
+      "  starts:          ",
+      paste0(
         "global=", st$global %||% NA_integer_,
         ", local=", st$local %||% NA_integer_,
         ", jitter_sd=", signif(st$jitter_sd %||% NA_real_, 4),
-        ", seed=", st$seed %||% NA_integer_, "\n", sep = "")
+        ", seed=", st$seed %||% NA_integer_
+      )
+    )
   }
   if (!is.null(x$data_summary$n)) cat("  n_obs:           ", x$data_summary$n, "\n", sep = "")
   if (!is.null(x$mapping$delta_values)) cat("  n_deltas:        ", length(x$mapping$delta_values), "\n", sep = "")
   if (!is.null(x$mapping$delta) && !is.na(x$mapping$delta)) cat("  selected_delta:  ", signif(x$mapping$delta, 6), "\n", sep = "")
   if (!is.null(x$fit$objective)) cat("  objective:       ", signif(x$fit$objective, 8), "\n", sep = "")
-  if (!is.null(x$fit$status)) cat("  final_status:    ", x$fit$status, "\n", sep = "")
-  if (!is.null(x$fit$message) && is.character(x$fit$message) && nzchar(x$fit$message)) cat("  final_outcome:   ", x$fit$message, "\n", sep = "")
+  if (!is.null(x$fit$status)) .cat_wrapped_field("  final_status:    ", x$fit$status)
+  if (!is.null(x$fit$message) && is.character(x$fit$message) && nzchar(x$fit$message)) {
+    .cat_wrapped_field("  final_outcome:   ", x$fit$message)
+  }
   if (!is.null(x$timing$seconds)) cat("  elapsed_sec:     ", round(x$timing$seconds, 3), "\n", sep = "")
   if (!is.null(x$fit$solution)) {
-    cat("  coefficients:    ", paste(signif(as.numeric(x$fit$solution), 6), collapse = ", "), "\n", sep = "")
+    cat("  coefficients:\n")
+    print(signif(as.numeric(x$fit$solution), 6))
   }
   invisible(x)
 }
@@ -116,19 +123,25 @@ summary.ldmppr_fit <- function(object, ...) {
 #' @export
 print.summary.ldmppr_fit <- function(x, ...) {
   cat("Summary: ldmppr Fit\n")
-  cat("  process:         ", x$process %||% NA_character_, "\n", sep = "")
-  cat("  engine:          ", x$engine %||% NA_character_, "\n", sep = "")
-  if (!is.null(x$settings$strategy)) cat("  strategy:        ", x$settings$strategy, "\n", sep = "")
+  .cat_wrapped_field("  process:         ", x$process %||% NA_character_)
+  .cat_wrapped_field("  engine:          ", x$engine %||% NA_character_)
+  if (!is.null(x$settings$strategy)) .cat_wrapped_field("  strategy:        ", x$settings$strategy)
   if (!is.null(x$settings$starts) && is.list(x$settings$starts)) {
     st <- x$settings$starts
-    cat("  starts:          ",
+    .cat_wrapped_field(
+      "  starts:          ",
+      paste0(
         "global=", st$global %||% NA_integer_,
         ", local=", st$local %||% NA_integer_,
         ", jitter_sd=", signif(st$jitter_sd %||% NA_real_, 4),
-        ", seed=", st$seed %||% NA_integer_, "\n", sep = "")
+        ", seed=", st$seed %||% NA_integer_
+      )
+    )
   }
-  cat("  status:          ", x$status %||% NA_character_, "\n", sep = "")
-  if (!is.null(x$message) && is.character(x$message) && nzchar(x$message)) cat("  outcome:         ", x$message, "\n", sep = "")
+  .cat_wrapped_field("  status:          ", x$status %||% NA_character_)
+  if (!is.null(x$message) && is.character(x$message) && nzchar(x$message)) {
+    .cat_wrapped_field("  outcome:         ", x$message)
+  }
   cat("  objective:       ", signif(x$objective, 10), "\n", sep = "")
   if (!is.null(x$mapping$delta) && !is.na(x$mapping$delta)) cat("  selected_delta:  ", signif(x$mapping$delta, 6), "\n", sep = "")
   if (!is.null(x$timing$seconds)) cat("  elapsed_sec:     ", round(x$timing$seconds, 3), "\n", sep = "")

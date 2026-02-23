@@ -37,9 +37,9 @@ print.ldmppr_model_check <- function(x, ...) {
   if (!is.null(x$settings$n_sim)) cat("  n_sim:            ", x$settings$n_sim, "\n", sep = "")
   if (!is.null(x$settings$n_sim_used)) cat("  n_sim_used:       ", x$settings$n_sim_used, "\n", sep = "")
   if (!is.null(x$settings$thinning)) cat("  thinning:         ", x$settings$thinning, "\n", sep = "")
-  if (!is.null(x$settings$edge_correction)) cat("  edge_correction:  ", x$settings$edge_correction, "\n", sep = "")
+  if (!is.null(x$settings$edge_correction)) .cat_wrapped_field("  edge_correction:  ", x$settings$edge_correction)
   if (!is.na(p_comb)) cat("  p_combined:       ", signif(p_comb, 6), "\n", sep = "")
-  cat("  envelopes:        ", paste(names(x$envs), collapse = ", "), "\n", sep = "")
+  .cat_wrapped_field("  envelopes:        ", paste(names(x$envs), collapse = ", "))
   invisible(x)
 }
 
