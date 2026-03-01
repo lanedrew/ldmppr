@@ -10,7 +10,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/lanedrew/ldmppr/blob/master/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/lanedrew/ldmppr/blob/v1.1.2/DESCRIPTION)
 
 Drew L, Kaplan A (2026). *ldmppr: Estimate and Simulate from Location
 Dependent Marked Point Processes*. R package version 1.1.2,

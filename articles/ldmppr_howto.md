@@ -182,7 +182,7 @@ fit_sc
 #>   final_status:    5
 #>   final_outcome:   NLOPT_MAXEVAL_REACHED: Optimization stopped because maxeval
 #>                    (above) was reached.
-#>   elapsed_sec:     0.378
+#>   elapsed_sec:     0.377
 #>   coefficients:
 #> [1] -1.153890 10.130800  0.025621  1.762710  2.576580  0.793192  2.500100
 #> [8]  0.111552
@@ -273,11 +273,11 @@ mark_model <- train_mark_model(
 #>   Done in 0.0s.
 #> Step 5/6: Fitting model (with optional CV tuning)...
 #>   foreach backend: doSEQ | workers=1
-#>   Done in 31.3s.
+#>   Done in 30.6s.
 #> Step 6/6: Finalizing output object...
 #>   Residual bootstrap stored (source=oos, transform=sqrt, bins=6, min/bin=8).
-#>   Done in 1.8s.
-#> Training complete. Total time: 33.1s.
+#>   Done in 1.7s.
+#> Training complete. Total time: 32.3s.
 
 # Print method for ldmppr_mark_model objects
 print(mark_model)
@@ -376,11 +376,11 @@ model_check <- check_model_fit(
 #> Using FGJ r-grid from reference: 1:198 (max r=2.405), correction=km
 #>   Done in 0.1s.
 #> Step 2/4: Generating accepted simulations
-#>   Done in 9.8s.
+#>   Done in 9.4s.
 #> Step 3/4: Computing envelope tests
 #>   Done in 0.9s.
 #> Step 4/4: Finalizing output object
-#>   Done in 10.9s.
+#>   Done in 10.4s.
 #> Model check complete.
 
 # Plot method for ldmppr_model_check objects (defaults to combined global envelope test)
