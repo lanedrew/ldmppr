@@ -13,7 +13,8 @@ generate_mpp(locations, marks = NULL, xy_bounds = NULL)
 
 - locations:
 
-  a data.frame of (x,y) locations with names "x" and "y".
+  a data.frame or matrix of (x,y) locations. If a data.frame is
+  supplied, it must contain columns named "x" and "y".
 
 - marks:
 

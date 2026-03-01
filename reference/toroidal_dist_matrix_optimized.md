@@ -36,7 +36,7 @@ x_bound <- 10
 y_bound <- 10
 
 # Compute the toroidal distance matrix
-toroidal_dist_matrix_optimized(location_matrix, x_bound, y_bound)
+ldmppr:::toroidal_dist_matrix_optimized(location_matrix, x_bound, y_bound)
 #>          [,1]     [,2]     [,3]
 #> [1,] 0.000000 1.414214 2.828427
 #> [2,] 1.414214 0.000000 1.414214

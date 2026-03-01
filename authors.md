@@ -13,13 +13,13 @@ Source:
 [`DESCRIPTION`](https://github.com/lanedrew/ldmppr/blob/master/DESCRIPTION)
 
 Drew L, Kaplan A (2026). *ldmppr: Estimate and Simulate from Location
-Dependent Marked Point Processes*. R package version 1.1.1.9000,
+Dependent Marked Point Processes*. R package version 1.1.2,
 <https://github.com/lanedrew/ldmppr>.
 
     @Manual{,
       title = {ldmppr: Estimate and Simulate from Location Dependent Marked Point Processes},
       author = {Lane Drew and Andee Kaplan},
       year = {2026},
-      note = {R package version 1.1.1.9000},
+      note = {R package version 1.1.2},
       url = {https://github.com/lanedrew/ldmppr},
     }
