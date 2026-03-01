@@ -294,7 +294,7 @@ simulate_mpp <- function(process = c("self_correcting"),
     realization <- data.frame(time = numeric(0), x = numeric(0), y = numeric(0), marks = numeric(0))
 
     sim_mpp <- generate_mpp(
-      locations = matrix(numeric(0), ncol = 2),
+      locations = data.frame(x = numeric(0), y = numeric(0)),
       marks = numeric(0),
       xy_bounds = xy_bounds
     )

@@ -357,6 +357,18 @@ train_mark_model <- function(data,
     # conservative default for small datasets
     1L
   }
+
+  # Apply thread limits only within this call and restore on exit.
+  old_omp <- Sys.getenv("OMP_THREAD_LIMIT", unset = NA_character_)
+  Sys.setenv("OMP_THREAD_LIMIT" = as.character(engine_threads))
+  on.exit({
+    if (is.na(old_omp)) {
+      Sys.unsetenv("OMP_THREAD_LIMIT")
+    } else {
+      Sys.setenv("OMP_THREAD_LIMIT" = old_omp)
+    }
+  }, add = TRUE)
+
   .vcat("Model engine threads: ", engine_threads, .indent = 1L)
   .vcat("Done in ", .fmt_time(.elapsed_sec(step_t)), ".", .indent = 1L)
 

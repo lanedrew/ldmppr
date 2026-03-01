@@ -3,7 +3,8 @@
 #' @description
 #' Creates an object of class "ppp" that represents a marked point pattern in the two-dimensional plane.
 #'
-#' @param locations a data.frame of (x,y) locations with names "x" and "y".
+#' @param locations a data.frame or matrix of (x,y) locations. If a data.frame
+#'   is supplied, it must contain columns named "x" and "y".
 #' @param marks a vector of marks.
 #' @param xy_bounds a vector of domain bounds (2 for x, 2 for y).
 #'
@@ -23,14 +24,28 @@
 #'
 generate_mpp <- function(locations, marks = NULL, xy_bounds = NULL) {
   # Check arguments
-  if (!is.data.frame(locations)) stop("Provide a data frame with columns x and y for the locations argument.", .call = FALSE)
-  if (is.null(marks)) stop("Provide a vector of marks with length matching the number of locations provided for the marks argument.", .call = FALSE)
-  if (is.null(xy_bounds) | !(length(xy_bounds) == 4)) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
-  if (xy_bounds[2] < xy_bounds[1] | xy_bounds[4] < xy_bounds[3]) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", .call = FALSE)
+  if (is.data.frame(locations)) {
+    if (!all(c("x", "y") %in% names(locations))) {
+      stop("Provide locations with columns x and y.", call. = FALSE)
+    }
+    loc_xy <- as.matrix(locations[, c("x", "y"), drop = FALSE])
+  } else if (is.matrix(locations)) {
+    if (ncol(locations) != 2L) {
+      stop("Provide locations as a 2-column matrix/data.frame of (x,y).", call. = FALSE)
+    }
+    loc_xy <- locations
+  } else {
+    stop("Provide locations as a 2-column matrix/data.frame of (x,y).", call. = FALSE)
+  }
+
+  if (is.null(marks)) stop("Provide a vector of marks with length matching the number of locations provided for the marks argument.", call. = FALSE)
+  if (length(marks) != nrow(loc_xy)) stop("Length of `marks` must equal the number of rows in `locations`.", call. = FALSE)
+  if (is.null(xy_bounds) || length(xy_bounds) != 4) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", call. = FALSE)
+  if (xy_bounds[2] < xy_bounds[1] || xy_bounds[4] < xy_bounds[3]) stop("Provide (x,y) bounds in the form (a_x, b_x, a_y, b_y) for the xy_bounds argument.", call. = FALSE)
 
   # Create a point process object with marks
-  marked_pp <- spatstat.geom::ppp(locations$x,
-    locations$y,
+  marked_pp <- spatstat.geom::ppp(loc_xy[, 1],
+    loc_xy[, 2],
     xy_bounds[1:2], xy_bounds[3:4],
     marks = marks
   )

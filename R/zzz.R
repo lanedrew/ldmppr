@@ -1,11 +1,6 @@
-# This file contains the .onLoad() function to handle initialization tasks
-# and ensure imports from xgboost and ranger are recognized.
+# Package startup hook.
+#
+# Avoid changing process-wide preferences (such as OMP_THREAD_LIMIT) at load time.
 .onLoad <- function(libname, pkgname) {
-
-  # CRAN OMP THREAD LIMIT
-  Sys.setenv("OMP_THREAD_LIMIT" = 1)
-
-  # Reference the functions to ensure they are recognized
-  xgboost::xgboost
-  ranger::ranger
+  invisible(NULL)
 }

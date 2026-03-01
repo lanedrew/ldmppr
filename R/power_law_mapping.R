@@ -14,11 +14,11 @@
 #' power_law_mapping(sizes, .5)
 #'
 power_law_mapping <- function(sizes, delta) {
-  if (length(delta) != 1 || is.na(delta) || delta < 0) {
-    stop("Please input a value for delta >= 0.")
+  if (length(delta) != 1 || is.na(delta) || delta <= 0) {
+    stop("Please input a value for delta > 0.", call. = FALSE)
   }
   if (!is.numeric(sizes) || anyNA(sizes)) {
-    stop("`sizes` must be a numeric vector with no missing values.")
+    stop("`sizes` must be a numeric vector with no missing values.", call. = FALSE)
   }
 
   smin <- base::min(sizes)
@@ -32,4 +32,3 @@ power_law_mapping <- function(sizes, delta) {
   t_scaled <- 1 - ((sizes - smin) / (smax - smin))^delta
   return(t_scaled)
 }
-

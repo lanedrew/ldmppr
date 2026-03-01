@@ -4,6 +4,7 @@
 #' @param pattern_type type of pattern to plot (\code{"reference"} or \code{"simulated"}).
 #'
 #' @return a \code{ggplot} object of the marked point process.
+#' @export
 #'
 #' @examples
 #' # Load example data

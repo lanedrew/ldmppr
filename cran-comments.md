@@ -3,11 +3,13 @@ This is a minor update. In this version of the package we have:
 
 * Reworked the documentation to improve clarity and fix minor issues.
 
-* Updated the workflow pipeline to allow passage of S3 class objects between functions to simplify the user experience.
-The four main steps of the workflow (fit process model, train mark model, check model fit, simulate realizations) now each have their own S3 class and associated methods and you can pass the
-objects forward between functions. See the updated documentation for details.
+* Bumped version number from 1.1.1 to 1.1.2.
 
-* Bumped version number from 1.1.0 to 1.1.1.
+* Refined package exports to include only intended user-facing functions.
+
+* Improved simulation/helper edge-case handling and input validation consistency.
+
+* Removed package-load side effects from OpenMP thread handling.
 
 We have not included a reference describing the methods in this package as the reference is not yet published. The reference is under revision currently and will be included
 in the next version of the package.

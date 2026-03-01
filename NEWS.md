@@ -1,5 +1,13 @@
 # ldmppr (development version)
 
+# ldmppr 1.1.2
+
+* Refined API exports to expose only intended user-facing functions.
+
+* Improved simulation edge-case handling and input validation consistency for helper functions.
+
+* Removed package-load side effects from OpenMP thread handling.
+
 # ldmppr 1.1.1
 
 * Updated the workflow pipeline to allow passage of S3 class objects between functions to simplify the user experience.
