@@ -4,6 +4,8 @@
 
 ## ldmppr 1.1.2
 
+CRAN release: 2026-03-01
+
 - Refined API exports to expose only intended user-facing functions.
 
 - Improved simulation edge-case handling and input validation
