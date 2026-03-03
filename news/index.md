@@ -2,6 +2,14 @@
 
 ## ldmppr (development version)
 
+## ldmppr 1.1.3
+
+CRAN release: 2026-03-03
+
+- Fixed gcc-UBSAN undefined behavior in C++ spatial hash key
+  construction during thinning by replacing signed left-shift operations
+  with unsigned-safe key packing.
+
 ## ldmppr 1.1.2
 
 CRAN release: 2026-03-01
