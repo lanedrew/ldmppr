@@ -1,22 +1,26 @@
 ## Resubmission
-This is a minor update. In this version of the package we have:
+This is a targeted patch release to address an additional issue reported by CRAN
+under gcc-UBSAN.
 
-* Reworked the documentation to improve clarity and fix minor issues.
+* Fixed undefined behavior in `src/self_correcting_model.cpp` (left shift of
+  negative value) in the spatial hash key function used by `thin_st_fast()`
+  and `interaction_st_fast()`.
 
-* Bumped version number from 1.1.1 to 1.1.2.
+* Replaced signed left-shift key construction with unsigned-safe packing
+  (`uint32_t` -> `uint64_t`) to avoid UB while preserving key behavior.
 
-* Refined package exports to include only intended user-facing functions.
-
-* Improved simulation/helper edge-case handling and input validation consistency.
-
-* Removed package-load side effects from OpenMP thread handling.
+* Bumped version number from 1.1.2 to 1.1.3.
 
 We have not included a reference describing the methods in this package as the reference is not yet published. The reference is under revision currently and will be included
 in the next version of the package.
 
 ## R CMD check results
 
-0 errors | 0 warnings | 0 note
+0 errors | 0 warnings | 1 notes
+
+Notes observed locally:
+
+* "Days since last update: 1" (expected for this quick follow-up patch).
 
 ## Downstream dependencies
 This package has no downstream dependencies.

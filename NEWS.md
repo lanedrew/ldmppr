@@ -1,5 +1,11 @@
 # ldmppr (development version)
 
+# ldmppr 1.1.3
+
+* Fixed gcc-UBSAN undefined behavior in C++ spatial hash key construction
+  during thinning by replacing signed left-shift operations with unsigned-safe
+  key packing.
+
 # ldmppr 1.1.2
 
 * Refined API exports to expose only intended user-facing functions.

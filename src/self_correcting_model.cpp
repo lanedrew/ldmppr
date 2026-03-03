@@ -2,6 +2,7 @@
 #include <vector>
 #include <limits>
 #include <cmath>
+#include <cstdint>
 #include <unordered_map>
 using namespace Rcpp;
 
@@ -888,7 +889,9 @@ Rcpp::NumericVector interaction_st_fast(const Rcpp::NumericMatrix& data,
   const double cell = beta3;
 
   auto key_of = [](int cx, int cy) -> long long {
-    return (static_cast<long long>(cx) << 32) ^ static_cast<unsigned long long>(cy);
+    const std::uint64_t ux = static_cast<std::uint64_t>(static_cast<std::uint32_t>(cx));
+    const std::uint64_t uy = static_cast<std::uint64_t>(static_cast<std::uint32_t>(cy));
+    return static_cast<long long>((ux << 32) | uy);
   };
 
   std::unordered_map<long long, std::vector<int>> cells;
@@ -972,7 +975,9 @@ Rcpp::LogicalVector thin_st_fast(const Rcpp::NumericMatrix& data,
 
   const double cell = beta3;
   auto key_of = [](int cx, int cy) -> long long {
-    return (static_cast<long long>(cx) << 32) ^ static_cast<unsigned long long>(cy);
+    const std::uint64_t ux = static_cast<std::uint64_t>(static_cast<std::uint32_t>(cx));
+    const std::uint64_t uy = static_cast<std::uint64_t>(static_cast<std::uint32_t>(cy));
+    return static_cast<long long>((ux << 32) | uy);
   };
 
   // Maintain only ACCEPTED indices in cells
